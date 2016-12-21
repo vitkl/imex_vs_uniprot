@@ -1,0 +1,2 @@
+all.interactors	interactors.with.the.UniprotKB.identifier	interactors.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	SPECIES_ID.interactors	interactors.from.other.species
+885	885	0	6239	Caenorhabditis elegans	867	38

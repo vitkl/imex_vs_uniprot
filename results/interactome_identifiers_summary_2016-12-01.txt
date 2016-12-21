@@ -1,0 +1,6 @@
+all.interactors	interactors.with.the.UniprotKB.identifier	interactors.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	SPECIES_ID.interactors	interactors.from.other.species
+30691	28292	2399	9606	Homo sapiens	20374	8002
+17240	16630	610	10090	Mus musculus	8737	7908
+11498	10740	758	7227	Drosophila melanogaster	10552	188
+9795	5130	4665	6239	Caenorhabditis elegans	5078	52
+6010	5728	282	3702	Arabidopsis thaliana	5517	211

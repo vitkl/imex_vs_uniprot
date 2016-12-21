@@ -1,0 +1,12 @@
+INFO [2016-11-24 12:05:46] [[1]]
+INFO [2016-11-24 12:05:46] IMEx_vs_BioGRID_from_Mentha
+INFO [2016-11-24 12:05:46] 
+INFO [2016-11-24 12:05:46] [[2]]
+INFO [2016-11-24 12:05:46] [1] "x.tiff"
+INFO [2016-11-24 12:05:46] 
+ERROR [2016-11-24 12:05:46] Incorrect number of elements.
+ERROR [2016-11-24 13:43:42] Unexpected parameter length for 'alpha'
+ERROR [2016-11-24 13:43:57] Unexpected parameter length for 'cat.dist'
+ERROR [2016-11-24 13:44:06] Impossible: a2 <- n12 - n123 produces negative area
+ERROR [2016-11-24 16:15:22] Unexpected parameter length for 'category'
+ERROR [2016-11-24 16:20:38] Unexpected parameter length for 'category'

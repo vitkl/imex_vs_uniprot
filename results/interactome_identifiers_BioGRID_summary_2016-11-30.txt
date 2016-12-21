@@ -1,0 +1,13 @@
+all.interactors	interactors.with.the.UniprotKB.identifier	interactors.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	SPECIES_ID.interactors	interactors.from.other.species
+18588	18588	0	9606	Homo sapiens	15374	3214
+10766	10766	0	10090	Mus musculus	5419	5347
+6101	6101	0	559292	strain ATCC 204508	5714	387
+2096	2096	0	7227	Drosophila melanogaster	2018	78
+885	885	0	6239	Caenorhabditis elegans	847	38
+6643	6643	0	3702	Arabidopsis thaliana	6557	86
+18588	18588	0	9606	Homo sapiens	15374	3214
+10766	10766	0	10090	Mus musculus	5419	5347
+6101	6101	0	559292	strain ATCC 204508	5714	387
+2096	2096	0	7227	Drosophila melanogaster	2018	78
+885	885	0	6239	Caenorhabditis elegans	847	38
+6643	6643	0	3702	Arabidopsis thaliana	6557	86

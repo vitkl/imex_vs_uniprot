@@ -1,0 +1,25 @@
+---
+title: Characterisation of model species interactome available from
+  primary molecular interaction databases
+author: "Vitalii Kleshchevnikov"
+date: "21 December 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = TRUE, message = FALSE)
+```
+
+# Introduction
+
+    Structure and function of the cell arises from interactions between molecules (proteins, nucleic acids and others). We can discover and study these molecular interactions using a number of experimental and computational techniques. This study focuses on molecular interactions identified in experimental setting, most of which are represented in the literature and databases by protein-protein interactions (also protein-DNA interactions obtained, for example, by ChIP-Seq, but those are traditionally incorporated into genomic databases). 
+    Due to the nature of detection methods used, these interactions come in two flavors: binary interactions and associations. Binary interactions are the interactions between two components, for example, two specific proteins, some detection methods (e.g. two-hybrid) identify those. To understand associations, we need to imagine we know proteins A, B and C constitute a complex and interact as shown in a figure 1 A. When we conduct an experiment, we choose the bait (the molecule experimentally treated to capture its interacting partners, called preys) to be protein A, and by some detection method (e.g. affinity-purification mass-spectrometry) we get both protein B and protein C detected as preys. Next step is to translate bait-prey relationship into a model of reality like the one shown in figure 1 A. We call interactions A-B and A-C associations, because we cannot infer the true relationship between A, B and C from this experiment setup.
+    What was just described 
+    If we did not have the information about true nature (shown in figure 1 A) - we would imagine two scenarios:
+1. the bait (protein A) can be directly bound to both prey proteins (protein B and protein C) 
+2. alternatively, protein C can link protein A and protein B together - which happends to be the true nature
+In the reality we don't know the true nature of undelying our experimental result
+
+
+One of the big challenges of studying molecular interactions is that we don't know the true nature of undelying our experimental result, therefore, when our assays display positive result
+The aggregation of all components and their interactions into a single network result in what we call interactome, the whole 

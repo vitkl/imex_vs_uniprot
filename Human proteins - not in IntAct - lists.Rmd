@@ -1,0 +1,59 @@
+---
+title: "Human proteins - not in IntAct - lists"
+author: "Vitalii Kleshchevnikov"
+date: "15 December 2016"
+output: html_document
+---
+
+## 1. Human proteins that are in Swissprot, but not in IntAct (all IMEx databases) 
+("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", "HPIDb",
+"I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+
+```{r Swissprot no-isoforms}
+filename = "./analysis/proteome_vs_interactome_f_9606_reviewed_2_isoforms_FALSE_2016-12-01.txt"
+swissprot_noiso = read.delim(filename, stringsAsFactors = F)
+swissprot_noiso = dplyr::filter(swissprot_noiso, swissprot_noiso$whole_proteome_Uniprot == 1)
+swissprot_noiso = dplyr::filter(swissprot_noiso, swissprot_noiso$IMEx == 0)
+write(swissprot_noiso$whole_proteome_IDs, "Swissprot_without_isoforms_missing_in_IntAct.txt")
+```
+number of proteins missing interactions in IntAct: `r nrow(swissprot_noiso)` 
+
+
+
+## 2. Human proteins that are in full proteome (all UniprotKB), but not in IntAct (all IMEx databases) 
+("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", "HPIDb",
+"I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+
+```{r UniprotKB no-isoforms}
+filename = "./analysis/proteome_vs_interactome_f_9606_reviewed_1_isoforms_FALSE_2016-12-01.txt"
+UniprotKB_noiso = read.delim(filename, stringsAsFactors = F)
+UniprotKB_noiso = dplyr::filter(UniprotKB_noiso, UniprotKB_noiso$whole_proteome_Uniprot == 1)
+UniprotKB_noiso = dplyr::filter(UniprotKB_noiso, UniprotKB_noiso$IMEx == 0)
+write(UniprotKB_noiso$whole_proteome_IDs, "UniprotKB_without_isoforms_missing_in_IntAct.txt")
+```
+number of proteins missing interactions in IntAct: `r nrow(UniprotKB_noiso)` 
+
+## 3. Human proteins and their isoforms - that are in Swissprot, but not in IntAct (all IMEx databases) 
+("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", "HPIDb",
+"I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+
+```{r Swissprot isoforms}
+filename = "./analysis/proteome_vs_interactome_f_9606_reviewed_2_isoforms_TRUE_2016-12-01.txt"
+swissprot_iso = read.delim(filename, stringsAsFactors = F)
+swissprot_iso = dplyr::filter(swissprot_iso, swissprot_iso$whole_proteome_Uniprot == 1)
+swissprot_iso = dplyr::filter(swissprot_iso, swissprot_iso$IMEx == 0)
+write(swissprot_iso$whole_proteome_IDs, "Swissprot_with_isoforms_missing_in_IntAct.txt")
+```
+number of proteins missing interactions in IntAct: `r nrow(swissprot_iso)` 
+
+### Human proteins that are in Swissprot, but not in IntAct (all IMEx databases): 
+
+`r swissprot_noiso$whole_proteome_IDs`
+
+### Human proteins that are in full proteome (all UniprotKB), but not in IntAct (all IMEx databases): 
+
+`r UniprotKB_noiso$whole_proteome_IDs`
+
+### Human proteins and their isoforms - that are in Swissprot, but not in IntAct (all IMEx databases): 
+
+`r swissprot_iso$whole_proteome_IDs`

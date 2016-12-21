@@ -1,0 +1,380 @@
+---
+title: "How does the presence of disordered domains in a protein and it's physical/chemical properties influence this protein detection in protein interactions?"
+author: "Vitalii Kleshchevnikov"
+date: "19 December 2016"
+output: html_document
+---
+
+```{r options, echo=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE)
+```
+
+### Literature references
+A collection of intrinsic disorder characterizations from eukaryotic proteomes. - database used in this analysis
+https://www.ncbi.nlm.nih.gov/pubmed/27326998
+
+Molecular signaling involving intrinsically disordered proteins in prostate cancer.
+https://www.ncbi.nlm.nih.gov/pubmed/27212129
+
+Sequence- and Structure-Based Analysis of Tissue-Specific Phosphorylation Sites.
+https://www.ncbi.nlm.nih.gov/pubmed/27332813
+
+Intrinsically Disordered Side of the Zika Virus Proteome.
+https://www.ncbi.nlm.nih.gov/pubmed/27867910
+
+Origin of a folded repeat protein from an intrinsically disordered ancestor.
+https://www.ncbi.nlm.nih.gov/pubmed/27623012
+
+### setting up parameters of the analysis
+##=========================================================##
+Species to select from:
+"Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12"
+Paste value in the code chunk below
+``` {r SPECIES_NAME} 
+SPECIES_NAME = "Homo sapiens"
+```
+all Uniprot if reviewed == 1, only Swissprot data if reviewed == 2, 
+TrEMBL data if reviewed == 3
+only reviewed = 2 is relevant for this analysis 
+Paste value in the code chunk below
+``` {r reviewed}
+reviewed = 2
+```
+To distinguish between isoforms or not (to use only generic UniprotACs): TRUE / FALSE?
+only isoforms = FALSE is relevant for this analysis 
+Paste value in the code chunk below
+``` {r isoforms}
+isoforms = FALSE
+```
+Please specify the date for which you want to perform the analysis (if not today)
+"Logic table" from protein_properties script is needed for this analysis. Filename example:  
+"proteome_vs_interactome_protein_properties_f_Homo sapiens_reviewed_2_isoforms_FALSE_2016-12-01.txt"
+``` {r date}
+date = Sys.Date()
+date = as.Date("2016-12-01")
+```
+the date of analysis, how old is Uniprot protein list: `r date` 
+
+### Species ID lookup
+##=========================================================##
+looking up species ID in the Uniprot readme file (always reads from url)
+``` {r species_id_lookup}
+source("SPECIES_NAME_TO_ID.R")
+r = reviewed
+i = isoforms
+n = SPECIES_NAME
+SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+SPECIES_ID = SPECIES_IDs$SPECIES_ID
+```
+
+Reading SQL database for information about the disordered proteins
+```{r, results= 'hide', message =F}
+library(RSQLite)
+library(dplyr)
+library(ggplot2)
+library(scales) 
+# connect to the sqlite file
+disorder = dbConnect(SQLite(), db = "Vincent_and_Schnell_2016_v2.db")
+# get a list of all tables
+alltables = dbListTables(disorder)
+# get the everything from CD_counts table as a data.frame
+Percent_disorder = dbGetQuery( disorder,'select * from Percent_disorder')
+# count the areas in the SQLite table
+CIDER_data = dbGetQuery( disorder,'select * from CIDER_data')
+# get the everything from CD_counts table for UniProtKB_AC == 'O14746' as a data.frame
+p3 = dbGetQuery( disorder,'select * from CIDER_data where UniProtKB_AC==\'O14746\'' )
+
+dbDisconnect(disorder)
+```
+
+##=========================================================##
+read the table saved before 
+- script can be started from here
+``` {r reading_table}
+filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+proteome_vs_imex_interaction_details_f = as.data.frame(read.delim(filename, header = T, stringsAsFactors = F,quote=""))
+proteome_vs_imex_interaction_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_interaction_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
+proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS = factor(proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS, ordered =F)
+```
+
+merge % of protein disordered to interaction data
+```{r}
+proteome_vs_imex_interaction_details_f_Percent_disorder.t = merge(x = proteome_vs_imex_interaction_details_f,
+                                                       y = Percent_disorder,
+                                                       by.x = "whole_proteome_IDs",
+                                                       by.y = "UniProtKB_AC",
+                                                       all.x = T,
+                                                       all.y = F)
+print(paste0("disorder NAs: ",sum(is.na(proteome_vs_imex_interaction_details_f_Percent_disorder.t$REM465_PD))))
+proteome_vs_imex_interaction_details_f_Percent_disorder = merge(x = proteome_vs_imex_interaction_details_f_Percent_disorder.t,
+                                                       y = CIDER_data,
+                                                       by.x = "whole_proteome_IDs",
+                                                       by.y = "UniProtKB_AC",
+                                                       all.x = T,
+                                                       all.y = F)
+print(paste0("CIDER data NAs: ",sum(is.na(proteome_vs_imex_interaction_details_f_Percent_disorder$Kappa))))
+proteome_vs_imex_interaction_details_f_Percent_disorder[is.na(proteome_vs_imex_interaction_details_f_Percent_disorder)] = 0
+```
+
+# Results 
+## Protein disorder 
+### How does the fraction of disordered regions of protein influence it's detection in protein interactions? 
+##=========================================================##
+``` {r plots, fig.width = 12, fig.height = 12}
+## adding two_hybrid and AP_MS levels to show non-combinatory relationship (not 
+## excluding proteins present in both)
+two_hybrid = filter(proteome_vs_imex_interaction_details_f_Percent_disorder, two_hybrid == 1)
+two_hybrid$two_hybrid_vs_AP_MS = "two_hybrid"
+AP_MS = filter(proteome_vs_imex_interaction_details_f_Percent_disorder, AP_MS == 1)
+AP_MS$two_hybrid_vs_AP_MS = "AP_MS"
+for_plot = rbind(proteome_vs_imex_interaction_details_f_Percent_disorder, two_hybrid, AP_MS)
+for_plot$two_hybrid_vs_AP_MS = factor(for_plot$two_hybrid_vs_AP_MS, ordered = F)
+# for_plot$ICHR_consensus_PD = for_plot$ICHR_consensus_PD +2
+```
+
+### Protein disorder discribed by consensus across disordered region prediction algorithms (IUPRED, DisEMBL) 
+```{r ICHR_consensus_PD, fig.width = 12, fig.height = 12}
+## Calculating median percent disorder for each group
+yy = split(x=for_plot, f =for_plot$two_hybrid_vs_AP_MS)
+Mass_median = sapply(yy, function(x){median((x$ICHR_consensus_PD))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median percent disorder: ", signif(kDa_median_mass,3)," %)")
+
+## Violin plot - proportional
+ggplot(for_plot, aes(y = ICHR_consensus_PD, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("percent of disordered regions (consensus across prediction algorithms)")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the fraction of disordered regions of protein influences it's detection \n in protein interactions?",
+          subtitle = "percent of disordered regions (consensus across prediction algorithms)")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+
+### Protein disorder as discribed by the capacity to form interresidue contacts necessary for structural stability (IUPRED) 
+##=========================================================##
+``` {r IUPRED_PD, fig.width = 12, fig.height = 12}
+## Calculating median percent disorder for each group
+Mass_median = sapply(yy, function(x){median((x$IUPRED_PD))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median percent disorder: ", signif(kDa_median_mass,3)," %)")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = IUPRED_PD, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("percent of disordered regions (IUPRED, capacity to form interresidue contacts)")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the fraction of disordered regions of protein influences it's detection \n in protein interactions?",
+          subtitle = "percent of disordered regions (IUPRED, capacity to form interresidue contacts)")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### Protein disorder as discribed by missing X-ray crystallography coordinates (neural network prediction, DisEMBL) 
+##=========================================================##
+``` {r REM465_PD, fig.width = 12, fig.height = 12}
+## Calculating median percent disorder for each group
+Mass_median = sapply(yy, function(x){median((x$REM465_PD))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median percent disorder: ", signif(kDa_median_mass,3)," %)")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = REM465_PD, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("percent of disordered regions (DisEMBL, missing X-ray crystallography coordinates)")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the fraction of disordered regions of protein influences it's detection \n in protein interactions?",
+          subtitle = "DisEMBL, missing X-ray crystallography coordinates")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### Protein disorder as discribed by coils/loops content - excluding $\alpha$-helix, $3_{10}$-helix, $\beta$-sheets (neural network prediction, DisEMBL) 
+##=========================================================##
+``` {r COILS_PD, fig.width = 12, fig.height = 12}
+## Calculating median percent disorder for each group
+Mass_median = sapply(yy, function(x){median((x$COILS_PD))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median percent disorder: ", signif(kDa_median_mass,3)," %)")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = COILS_PD, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("percent of disordered regions (DisEMBL, coils/loops content)")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the fraction of disordered regions of protein influences it's detection \n in protein interactions?",
+          subtitle = "DisEMBL, coils/loops content")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### Protein disorder as discribed by hot-loops content (high $\alpha$-carbon temperature factor) - coils/loops excluding $\alpha$-helix, $3_{10}$-helix, $\beta$-sheets (neural network prediction, DisEMBL-H) 
+##=========================================================##
+``` {r HOTLOOPS_PD, fig.width = 12, fig.height = 12}
+## Calculating median percent disorder for each group
+Mass_median = sapply(yy, function(x){median((x$HOTLOOPS_PD))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median percent disorder: ", signif(kDa_median_mass,3)," %)")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = HOTLOOPS_PD, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("percent of disordered regions (DisEMBL, hot-loops content)")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the fraction of disordered regions of protein influences it's detection \n in protein interactions?",
+          subtitle = "DisEMBL, hot-loops content (high alpha-carbon temperature factor)")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+# How physical and chemical properties of a protein influence it's detection in protein interactions? 
+### How does net charge per residue (CIDER) of a protein influence it's detection in protein interactions? 
+##=========================================================##
+``` {r NCPR, fig.width = 12, fig.height = 12}
+## Calculating median net charge per residue for each group
+Mass_median = sapply(yy, function(x){median((x$NCPR))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median net charge per residue: ", signif(kDa_median_mass,3)," )")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = NCPR, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("net charge per residue")+ylim(-0.30,0.30)+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does net charge per residue of a protein influences it's detection \n in protein interactions?",
+          subtitle = "net charge per residue")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### How does amino acid charge segregation (CIDER) in a protein sequence influence it's detection in protein interactions? 
+##=========================================================##
+``` {r Kappa, fig.width = 12, fig.height = 12}
+## Calculating median degree of amino acid charge segregation for each group
+Mass_median = sapply(yy, function(x){median((x$Kappa))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median degree of amino acid charge segregation: ", signif(kDa_median_mass,3)," )")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = Kappa, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("Kappa, amino acid charge segregation in a protein sequence")+ ylim(0,1)+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does amino acid charge segregation in a protein sequence influences it's detection \n in protein interactions?",
+          subtitle = "Kappa, amino acid charge segregation in a protein sequence, \n 1 corresponds to greater degree segregation of positive and negative charges, \n 0 - greater degree of mixing charges")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### How does the fraction of charged residues (CIDER) in a protein sequence influence it's detection in protein interactions? 
+##=========================================================##
+``` {r FCR, fig.width = 12, fig.height = 12}
+## Calculating the median fraction of charged residues for each group
+Mass_median = sapply(yy, function(x){median((x$FCR))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median fraction of charged residues: ", signif(kDa_median_mass,3),")")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = FCR, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("the fraction of charged residues (CIDER)")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the fraction of charged residues (CIDER) in a protein sequence influence it's detection \n in protein interactions?",
+          subtitle = "the fraction of charged residues (CIDER)")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### How does the mean hydropathy (CIDER) of a protein influence it's detection in protein interactions? 
+##=========================================================##
+``` {r Hydropathy_m, fig.width = 12, fig.height = 12}
+## Calculating median of mean hydropathy for each group
+Mass_median = sapply(yy, function(x){median((x$Hydropathy_m))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median of mean hydropathy: ", signif(kDa_median_mass,3),")")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = Hydropathy_m, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("mean hydropathy (CIDER)")+ ylim(2,6)+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does the mean hydropathy of a protein influence it's detection in protein interactions?",
+          subtitle = "")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### How does proline content of a protein influences it's detection in protein interactions? 
+##=========================================================##
+``` {r Proline_content, fig.width = 12, fig.height = 12}
+## Calculating protein median protein mass for each group
+Mass_median = sapply(yy, function(x){median((x$Proline_content))})
+kDa_median_mass = Mass_median
+plot_labels = paste0(gsub("_"," ",levels(for_plot$two_hybrid_vs_AP_MS)),", \n (median proline content: ", signif(kDa_median_mass,3)," %)")
+
+## Violin plot - not proportional - violin plot can't show medians properly
+ggplot(for_plot, aes(y = Proline_content, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_boxplot(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_discrete(labels = plot_labels)+
+  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("proline content, %")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does proline content of a protein influences it's detection in protein interactions?",
+          subtitle = "proline content, %")+
+  coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### What is the relationship between hydropathy and protein disorder (consensus)? 
+##=========================================================##
+``` {r hydropathy_vs_disorder, fig.width = 12, fig.height = 12}
+## Calculating protein median protein mass for each group
+library("MASS")
+
+ggplot(for_plot, aes(y = Hydropathy_m, x =REM465_PD, color = two_hybrid_vs_AP_MS)) +
+  geom_point(alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+#  scale_x_discrete(labels = plot_labels)+
+#  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("mean hydropathy, log2")+scale_y_continuous(trans = "log2")+
+  geom_smooth(method = "rlm")+
+  xlab("percent of disordered regions (DisEMBL, REM465_PD, based on missing X-ray crystallography coordinates)")+
+  ggtitle("What is the relationship between hydropathy and disorder (REM465_PD)? ",
+          subtitle = "mean hydropathy log2 transformed vs \n DisEMBL, REM465_PD, based on missing X-ray crystallography coordinates")#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+rlm - robust linear model - less sensitive to outliers
+
+```{r session}
+sessionInfo()
+```

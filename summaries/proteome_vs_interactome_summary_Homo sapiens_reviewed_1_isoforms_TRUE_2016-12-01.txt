@@ -1,0 +1,3 @@
+species.name	database	reviewed	isoforms	whole.proteome..Uniprot.	uncovered.whole.proteome	whole.proteome..interactome.available	interactome..but.not.in.Uniprot	reference.proteome..Uniprot.	uncovered.reference.proteome	reference.proteome..interactome.available	interactome..but.not.in.Uniprot.1	Overlap.between.interactome.and.the.reference.proteome..fraction	Overlap.between.interactome.and.the.whole.proteome..fraction
+Homo sapiens	IMEx	1	TRUE	178616	158989	19627	147	92996	74865	18131	1643	0.194965374854832	0.109793413625862
+Homo sapiens	X0469.IntAct.	1	TRUE	178616	160149	18467	121	92996	75826	17170	1418	0.184631597057938	0.103304375066429

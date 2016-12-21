@@ -1,0 +1,3 @@
+species.name	database	reviewed	isoforms	whole.proteome..Uniprot.	uncovered.whole.proteome	whole.proteome..interactome.available	interactome..but.not.in.Uniprot	reference.proteome..Uniprot.	uncovered.reference.proteome	reference.proteome..interactome.available	interactome..but.not.in.Uniprot.1	Overlap.between.interactome.and.the.reference.proteome..fraction	Overlap.between.interactome.and.the.whole.proteome..fraction
+Drosophila melanogaster	IMEx	2	TRUE	4695	1794	2901	7487	4665	1765	2900	7488	0.621650589496249	0.238138236742735
+Drosophila melanogaster	X0469.IntAct.	2	TRUE	4695	1807	2888	7437	4665	1778	2887	7438	0.618863879957128	0.237071088491217

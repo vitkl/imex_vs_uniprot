@@ -1,0 +1,92 @@
+Selection Citeria:
+Statistical Test Used = Enrichment (Right-sided hypergeometric test)
+Correction Method Used = Bonferroni step down
+Min GO Level = 2
+Max GO Level = 6
+Cluster #1
+Sample File Name = File selection: ManuallyAddedOrModifiedIDs
+Number of Genes = 6
+Get All Percentage = true
+
+Cluster #2
+Sample File Name = File selection: 
+Number of Genes = 6
+Get All Percentage = true
+
+Combine Clusters With 'Or' = true
+Percentage for a Cluster to be Significant = 60.0
+GO Fusion = true
+GO Group = true
+Kappa Score Threshold = 0.4
+Over View Term = SmallestPValue
+Group By Kappa Statistics = true
+Initial Group Size = 1
+Sharing Group Percentage = 60.0
+
+ClueGO Log:
+### All results were created with ClueGO v2.3.2 ###
+Organism analyzed: Homo Sapiens [9606]
+Identifier types used: [AccessionID, UniProtKB_AC]
+Evidence codes used: [All]
+#Genes in custom reference set (/Users/vitalii/Desktop/VItalii_EBI/imex_vs_uniprot/swissprot.txt) : 17925
+#All unique genes in selected ontologies: 17925 (reference set for hypergeometric test)
+
+#Genes from Cluster#1: uploaded ids 8642 -> unique genes 8587, with 9 (0.1%) missing  -> 8578 recognized by ClueGO.
+#Genes from Cluster#2: uploaded ids 11574 -> unique genes 11541, with 15 (0.13%) missing  -> 11526 recognized by ClueGO.
+ -> To improve the % of found genes, verify gene identifiers, download new available ClueGO conversion files or add/request additional files.
+
+#Genes with functional annotations in all selected Ontologies from Cluster#1: 8194 (95.52%) -> 384 (4.48%) are not functionally annotated in any selected Ontology!
+#Genes with functional annotations in all selected Ontologies from Cluster#2: 10858 (94.2%) -> 668 (5.8%) are not functionally annotated in any selected Ontology!
+#Unique genes with functional annotations in all selected ontologies from the 2 Clusters: 12645 (62.9%) -> 7459 (37.1%) are not functionally annotated!
+ -> To improve the % of annotated genes, chose additional ontologies or define less restrictive selection criteria.
+
+#Genes from all Clusters associated to representative Terms and Pathways (after applying selection criteria): 12454 (61.95%)
+
+KappaScore Grouping:
+Iteration: 0 with 111 groups
+Iteration: 1 with 105 groups
+Iteration: 2 with 102 groups
+Iteration: 3 with 100 groups
+Iteration: 4 with 89 groups
+Final KappaScore groups  = 89
+# Terms not grouped  = 0
+
+# Merge redundant groups with >60.0% overlap
+Final group size after merging: 89
+
+#GO All Terms Specific for Cluster #1: 232
+#GO All Terms Specific for Cluster #2: 234
+#GO All Terms not Specific for a Cluster: 7
+#GO Terms: 244
+#GO Term Connections: 389
+List of missing Genes -> make sure the ids exists or are written propperly -> if yes make sure you have their annotation in ClueGO!
+Cluster #1
+Gene IDs not found (no annotation or wrong ids) in Cluster#1:
+A6NNZ2
+A8MPP1
+A8MVJ9
+Q13278
+Q5JNZ5
+Q5T1J5
+Q6RFH8
+Q6VEQ5
+Q6ZSR9
+
+Cluster #2
+Gene IDs not found (no annotation or wrong ids) in Cluster#2:
+A8MPP1
+O15255
+O43261
+P09565
+Q5BKY6
+Q658K8
+Q6Q795
+Q6RFH8
+Q6U949
+Q6VEQ5
+Q86SG4
+Q86T23
+Q8IVG9
+Q8TAB7
+Q9UHZ2
+

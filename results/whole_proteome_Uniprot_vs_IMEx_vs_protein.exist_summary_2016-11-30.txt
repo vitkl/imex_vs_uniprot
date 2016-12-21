@@ -1,0 +1,39 @@
+species_name	A	B	C	reviewed	isoforms	count_whole_proteome_Uniprot	count_IMEx	count_missing_protein_evidence	whole_proteome_Uniprot_exclusively	whole_proteome_Uniprot_and_IMEx	whole_proteome_Uniprot_and_IMEx_not_missing_protein_evidence	IMEx_exclusively	whole_proteome_Uniprot_and_missing_protein_evidence	whole_proteome_Uniprot_and_missing_protein_evidence_not_IMEx	missing_protein_evidence_exclusively	IMEx_and_missing_protein_evidence	IMEx_and_missing_protein_evidence_not_whole_proteome_Uniprot	whole_proteome_Uniprot_and_IMEx_and_missing_protein_evidence
+Homo sapiens	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	178029	19774	103598	58130	19628	16301	146	103598	100271	0	3327	0	3327
+Mus musculus	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	88629	8603	46791	34574	8567	7264	36	46791	45488	0	1303	0	1303
+strain ATCC 204508	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	6759	6022	1503	189	5970	5067	52	1503	600	0	903	0	903
+strain K12	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	4493	3191	1654	574	3181	2265	10	1654	738	0	916	0	916
+Drosophila melanogaster	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	43878	10388	34533	4912	10379	4433	9	34533	28587	0	5946	0	5946
+Caenorhabditis elegans	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	28764	5058	15594	10113	5052	3057	6	15594	13599	0	1995	0	1995
+Arabidopsis thaliana	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	TRUE	79227	5507	70039	6247	5475	2941	32	70039	67505	0	2534	0	2534
+Homo sapiens	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	155990	17322	103598	38557	17193	13835	129	103598	100240	0	3358	0	3358
+Mus musculus	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	80493	8457	46791	26581	8426	7121	31	46791	45486	0	1305	0	1305
+strain ATCC 204508	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	6729	6022	1503	159	5970	5067	52	1503	600	0	903	0	903
+strain K12	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	4482	3188	1654	566	3178	2262	10	1654	738	0	916	0	916
+Drosophila melanogaster	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	42568	10172	34533	3829	10163	4206	9	34533	28576	0	5957	0	5957
+Caenorhabditis elegans	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	27499	5013	15594	8893	5007	3012	6	15594	13599	0	1995	0	1995
+Arabidopsis thaliana	whole_proteome_Uniprot	IMEx	missing_protein_evidence	1	FALSE	77169	5493	70039	4203	5461	2927	32	70039	67505	0	2534	0	2534
+Homo sapiens	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	42159	19774	5264	21434	17199	15461	2575	5264	3526	0	1738	0	1738
+Mus musculus	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	24967	8603	4680	13456	7369	6831	1234	4680	4142	0	538	0	538
+strain ATCC 204508	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	6751	6022	1495	189	5970	5067	52	1495	592	0	903	0	903
+strain K12	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	4445	3191	1607	573	3181	2265	10	1607	691	0	916	0	916
+Drosophila melanogaster	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	4695	10388	1661	1274	2901	1760	7487	1661	520	0	1141	0	1141
+Caenorhabditis elegans	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	5067	5058	2527	1727	1656	813	3402	2527	1684	0	843	0	843
+Arabidopsis thaliana	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	TRUE	17044	5507	9124	5154	3980	2766	1527	9124	7910	0	1214	0	1214
+Homo sapiens	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	20120	17322	5264	1861	14764	12995	2558	5264	3495	0	1769	0	1769
+Mus musculus	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	16831	8457	4680	5463	7228	6688	1229	4680	4140	0	540	0	540
+strain ATCC 204508	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	6721	6022	1495	159	5970	5067	52	1495	592	0	903	0	903
+strain K12	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	4434	3188	1607	565	3178	2262	10	1607	691	0	916	0	916
+Drosophila melanogaster	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	3385	10172	1661	191	2685	1533	7487	1661	509	0	1152	0	1152
+Caenorhabditis elegans	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	3802	5013	2527	507	1611	768	3402	2527	1684	0	843	0	843
+Arabidopsis thaliana	whole_proteome_Uniprot	IMEx	missing_protein_evidence	2	FALSE	14986	5493	9124	3110	3966	2752	1527	9124	7910	0	1214	0	1214
+Homo sapiens	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	TRUE	135870	19774	98334	36696	2429	840	17345	98334	96745	0	1589	0	1589
+Mus musculus	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	TRUE	63662	8603	42111	21118	1198	433	7405	42111	41346	0	765	0	765
+Drosophila melanogaster	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	TRUE	39183	10388	32872	3638	7478	2673	2910	32872	28067	0	4805	0	4805
+Caenorhabditis elegans	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	TRUE	23697	5058	13067	8386	3396	2244	1662	13067	11915	0	1152	0	1152
+Arabidopsis thaliana	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	TRUE	62183	5507	60915	1093	1495	175	4012	60915	59595	0	1320	0	1320
+Homo sapiens	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	FALSE	135870	17322	98334	36696	2429	840	14893	98334	96745	0	1589	0	1589
+Mus musculus	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	FALSE	63662	8457	42111	21118	1198	433	7259	42111	41346	0	765	0	765
+Drosophila melanogaster	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	FALSE	39183	10172	32872	3638	7478	2673	2694	32872	28067	0	4805	0	4805
+Caenorhabditis elegans	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	FALSE	23697	5013	13067	8386	3396	2244	1617	13067	11915	0	1152	0	1152
+Arabidopsis thaliana	whole_proteome_Uniprot	IMEx	missing_protein_evidence	3	FALSE	62183	5493	60915	1093	1495	175	3998	60915	59595	0	1320	0	1320

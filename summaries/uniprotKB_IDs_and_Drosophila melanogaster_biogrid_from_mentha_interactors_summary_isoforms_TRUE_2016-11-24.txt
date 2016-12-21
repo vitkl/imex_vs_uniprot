@@ -1,0 +1,2 @@
+all.interactors	interactors.with.the.UniprotKB.identifier	interactors.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	SPECIES_ID.interactors	interactors.from.other.species
+2096	2096	0	7227	Drosophila melanogaster	2059	84

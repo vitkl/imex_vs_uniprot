@@ -1,0 +1,2 @@
+all.interactors	interactors.with.the.UniprotKB.identifier	interactors.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	SPECIES_ID.interactors	interactors.from.other.species
+18588	18588	0	9606	Homo sapiens	15374	3214

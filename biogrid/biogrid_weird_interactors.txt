@@ -1,0 +1,22 @@
+interactor_IDs	interactor_IDs_databases	interactor_databases	interactor_SPECIES_ID	actual taxonomy
+Q6PB44	uniprotkb	0463(biogrid)	10090	Q6PB44 - is mouse, 10090
+Q6PB44	uniprotkb	0463(biogrid)	9606	Q6PB44 - is mouse, 10090
+Q6P1X5	uniprotkb	0463(biogrid)	9606	Q6P1X5 - is human, 9606
+Q6P1X5	uniprotkb	0463(biogrid)	10090	Q6P1X5 - is human, 9606
+Q6NZY7	uniprotkb	0463(biogrid)	9606	Q6NZY7 - is human, 9606
+Q6NZY7	uniprotkb	0463(biogrid)	10090	Q6NZY7 - is human, 9606
+Q6N069	uniprotkb	0463(biogrid)	9606	Q6N069 - is human, 9606
+Q6N069	uniprotkb	0463(biogrid)	10090	Q6N069 - is human, 9606
+Q6NZB1	uniprotkb	0463(biogrid)	10090	Q6NZB1 - is mouse, 10090
+Q6NZB1	uniprotkb	0463(biogrid)	9606	Q6NZB1 - is mouse, 10090
+Q6NYC8	uniprotkb	0463(biogrid)	9606	Q6NYC8 - is human, 9606
+Q6NYC8	uniprotkb	0463(biogrid)	10090	Q6NYC8 - is human, 9606
+P22670	uniprotkb	0463(biogrid)	9606	P22670 - is human, 9606
+P22670	uniprotkb	0463(biogrid)	10116	P22670 - is human, 9606
+P22626	uniprotkb	0463(biogrid)	9606	P22626 - is human, 9606
+P22626	uniprotkb	0463(biogrid)	10090	P22626 - is human, 9606
+P22626	uniprotkb	0463(biogrid)	11676	P22626 - is human, 9606
+P22626	uniprotkb	0463(biogrid)	10376	P22626 - is human, 9606
+Q15819	uniprotkb	0463(biogrid)	9606	Q15819 - is human, 9606
+Q15819	uniprotkb	0463(biogrid)	10090	Q15819 - is human, 9606
+Q15819	uniprotkb	0463(biogrid)	3702	Q15819 - is human, 9606
