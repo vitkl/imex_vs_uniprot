@@ -1,0 +1,3 @@
+species.name	database	reviewed	isoforms	whole.proteome..Uniprot.	uncovered.whole.proteome	whole.proteome..interactome.available	interactome..but.not.in.Uniprot	reference.proteome..Uniprot.	uncovered.reference.proteome	reference.proteome..interactome.available	interactome..but.not.in.Uniprot.1	Overlap.between.interactome.and.the.reference.proteome..fraction	Overlap.between.interactome.and.the.whole.proteome..fraction
+Mus musculus	IMEx	2	TRUE	24976	17599	7377	1222	24970	17594	7376	1223	0.295394473368042	0.281586380639744
+Mus musculus	X0469.IntAct.	2	TRUE	24976	20516	4460	609	24970	20511	4459	610	0.178574289146976	0.170242003206352
