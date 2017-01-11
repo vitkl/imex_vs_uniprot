@@ -73,11 +73,12 @@ The other helpful to look at the problem is to search for underrepresented in in
 
 3. Find out if proteins with no available interactions stand out by specific functions (Gene Ontology, GO: biological process and molecular function), cellular localization (GO), molecular mass, or protein evidence status from SwissProt
 
-4. Are proteing with high fraction of intrinsically disordered proteins more likely to have interactions available and do they have more interactions (if normalized for how well-studied proteins are?
+4. Are proteins with high fraction of intrinsically disordered domains more likely to have interactions available and do they have more interactions (if normalized for how well-studied proteins are?
 
-4. Find out if major protein interaction detection methods (two-hybrid and AP-MS, AP-WB?) exibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
+4. Find out if major protein interaction detection methods (two-hybrid and AP-MS, AP-WB?) exhibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
 
-5. Find out if there are any proteins which are in general well researched (many associated publications or manual GO annotations) but underrepresented in IntAct (low MI score)
+### 5. Find out if there are any proteins which are in general well researched (many associated publications or manual GO annotations) but underrepresented in IntAct (low MI score)
+5. What is the relationship between the number of interactions or MI score and the number of publicationions or GO terms per protein?
 
 6. If that is possible to measure: do intermediate filaments (or other highly insoluble proteins) really have higher rates of false-discovered interactions?
 
@@ -89,9 +90,9 @@ Whole proteome (all UniProtKB) for each species was downloaded programmatically 
 
 ### Getting and transforming interactome data from IMEx databases and BioGRID
 
-Interactome from all IMEx databases was downloaded programmatically in R using PSIQUIC package from Bioconductor [Paul Shannon (2015). PSICQUIC]. IMEx databases include IntAct, MINT, bhf-ucl, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo. The list of interactions (pairs of interactors) was transformed into the list of interactors preserving interactor identifiers, the type of interactor identifier, species information and the database interaction originates from. Only unique proteins wereIMEx databases contain interactions between proteins, RNA, DNA and small molecules, moreover, these interaction may involve molecules originating from different species. Therefore, to perform by species interactome/proteome comparison there is a need to remove non-UniProtKB/AC molecule identifiers (which removes non-protein molecules, although, may also remove small fraction of proteins which have no UniprotKB/AC) and there is a need to remove proteins originating from other species. Also, entries in IMEx databases has to be cleaned of tags and textual information ("taxid:9606(human-h1299)|taxid:9606(Homo sapiens lung lymph node carcinoma)" to "9606") to make analysis cleaner.
+Interactome from all IMEx databases was downloaded programmatically in R using PSIQUIC package from Bioconductor [Paul Shannon (2015). PSICQUIC]. IMEx databases include IntAct, MINT, bhf-ucl, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo. The list of interactions (pairs of interactors) was transformed into the list of interactors preserving interactor identifiers, the type of interactor identifier, species information and the database interaction originates from. Only unique proteins wereIMEx databases contain interactions between proteins, RNA, DNA and small molecules, moreover, these interaction may involve molecules originating from different species. Therefore, to perform by species interactome/proteome comparison there is a need to remove non-UniProtKB/AC molecule identifiers (which removes non-protein molecules, although, may also remove small fraction of proteins which have no UniprotKB/AC) and there is a need to remove proteins originating from other species. Also, entries in IMEx databases has to be cleaned of tags and textual descriptions ("taxid:9606(human-h1299)|taxid:9606(Homo sapiens lung lymph node carcinoma)" to "9606") to make further analysis easier and cleaner.
 Next, when provided in the research articles protein isoform information is always included in IMEx databases, so to perform analysis excluding isoform information UniProtKB/AC were cleaned of -N suffix (P04637-4 to P04637).
-Finally, 
+
 
 ### Disordered regions and biochemical properties
 ### Gene ontology enrichment analysis
@@ -102,7 +103,7 @@ SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K
 
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
-date = as.Date(Sys.Date())
+date = as.Date("2017-01-06")
 
 ## ## Use all Uniprot if reviewed == 1, only Swissprot data if reviewed == 2, 
 ## ## TrEMBL data if reviewed == 3
@@ -223,6 +224,8 @@ interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("Drosophila melanoga
 
 # Results
 
+## how well available interactome covers the proteome
+
 ### Available interactome covers substantial fraction of the reviewed proteome of main model species
 
 ```{r IMEx_vs_Uniprot_venndiagram, cache=F, fig.width=8, fig.height=8, fig.cap="Figure 2"}
@@ -287,13 +290,8 @@ popViewport()
 }
 ```
 
-Overall - the best interactome annotated by IMEx databases is baker’s yeast, 2nd best interactome is E.coli
-All other interactomes cover less than the half of their respective proteome (all UniprotKB)
-overlap between the interactome and reviewed proteome (SwissProt) looks much better
-A large fraction of human, mouse, arabidopsis interactors and more than a half of drosophila and C.elegans interactors are absent in SwissProt – under-annotation by Uniprot
-protein isoforms (in multicellular model organisms) are almost not annotated in the interactome
-Human is the exception – 2452 protein isoforms out of 21957
-For most organisms in my list (with the exception of mouse) IntAct overlaps to a large extent with the other IMEx databases  
+Overall - the best interactome annotated by IMEx databases is baker’s yeast, 2nd best interactome is *E.coli*. All other interactomes cover less than the half of their respective proteome (all UniprotKB, supplementary figure 1). Overlap between the interactome and reviewed proteome (SwissProt) looks much better. A large fraction of human, mouse, arabidopsis proteins-interactors and more than a half of drosophila and *C.elegans* proteins-interactors are absent in SwissProt – under-annotation by Uniprot. 
+Protein isoforms (in multicellular model organisms) are almost not annotated in the interactome. Human is the exception – 2452 protein isoforms out of 21957. For most organisms in this list (with the exception of mouse) IntAct overlaps to a large extent with the other IMEx databases (supplementary figure 1).
 
 ### Mouse and human proteins are commonly combined for interaction experiments
 
@@ -315,25 +313,30 @@ proteome_vs_interactome_plot
 
 Interchangable use of mouse and human proteins generates interaction data which is extremely hard to reuse due to the fact that it requires mapping between homologous proteins. However, this may not be the biggest problem with studying the interactions between mouse and human proteins and trying to correctly intrepret results. Recent studies of intrinsically disordered proteins show that linear amino acid motifs located in disordered regions frequently mediate protein-protein interactions [], for example, disordered region of p53 mediates its ability to recruit transcription-activating proteins to the promoter []. More importantily, these linear amino acid motifs can evolve quickly, for example, allowing cancer cells to escape control by P53 []. So, while the interaction between mouse protein A and human protein B can exist, that might not be true for the interaction bewteen human protein A and human protein B, and vice-verse.
 
-``` {r dowlnload_all_IntAct}
-
+```{r dowlnload_all_IntAct, cache=F, fig.width=8}
 # IntAct FTP contains the following databases = c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
 #               "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
 # this will take time and data traffic ~ 2.5GB
 
 url_intact = "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt"
 filename_intact = paste0("./Data/IntAct_MITAB27_release_", format(Sys.Date(), "%m-%Y.txt"))
-if(!file.exists(filename_intact)) {downloader::download(url_intact, filename_intact)}
+if(!file.exists(filename_intact)) {
+  downloader::download(url_intact, filename_intact)
+  gitignore = c(substr(filename_intact, 2, nchar(filename_intact)), readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+  }
 # Read all IntAct - do not attemp without 2.5 GB of free RAM
 library(data.table)
 all.IntAct = fread(filename_intact)
-# changing column names to appropriate format
+# changing column names to data.table-compatible format
+{
 (colnames_IntAct = colnames(all.IntAct))
 colnames(all.IntAct) = gsub(" ","_",colnames(all.IntAct))
 colnames(all.IntAct) = gsub("\\(|\\)","",colnames(all.IntAct))
 colnames(all.IntAct) = gsub("#","",colnames(all.IntAct))
-
+}
 # cleaning Taxid "taxid:9606(human)|taxid:9606(Homo sapiens)" to 9606
+{
 gsub("taxid:|\\(.*$","",x)
 all.IntAct[, Taxid_interactor_A := gsub("taxid:|\\(.*$","",Taxid_interactor_A)]
 all.IntAct[, Taxid_interactor_B := gsub("taxid:|\\(.*$","",Taxid_interactor_B)]
@@ -346,10 +349,12 @@ all.IntAct[, IDs_interactor_B := gsub("^.*:","",IDs_interactor_B)]
 all.IntAct[, bait_prey_status_A := gsub("^.*\\(|\\)","",Experimental_roles_interactor_A)]
 all.IntAct[, bait_prey_status_B := gsub("^.*\\(|\\)","",Experimental_roles_interactor_B)]
 all.IntAct[, Publication_Identifiers := gsub("^.*pubmed:|\\|.*$","",Publication_Identifiers)]
-
+all.IntAct[, Confidence_values := gsub("^intact-miscore:","",Confidence_values)]
+}
 gsub("^.*pubmed:|\\|.*$", "", x)
-all.IntAct[,head(Publication_Identifiers,100)]
-
+all.IntAct[,head]
+# checking mixed mouse / human interactions
+{
 the_host_for_mouse_human_pairs = all.IntAct[((Taxid_interactor_A == "9606" & Taxid_interactor_B == "10090")  | 
                                                (Taxid_interactor_A == "10090" & Taxid_interactor_B == "9606")) &
              interactor_IDs_databases_A == "uniprotkb" & interactor_IDs_databases_B == "uniprotkb"
@@ -379,9 +384,528 @@ N_pmid_mouse_as_bait_in_human = all.IntAct[((Taxid_interactor_A == "9606" & Taxi
               Host_organisms == "9606"
            ,length(unique(Publication_Identifiers))]
 all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == "9606", table(Host_organisms)]
+}
+
 ```
 
 Surprisingly, `r the_host_for_mouse_human_pairs[["9606"]]` interactions between mouse and human proteins were discovered in human rather than mouse cells (only `r the_host_for_mouse_human_pairs[["10090"]]`) suggesting that researchers use mouse proteins as baits (`r mouse_as_bait_mouse_baits` mouse baits total, `r mouse_as_bait_human_preys` human preys total, including isoforms, from `r N_pmid_mouse_as_bait_in_human` publications) to find interactions directly relevant to human interactome research, including human disease.
 
 
+### BioGRID database (as obtained from Mentha) overlaps significantly with IMEx databases
 
+```{r biogrid_vs_IMEx_vs_Uniprot_processing}
+## Enter SPECIES_NAME 
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+## !! no "E.coli strain K12" in BioGRID from Mentha
+## ## Use all Uniprot if reviewed == 1, only Swissprot data if reviewed == 2, 
+## ## TrEMBL data if reviewed == 3
+reviewed = c(1, 2)
+## ## Distinguish between isoforms or use only generic Uniprot IDs: TRUE / FALSE?
+isoforms = c(FALSE) # not possible to distinguish isoforms for BioGRID
+
+#============================================================================#
+source("biogrid_from_mentha_vs_proteome_vs_imex.R")
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
+        biogrid_from_mentha_vs_proteome_vs_imex(SPECIES_NAME = n, reviewed = r, isoforms = i, date = date)
+    }
+  }
+}
+
+whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha = data.frame()
+reference_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha = data.frame()
+whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha = data.frame()
+source("SPECIES_NAME_TO_ID.R")
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+      SPECIES_ID = SPECIES_IDs$SPECIES_ID
+      filename_vs_3 = paste("./analysis/","proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",reviewed = r,"_isoforms_",isoforms = i,"_", date,".txt", sep = "")
+      biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F))
+
+#============================================================================#
+## Calculating overlaps
+
+source("A_vs_B_vs_C_overlap.R")
+whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap(biogrid_from_mentha_vs_proteome_vs_imex_f, 
+                    A = "whole_proteome_Uniprot", 
+                    B = "IMEx", 
+                    C = "BioGRID_from_Mentha", 
+                    SPECIES_NAME = n, reviewed = r, isoforms = i)
+whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha = rbind(whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp)
+
+whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap(biogrid_from_mentha_vs_proteome_vs_imex_f, 
+                                                                                 A = "whole_proteome_Uniprot", 
+                                                                                 B = "X0469.IntAct.", 
+                                                                                 C = "BioGRID_from_Mentha", 
+                                                                                 SPECIES_NAME = n, reviewed = r, isoforms = i)
+whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha = rbind(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha_temp)
+
+reference_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap(biogrid_from_mentha_vs_proteome_vs_imex_f, 
+                                                                                 A = "reference_proteome_Uniprot", 
+                                                                                 B = "IMEx", 
+                                                                                 C = "BioGRID_from_Mentha", 
+                                                                                 SPECIES_NAME = n, reviewed = r, isoforms = i)
+reference_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha = rbind(reference_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, reference_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp)
+    }
+  }
+}
+```
+
+```{r biogrid_vs_IMEx_vs_Uniprot_venndiagram, cache=F, fig.width=8, fig.height=8, fig.cap="Figure 4" }
+## Plotting overlaps - Uniprot IMEx BioGRID
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+IMExdatabase = "IMEx"    # "X0469.IntAct." or "IMEx"
+### ======================================================================== ###
+# non-modifyable code
+if(IMExdatabase == "IMEx"){
+whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha$species_name = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha$species_name)
+library(dplyr)
+proteome_vs_interactome_summary.all_isof = filter(whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, reviewed == 1)
+proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == FALSE)
+proteome_vs_interactome_summary.all_noisof = filter(whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, reviewed == 2)
+proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, isoforms == FALSE)
+}
+if(IMExdatabase == "X0469.IntAct."){
+  whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha$species_name = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha$species_name)
+  library(dplyr)
+  proteome_vs_interactome_summary.all_isof = filter(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, reviewed == 1)
+  proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == FALSE)
+  proteome_vs_interactome_summary.all_noisof = filter(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, reviewed == 2)
+  proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, isoforms == FALSE)
+}
+library(VennDiagram)
+{
+grid.newpage()
+
+plotname = paste0("Proteome coverage by interaction databases, overlap between ", IMExdatabase," and BioGRID")
+
+pushViewport(viewport(layout=grid.layout(nrow = length(SPECIES_NAME)+2, ncol=4, widths = unit(c(2/7,2/7,2/7,1/7), "npc"), 
+                                         heights = unit(c(1/((length(SPECIES_NAME)+1)*4),1/((length(SPECIES_NAME)+1)*4),rep(1/(length(SPECIES_NAME)+1/2),length(SPECIES_NAME))), "npc"))))
+
+pushViewport(viewport(layout.pos.col=2, layout.pos.row = 1))
+x =grid.text(plotname, x = unit(0.7, "npc"),y= unit(0.5, "npc"))
+popViewport()
+pushViewport(viewport(layout.pos.col=2, layout.pos.row = 2))
+x =grid.text("UniprotKB, isoforms excluded", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
+popViewport()
+pushViewport(viewport(layout.pos.col=3, layout.pos.row = 2))
+x =grid.text("SwissProt, isoforms excluded", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
+popViewport()
+
+for (i in 1:length(SPECIES_NAME)) {
+  
+  pushViewport(viewport(layout.pos.col=1, layout.pos.row = i+2))
+  x =grid.text(SPECIES_NAME[i], x = unit(0.5, "npc"),y= unit(0.5, "npc"))
+  popViewport()
+  
+  pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+2))
+  source("triple.venn.prot.R")
+  venn = triple.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = TRUE)
+  popViewport()
+  
+  pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+2))
+  source("triple.venn.prot.R")
+  venn = triple.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = TRUE)
+  popViewport()
+}
+popViewport()
+}
+```
+
+## Which proteins are missing?
+
+```{r human_not_in_IMEx_protein_properties_processing}
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
+SPECIES_NAME = "Homo sapiens"
+## only reviewed = 2 is relevant for this analysis
+reviewed = 2
+isoforms = FALSE
+##============================================================================##
+source("SPECIES_NAME_TO_ID.R")
+library(dplyr)
+#for (r in reviewed) {
+#  for (i in isoforms) {
+#    for (n in SPECIES_NAME) {
+r = reviewed
+i = isoforms
+n = SPECIES_NAME
+     ##============================================================================##
+      ## querying Uniprot for the list of proteins (only mapped to Uniprot)
+      ## downolading length, mass, SNPs, isoforms, annotation score, existence attribute
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+      SPECIES_ID = SPECIES_IDs$SPECIES_ID
+      ## reading logic table and getting list of proteins
+      if(SPECIES_NAME != "strain K12"){
+      filename_vs_3 = paste("./analysis/","proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")}
+      if(SPECIES_NAME == "strain K12"){
+      filename_vs_3 = paste("./analysis/","proteome_vs_interactome_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")}
+      biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F))
+      IDs = dplyr::filter(biogrid_from_mentha_vs_proteome_vs_imex_f, whole_proteome_Uniprot==1)%>% dplyr::select(whole_proteome_IDs)
+      filename_perl = paste0("./Data/IDs_for_PERL_",date,".txt")
+      filename_out_of_perl = paste0("./Data/Swissprot_list_from_proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,"")
+      file.create(filename_out_of_perl)
+      write(IDs$whole_proteome_IDs, file = filename_perl)
+      source("download_whole_proteome.R")
+      whole_proteome_query = download_whole_proteome(SPECIES_ID, date = "2016-12-14")
+      uniprot_query = dplyr::filter(whole_proteome_query, Status == "reviewed")
+      ##============================================================================##
+      ## merging information from Uniprot to the logic table
+      proteome_vs_imex_details_f = merge(filter(biogrid_from_mentha_vs_proteome_vs_imex_f, whole_proteome_Uniprot==1), 
+                                         uniprot_query, 
+                                         by.x = "whole_proteome_IDs",
+                                         by.y = "Entry")
+      proteome_vs_imex_details_f$Mass = gsub(",","",proteome_vs_imex_details_f$Mass)
+      proteome_vs_imex_details_f$Mass = as.numeric(proteome_vs_imex_details_f$Mass)
+      ## creating a factor variable for presence_in_Uniprot.presence_in_IMEx (1_0/1_1)
+      proteome_vs_imex_details_f[,length(proteome_vs_imex_details_f)+1] = interaction(proteome_vs_imex_details_f$whole_proteome_Uniprot, proteome_vs_imex_details_f$IMEx, sep = "_")
+      colnames(proteome_vs_imex_details_f)[length(proteome_vs_imex_details_f)] = paste0(colnames(proteome_vs_imex_details_f)[2], "_","IMEx")
+      levels(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx) = c("SwissProt_not_IMEX", "SwissProt_and_IMEX")
+      ##============================================================================##
+      ## saving combined logic table + protein properties from Uniprot
+      filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+      write.table(proteome_vs_imex_details_f,filename_vs_2,col.names=T,row.names=F,sep="\t",quote=F)
+```
+
+### Olfactory receptors are a major group of proteins not represented in IntAct
+
+```{r human_not_in_IMEx_protein_properties_GOenrichment}
+
+```
+
+### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
+
+```{r human_not_in_IMEx_proteins_are_shorter_density, fig.width=8, fig.height=5, fig.cap="Figure 5" }
+      ##============================================================================##
+      ## Analysis
+      # read the saved table
+      filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+      proteome_vs_imex_details_f = as.data.frame(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+      proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
+                  ## plotting the distribution of mass
+      library(ggplot2)
+      # ggplot(proteome_vs_imex_details_f, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, alpha =0.5)) +geom_density()+ scale_x_log10()
+      # ggplot(proteome_vs_imex_details_f, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, alpha =0.5)) + scale_x_log10() + geom_histogram(position = "identity", bins = 50)
+      
+      ## removing olfactory receptors:
+      {proteome_vs_imex_details_f_minus_odor = proteome_vs_imex_details_f[-grep("Odor", 
+                                                                                proteome_vs_imex_details_f$Protein.names),]
+      proteome_vs_imex_details_f_minus_odor_olf = proteome_vs_imex_details_f_minus_odor[-grep("Olfactory",
+                                                                                              proteome_vs_imex_details_f$Protein.names),]
+      proteome_vs_imex_details_f_minus_odor_olf.c = rbind(cbind(proteome_vs_imex_details_f, olfac = 
+                                                              rep("all SwissProt", nrow(proteome_vs_imex_details_f))),
+                                                        cbind(proteome_vs_imex_details_f_minus_odor_olf, olfac = rep("SwissProt excluding \n olfactory receptors",nrow(proteome_vs_imex_details_f_minus_odor_olf))))}
+          ## density with and without olfactory receptors:
+      ggplot(proteome_vs_imex_details_f_minus_odor_olf.c, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, alpha =0.7, label = olfac)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(olfac~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution of protein mass for proteins with and without interaction evidence")
+```
+
+The difference in protein mass between proteins present and absent in the interactome is highly unlikely to be attributed to chance. Wilcox rank test on the whole population of proteins and Monte-Carlo sampling support this statement.
+
+```{r human_not_in_IMEx_proteins_are_shorter_Wilcox}
+           ## testing the difference in protein mass distributions
+            ##of proteins absent/present in IMEx using Wilcox rank test
+      SwissProt_not_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_not_IMEX"]
+      SwissProt_and_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_and_IMEX"]
+      wilcox.test.r = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
+      wilcox.test.r
+                 ## testing the difference in protein mass distributions
+            ##of proteins absent/present in IMEx using Wilcox rank test excluding olfactory receptors
+      SwissProt_not_IMEX = proteome_vs_imex_details_f_minus_odor_olf$Mass[proteome_vs_imex_details_f_minus_odor_olf$whole_proteome_Uniprot_IMEx=="SwissProt_not_IMEX"]
+      SwissProt_and_IMEX = proteome_vs_imex_details_f_minus_odor_olf$Mass[proteome_vs_imex_details_f_minus_odor_olf$whole_proteome_Uniprot_IMEx=="SwissProt_and_IMEX"]
+      wilcox.test.r = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
+      wilcox.test.r
+      
+                 ## is the distibution of mass or log(mass) normal?
+      library(rafalib)
+      mypar(2,2)
+          
+      
+      popsd(log10(SwissProt_not_IMEX))
+      median(log10(SwissProt_not_IMEX))
+      mad(log10(SwissProt_not_IMEX))
+      {
+      qqnorm(log10(SwissProt_not_IMEX), main = "SwissProt_not_IMEX, log(protein mass)")
+      qqline(log10(SwissProt_not_IMEX))
+      qqnorm(log10(SwissProt_and_IMEX), main = "SwissProt_and_IMEX, log(protein mass)")
+      qqline(log10(SwissProt_and_IMEX))
+      qqnorm((SwissProt_not_IMEX), main = "SwissProt_not_IMEX, protein mass")
+      qqline((SwissProt_not_IMEX))
+      qqnorm((SwissProt_and_IMEX), main = "SwissProt_and_IMEX, protein mass")
+      qqline((SwissProt_and_IMEX))
+      }
+
+            ## it indeed is
+      
+                  ## Monte-Carlo simulation
+            ## is there a significant difference in protein mass?
+      # code can be used for things other than mass
+      set.seed(1)
+      # sample size
+      Ns <- seq(5, 350, 20)
+      lengthNs = length(Ns)
+      # number of simulations
+      B = 1000
+      # function which takes samples and does Wilcox test
+      simulation = function(n){  
+       # x = cbind( matrix(sample(SwissProt_not_IMEX, B*n),B,n)
+       # y = matrix(sample(SwissProt_and_IMEX, B*n),B,n)
+       # genefilter::rowttests()
+        wilcox.test.rr = matrix(0, 1, 3)
+        x = sample(SwissProt_not_IMEX, n)
+        y = sample(SwissProt_and_IMEX, n)
+        wilcox.test.rr[1,c(1,2)] = wilcox.test(x, y, conf.int = T)$conf.int
+        wilcox.test.rr[1,3] = wilcox.test(x, y, conf.int = T)$p.value
+        return(wilcox.test.rr)
+      }
+      wilcox.test.rr = matrix(0, lengthNs, 3)
+      # looping Monte-Carlo over samples sizes ]
+     # for (n in 1:lengthNs) {
+     #   z =replicate(B, simulation(Ns[n]), simplify = T)
+     #   wilcox.test.rr[n,] = rowMeans(z)
+     # }
+      xx =cbind(wilcox.test.rr, Ns)
+      qplot(xx[,4], xx[,3], ylab = "Wilcox test p-val", xlab = "proteins sampled, N")
+
+```
+
+## What is the relationship between the number of interactions or MI score and the number of publicationions or GO terms per protein?
+
+```{r N_interactions_vs_research, fig.height=10, fig.width=8}
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+## Converting UniprotAC to geneID
+## Converting UniprotAC isoforms to generic
+## copy all.IntAct (data.table doesn't make an explicit copy while assigning DT = data.table())
+all.IntAct[,c("IDs_interactor_A_isoforms","IDs_interactor_B_isoforms") := .(IDs_interactor_A,IDs_interactor_B)]
+source("isoform_id_all_remover.R")
+all.IntAct[interactor_IDs_databases_A == "uniprotkb", IDs_interactor_A := isoform_id_all_remover(IDs_interactor_A)]
+all.IntAct[interactor_IDs_databases_B == "uniprotkb", IDs_interactor_B := isoform_id_all_remover(IDs_interactor_B)]
+all.IntAct.modif = copy(all.IntAct)
+## downloading the content of the folder containing species specific ID mapping
+# genereting filenames
+library(RCurl)
+uniprotAC2geneID_url = "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/"
+filenames <- getURL(uniprotAC2geneID_url,dirlistonly = TRUE) 
+filenames = unlist(strsplit(filenames,"\n"))
+filenames = filenames[grep("idmapping.dat.gz",filenames)]
+uniprotAC2geneID_filename = paste0("./Data/uniprotAC2geneID","release_", format(Sys.Date(), "%m-%Y"),"_", filenames)
+uniprotAC2geneID_filename.dat = substr(uniprotAC2geneID_filename, 1, nchar(uniprotAC2geneID_filename)-3)
+# downloading and unzipping files
+for(i in 1:length(uniprotAC2geneID_filename.dat)){
+  if(!file.exists(uniprotAC2geneID_filename.dat[i])) {
+    downloader::download(paste0(uniprotAC2geneID_url,filenames[i]), uniprotAC2geneID_filename[i])
+  R.utils::gunzip(uniprotAC2geneID_filename[i])
+  # make git ignore big files 
+  gitignore = c(substr(uniprotAC2geneID_filename.dat[i], 2, nchar(uniprotAC2geneID_filename.dat[i])),
+                readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+}
+}
+# reading files for uniprotAC to geneID mapping
+uniprotAC2geneID = data.table()
+for(i in 1:length(uniprotAC2geneID_filename.dat)){
+  temp = fread(uniprotAC2geneID_filename.dat[i], header = F)
+  temp = temp[V2 == "GeneID", .(V1, V3)]
+  uniprotAC2geneID = rbind(uniprotAC2geneID,temp)
+  rm(list = "temp")
+}
+
+## map GeneIDs for IDs_interactor_A
+{
+colnames(uniprotAC2geneID)[2] = "IDs_interactor_A_GeneID"
+all.IntAct.modif = merge(all.IntAct.modif, uniprotAC2geneID, by.x = "IDs_interactor_A", by.y = "V1", all.x=TRUE)
+# colnames(all.IntAct.modif)
+# sum(!is.na(all.IntAct.modif$IDs_interactor_A_GeneID))
+}
+## map GeneIDs for IDs_interactor_B
+{
+colnames(uniprotAC2geneID)[2] = "IDs_interactor_B_GeneID"
+all.IntAct.modif = merge(all.IntAct.modif, uniprotAC2geneID, by.x = "IDs_interactor_B", by.y = "V1", all.x=TRUE)
+# colnames(all.IntAct.modif)
+# sum(!is.na(all.IntAct.modif$IDs_interactor_B_GeneID))
+}
+rm(list = "uniprotAC2geneID")
+
+## getting the publication ID for each gene
+geneID2pubmed_url = "ftp://ftp.ncbi.nih.gov/gene/DATA/gene2pubmed.gz"
+geneID2pubmed_filename = paste0("./Data/geneID2pubmed_release_", format(Sys.Date(), "%m-%Y.gz"))
+geneID2pubmed_filename_txt = substr(geneID2pubmed_filename, 1, nchar(geneID2pubmed_filename)-3)
+if(!file.exists(geneID2pubmed_filename_txt)) {
+  downloader::download(geneID2pubmed_url, geneID2pubmed_filename)
+  R.utils::gunzip(geneID2pubmed_filename)
+  gitignore = c(substr(geneID2pubmed_filename, 2, nchar(geneID2pubmed_filename)-3), readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+}
+
+geneID2pubmed = fread(geneID2pubmed_filename_txt, colClasses = c("character","character","character"))
+geneID2pubmed = geneID2pubmed[,.(GeneID, PubMed_ID)]
+
+## count the number of pubmed PMID per GeneIDs for IDs_interactor_A
+{
+geneID2pubmed[, interactor_A_total_PMID := length(PubMed_ID), by = GeneID]
+geneID2pubmed = geneID2pubmed[,unique(data.table(GeneID,interactor_A_total_PMID))][,GeneID := as.character(GeneID)]
+all.IntAct.modif = merge(all.IntAct.modif, geneID2pubmed, by.x = "IDs_interactor_A_GeneID", by.y = "GeneID", all.x=TRUE)
+colnames(geneID2pubmed)[2] = "interactor_B_total_PMID"
+all.IntAct.modif = merge(all.IntAct.modif, geneID2pubmed, by.x = "IDs_interactor_B_GeneID", by.y = "GeneID", all.x=TRUE)
+ colnames(all.IntAct.modif)
+}
+
+rm(list = "uniprotAC2geneID")
+
+{
+  all.IntAct.proteins = all.IntAct.modif[,data.table(IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   interactor_total_PMID = c(interactor_A_total_PMID,interactor_B_total_PMID),
+                   Confidence_values = as.numeric(c(Confidence_values,Confidence_values)),
+                   Taxid_interactor = c(Taxid_interactor_A,Taxid_interactor_B),
+                   interactor_IDs_databases = c(interactor_IDs_databases_A, interactor_IDs_databases_B),
+                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID))]
+  all.IntAct.proteins = unique(all.IntAct.proteins)
+  all.IntAct.proteins[,Median_MI_score := median(Confidence_values), by = IDs_interactor]
+  all.IntAct.proteins[,Mean_MI_score := mean(Confidence_values), by = IDs_interactor]
+  all.IntAct.proteins[,Confidence_values := NULL]
+  all.IntAct.proteins = all.IntAct.proteins[Taxid_interactor %in% c("9606", "10090", "559292","83333","7227", "6239","3702") & interactor_IDs_databases == "uniprotkb",]
+  # nrow(unique(all.IntAct.proteins[Taxid_interactor %in% c("9606"), ]))
+  # length(unique(all.IntAct.proteins[Taxid_interactor %in% c("9606"), IDs_interactor]))
+  SPECIES_NAME_ID = data.table(SPECIES_ID = c("9606", "10090", "559292","83333","7227", "6239","3702"), SPECIES_NAME)
+  all.IntAct.proteins = merge(all.IntAct.proteins, SPECIES_NAME_ID, by.x = "Taxid_interactor", by.y = "SPECIES_ID", all=TRUE)
+  str(all.IntAct.proteins)
+}
+library(MASS)
+# Median
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+facet_wrap(~SPECIES_NAME, scales = "free") +
+    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10() + scale_y_log10()+
+     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression")+
+    ylab("median MI score for the interactions \n including the protein encoded by the gene") + xlab("the number of publications per gene") +
+     geom_smooth(method = "rlm", se = T) +geom_point(size = 0.1, alpha = 0.05)
+
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Mean_MI_score))+facet_wrap(~SPECIES_NAME, scales = "free") +
+    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10() + scale_y_log10()+
+     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+    ggtitle("The relationship between the number of publications per gene and mean MI score", subtitle = "line was fitted using robust linear regression")+
+    ylab("mean MI score for the interactions \n including the protein encoded by the gene") + xlab("the number of publications per gene") +
+     geom_smooth(method = "rlm", se = T) +geom_point(size = 0.1, alpha = 0.05)
+
+fit = rlm(Median_MI_score~interactor_total_PMID, data=all.IntAct.proteins)
+summary(fit)
+
+```
+
+# Supplementary figures
+
+Supplementary figure 1 
+
+```{r Supplementary1_IMEx_vs_Uniprot_venndiagram_all_Uniprot, cache=F, fig.width=8, fig.height=8, fig.cap="Supplementary figure 1"}
+## Plotting with venn.diagram - Uniprot vs IMEx (or IntAct)
+# code to be modified for different graphs
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+reviewed_venn = 1                 # 1 or 2
+IMExdatabase = "IMEx"    # "X0469.IntAct." or "IMEx"
+### ======================================================================== ###
+# non-modifyable code
+proteome_vs_interactome_summary.all$species.name = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", proteome_vs_interactome_summary.all$species.name)
+proteome_vs_interactome_summary.all$species.name = gsub("strain K12", "Escherichia coli, strain K12", proteome_vs_interactome_summary.all$species.name)
+SPECIES_NAME = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", SPECIES_NAME)
+SPECIES_NAME = gsub("strain K12", "Escherichia coli, strain K12", SPECIES_NAME)
+library(dplyr)
+proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn)
+proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == TRUE)
+proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, database == IMExdatabase)
+proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn)
+proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, isoforms == FALSE)
+proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, database == IMExdatabase)
+
+library(VennDiagram)
+{
+grid.newpage()
+
+if(reviewed_venn == 2){plotname = paste0("Proteome (SwissProt) coverage by interaction databases(",IMExdatabase,")")
+databasename = "SwissProt"}
+if(reviewed_venn == 1){plotname = paste0("Proteome (all UniprotKB) coverage by interaction databases(",IMExdatabase,")")
+databasename = "UniprotKB"}
+
+pushViewport(viewport(layout=grid.layout(nrow = length(SPECIES_NAME)+2, ncol=4, widths = unit(c(2/7,2/7,2/7,1/7), "npc"), 
+                                         heights = unit(c(1/((length(SPECIES_NAME)+1)*4),1/((length(SPECIES_NAME)+1)*4),rep(1/(length(SPECIES_NAME)+1/2),length(SPECIES_NAME))), "npc"))))
+
+pushViewport(viewport(layout.pos.col=2, layout.pos.row = 1))
+x =grid.text(plotname, x = unit(0.7, "npc"),y= unit(0.5, "npc"))
+popViewport()
+pushViewport(viewport(layout.pos.col=2, layout.pos.row = 2))
+x =grid.text("isoforms included", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
+popViewport()
+pushViewport(viewport(layout.pos.col=3, layout.pos.row = 2))
+x =grid.text("isoforms excluded", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
+popViewport()
+
+for (i in 1:length(SPECIES_NAME)) {
+  
+  pushViewport(viewport(layout.pos.col=1, layout.pos.row = i+2))
+  x =grid.text(SPECIES_NAME[i], x = unit(0.5, "npc"),y= unit(0.5, "npc"))
+  popViewport()
+  
+  pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+2))
+  source("double.venn.prot.R")
+  venn = double.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
+  popViewport()
+  
+  pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+2))
+  source("double.venn.prot.R")
+  venn = double.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
+  popViewport()
+}
+popViewport()
+}
+```
+
+Supplementary figure 2
+
+```{r BioGRID_vs_IMEx_vs_Uniprot_N_Uniprot&Species, cache=F, fig.width=8, fig.height=8, fig.cap="Supplementary figure 2" }
+### combine the summaries for multiple species of how many interactors have non-uniprot identifiers
+interactome_identifiers_summary.all = data.frame()
+for (i in isoforms) {
+  for(n in SPECIES_NAME) {
+    filename.summary = paste("./summaries/","uniprotKB_IDs_and_",n,"_biogrid_from_mentha_interactors_summary", "_isoforms_",i,"_", date,".txt", sep = "")
+    if(!file.exists(filename.summary)) {
+      interactome_identifiers_summary.all
+    }
+    if(file.exists(filename.summary)) {
+      interactome_identifiers_summary.o = as.data.frame(read.delim(filename.summary, stringsAsFactors = F))
+      interactome_identifiers_summary.all = rbind(interactome_identifiers_summary.all, interactome_identifiers_summary.o)
+    }
+  }
+}
+interactome_identifiers_summary.all = unique(interactome_identifiers_summary.all)
+## save all species summary
+filename.summary.all = paste("./results/","interactome_identifiers_BioGRID_summary_",date,".txt", sep = "")
+write.table(interactome_identifiers_summary.all, filename.summary.all, col.names=T,row.names=F,sep="\t",quote=F)
+
+#################
+interactome_identifiers_summary.all.s = interactome_identifiers_summary.all[,c(3,4,5,6,7)]
+## Transform table for plotting with ggplot2
+library(reshape2)
+interactome_identifiers_summary.all.s.m= melt(data = interactome_identifiers_summary.all.s,
+                                              id.vars = c("SPECIES_NAME", "SPECIES_ID"),
+                                              variable.name = "decription",
+                                              value.name = "number")
+interactome_identifiers_summary.all.s.m=unique(interactome_identifiers_summary.all.s.m)
+## rename yeast and E.coli
+interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", interactome_identifiers_summary.all.s.m$SPECIES_NAME)
+interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("strain K12", "E. coli, strain K12", interactome_identifiers_summary.all.s.m$SPECIES_NAME)
+interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("Caenorhabditis elegans", "C. elegans", interactome_identifiers_summary.all.s.m$SPECIES_NAME)
+interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("Drosophila melanogaster", "D. melanogaster", interactome_identifiers_summary.all.s.m$SPECIES_NAME)
+
+# plot
+library(ggplot2)
+library(dplyr)
+
+proteome_vs_interactome_plot <- ggplot(interactome_identifiers_summary.all.s.m, aes(x=SPECIES_NAME, y=number, fill=decription,label=number)) + geom_bar(width = 0.9, stat = "identity", position = "stack") + geom_label(position = "stack", size = 4, label.padding = unit(0.08, "lines")) +
+  ggtitle("The number of interactors which have UniprotKB identifiers \n and belong to the species queried") + theme(axis.text.x=element_text(angle = 20), axis.title.x = element_text(size = 0)) + ylab("number of proteins")
+proteome_vs_interactome_plot
+# save plot
+# filename=paste("./results/", "interactome_identifiers_summary_plot_SMALL",date,".png", sep = "")
+# ggsave(filename, proteome_vs_interactome_plot, width = 12, height = 12)
+
+### ======================================================================== ###
+
+```

@@ -1,0 +1,23 @@
+"0","SPECIES_NAME = c(""Homo sapiens"", ""Mus musculus"", ""strain ATCC 204508"", ""strain K12"")
+SPECIES_NAME = ""Homo sapiens""
+## only reviewed = 2 is relevant for this analysis
+reviewed = 2
+isoforms = FALSE
+##============================================================================##
+source(""SPECIES_NAME_TO_ID.R"")
+library(dplyr)
+#for (r in reviewed) {
+#  for (i in isoforms) {
+#    for (n in SPECIES_NAME) {
+r = reviewed
+i = isoforms
+n = SPECIES_NAME
+     ##============================================================================##
+      ## querying Uniprot for the list of proteins (only mapped to Uniprot)
+      ## downolading length, mass, SNPs, isoforms, annotation score, existence attribute
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+"
+"1","[1]"
+"1"," ""UP000005640 9606    HUMAN     21032   71899   93381  Homo sapiens (Human)"""
+"1","
+"

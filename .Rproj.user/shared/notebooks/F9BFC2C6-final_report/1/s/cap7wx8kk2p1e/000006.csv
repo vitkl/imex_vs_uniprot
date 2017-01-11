@@ -1,0 +1,3 @@
+"0","# save plot"
+"0","# filename=paste(""./results/"", ""interactome_identifiers_summary_plot_SMALL"",date,"".png"", sep = """")"
+"0","# ggsave(filename, proteome_vs_interactome_plot, width = 12, height = 12)"

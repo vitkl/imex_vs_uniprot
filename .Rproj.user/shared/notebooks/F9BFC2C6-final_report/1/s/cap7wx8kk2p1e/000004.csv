@@ -1,0 +1,6 @@
+"0","# plot how many interactors have non-uniprot and non-given-species identifiers"
+"0","library(ggplot2)"
+"0","library(dplyr)"
+"0","proteome_vs_interactome_plot <- ggplot(interactome_identifiers_summary.all.s.m, aes(x=SPECIES_NAME, y=number, fill=decription)) + geom_bar(width = 0.9, stat = ""identity"", position = ""stack"") + geom_label(aes(label=number), position = ""stack"", size = 4, label.padding = unit(0.08, ""lines"")) +"
+"0","  ggtitle(""The number of interacting molecules (interactors) which have UniprotKB identifiers \n and belong to the species of interest"") + theme(axis.text.x=element_text(angle = 20), axis.title.x = element_text(size = 0)) + ylab(""number of proteins"")"
+"0","proteome_vs_interactome_plot"

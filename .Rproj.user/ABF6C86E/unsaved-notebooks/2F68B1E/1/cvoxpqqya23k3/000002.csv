@@ -1,0 +1,7 @@
+"0","      for (n in 1:lengthNs) {
+        z =replicate(B, simulation(Ns[n]), simplify = T)
+        wilcox.test.rr[n,] = rowMeans(z)
+      }
+"
+"2","
+"
