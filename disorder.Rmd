@@ -30,20 +30,20 @@ https://www.ncbi.nlm.nih.gov/pubmed/27623012
 Species to select from:
 "Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12"
 Paste value in the code chunk below
-``` {r SPECIES_NAME} 
+```{r SPECIES_NAME} 
 SPECIES_NAME = "Homo sapiens"
 ```
 all Uniprot if reviewed == 1, only Swissprot data if reviewed == 2, 
 TrEMBL data if reviewed == 3
 only reviewed = 2 is relevant for this analysis 
 Paste value in the code chunk below
-``` {r reviewed}
+```{r reviewed}
 reviewed = 2
 ```
 To distinguish between isoforms or not (to use only generic UniprotACs): TRUE / FALSE?
 only isoforms = FALSE is relevant for this analysis 
 Paste value in the code chunk below
-``` {r isoforms}
+```{r isoforms}
 isoforms = FALSE
 ```
 Please specify the date for which you want to perform the analysis (if not today)
@@ -74,7 +74,7 @@ library(dplyr)
 library(ggplot2)
 library(scales) 
 # connect to the sqlite file
-disorder = dbConnect(SQLite(), db = "Vincent_and_Schnell_2016_v2.db")
+disorder = dbConnect(SQLite(), db = "./Data/Vincent_and_Schnell_2016_v2.db")
 # get a list of all tables
 alltables = dbListTables(disorder)
 # get the everything from CD_counts table as a data.frame
@@ -244,7 +244,7 @@ ggplot(for_plot, aes(y = HOTLOOPS_PD, x =two_hybrid_vs_AP_MS, fill = two_hybrid_
 ```
 
 # How physical and chemical properties of a protein influence it's detection in protein interactions? 
-### How does net charge per residue (CIDER) of a protein influence it's detection in protein interactions? 
+### net charge per residue vs detection in protein interactions
 ##=========================================================##
 ``` {r NCPR, fig.width = 12, fig.height = 12}
 ## Calculating median net charge per residue for each group
@@ -266,7 +266,7 @@ ggplot(for_plot, aes(y = NCPR, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_M
   coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
 ```
 
-### How does amino acid charge segregation (CIDER) in a protein sequence influence it's detection in protein interactions? 
+### amino acid charge segregation vs detection in protein interactions? 
 ##=========================================================##
 ``` {r Kappa, fig.width = 12, fig.height = 12}
 ## Calculating median degree of amino acid charge segregation for each group
@@ -288,7 +288,7 @@ ggplot(for_plot, aes(y = Kappa, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_
   coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
 ```
 
-### How does the fraction of charged residues (CIDER) in a protein sequence influence it's detection in protein interactions? 
+### fraction of charged residues vs detection in protein interactions
 ##=========================================================##
 ``` {r FCR, fig.width = 12, fig.height = 12}
 ## Calculating the median fraction of charged residues for each group
@@ -310,7 +310,7 @@ ggplot(for_plot, aes(y = FCR, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS
   coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
 ```
 
-### How does the mean hydropathy (CIDER) of a protein influence it's detection in protein interactions? 
+### mean hydropathy vs detection in protein interactions
 ##=========================================================##
 ``` {r Hydropathy_m, fig.width = 12, fig.height = 12}
 ## Calculating median of mean hydropathy for each group
@@ -332,7 +332,7 @@ ggplot(for_plot, aes(y = Hydropathy_m, x =two_hybrid_vs_AP_MS, fill = two_hybrid
   coord_flip()#+facet_grid(two_hybrid_vs_AP_MS~Organism)
 ```
 
-### How does proline content of a protein influences it's detection in protein interactions? 
+### proline content vs detection in protein interactions? 
 ##=========================================================##
 ``` {r Proline_content, fig.width = 12, fig.height = 12}
 ## Calculating protein median protein mass for each group
@@ -373,7 +373,106 @@ ggplot(for_plot, aes(y = Hydropathy_m, x =REM465_PD, color = two_hybrid_vs_AP_MS
           subtitle = "mean hydropathy log2 transformed vs \n DisEMBL, REM465_PD, based on missing X-ray crystallography coordinates")#+facet_grid(two_hybrid_vs_AP_MS~Organism)
 ```
 
+### What is the relationship between hydropathy and net charge per residue? 
+##=========================================================##
+``` {r hydropathy_vs_NCPR, fig.width = 12, fig.height = 12}
+## Calculating protein median protein mass for each group
+library("MASS")
+
+ggplot(for_plot, aes(y = Hydropathy_m, x =NCPR, color = two_hybrid_vs_AP_MS)) +
+  geom_point(alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+#  scale_x_discrete(labels = plot_labels)+
+#  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("mean hydropathy, log2")+scale_y_continuous(trans = "log2")+
+  geom_smooth(method = "rlm")+
+  xlab("net charge per residue")+
+  ggtitle("What is the relationship between hydropathy and net charge per residue?",
+          subtitle = "mean hydropathy log2 transformed vs net charge per residue")#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### What is the relationship between hydropathy and the fraction of charged residues (CIDER)? 
+##=========================================================##
+``` {r hydropathy_vs_FCR, fig.width = 12, fig.height = 12}
+## Calculating protein median protein mass for each group
+library("MASS")
+
+ggplot(for_plot, aes(y = Hydropathy_m, x =FCR, color = two_hybrid_vs_AP_MS)) +
+  geom_point(alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+#  scale_x_discrete(labels = plot_labels)+
+#  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("mean hydropathy, log2")+scale_y_continuous(trans = "log2")+
+  geom_smooth(method = "rlm")+
+  xlab("the fraction of charged residues (CIDER)")+
+  ggtitle("What is the relationship between hydropathy and the fraction of charged residues (CIDER)?",
+          subtitle = "mean hydropathy log2 transformed vs \n the fraction of charged residues (CIDER)")#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
+### What is the relationship between hydropathy and amino acid charge segregation? 
+##=========================================================##
+``` {r hydropathy_vs_Kappa, fig.width = 12, fig.height = 12}
+## Calculating protein median protein mass for each group
+library("MASS")
+
+ggplot(for_plot, aes(y = Hydropathy_m, x =Kappa, color = two_hybrid_vs_AP_MS)) +
+  geom_point(alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+#  scale_x_discrete(labels = plot_labels)+
+#  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("mean hydropathy, log2")+scale_y_continuous(trans = "log2")+
+  geom_smooth(method = "rlm")+
+  xlab("amino acid charge segregation (CIDER)")+
+  ggtitle("What is the relationship between hydropathy and amino acid charge segregation?",
+          subtitle = "mean hydropathy log2 transformed vs \n amino acid charge segregation (CIDER)")#+facet_grid(two_hybrid_vs_AP_MS~Organism)
+```
+
 rlm - robust linear model - less sensitive to outliers
+
+## PCA
+
+```{r disorder_pca, fig.width=10, fig.height=7}
+library(data.table)
+proteome_vs_imex_interaction_details_f_Percent_disorder = as.data.table(proteome_vs_imex_interaction_details_f_Percent_disorder)
+x =colnames(proteome_vs_imex_interaction_details_f_Percent_disorder)
+whole_proteome_IDs = proteome_vs_imex_interaction_details_f_Percent_disorder[,whole_proteome_IDs] 
+two_hybrid_vs_AP_MS = proteome_vs_imex_interaction_details_f_Percent_disorder[,two_hybrid_vs_AP_MS]
+
+proteome_vs_imex_interaction_details_f_Percent_disorder_sel = as.matrix(proteome_vs_imex_interaction_details_f_Percent_disorder[,.(log10(Mass),IUPRED_PD/100,COILS_PD/100,HOTLOOPS_PD/100,REM465_PD/100,ICHR_consensus_PD/100,Frac_DP,Hydropathy_m,Hydropathy_U,FCR,NCPR,Kappa,Delta,Delta_max,(Proline_content -median(Proline_content))/mad(Proline_content))])
+colnames(proteome_vs_imex_interaction_details_f_Percent_disorder_sel) = c("log10_Mass","IUPRED_PD","COILS_PD","HOTLOOPS_PD","REM465_PD","ICHR_consensus_PD","Frac_DP","Hydropathy_m","Hydropathy_U","FCR","NCPR","Kappa","Delta","Delta_max","norm_Proline_content")
+rownames(proteome_vs_imex_interaction_details_f_Percent_disorder_sel) = whole_proteome_IDs
+head(proteome_vs_imex_interaction_details_f_Percent_disorder_sel)
+s = svd(t(proteome_vs_imex_interaction_details_f_Percent_disorder_sel))
+
+U = s$u
+D = s$d
+V = s$v
+str(D[1:2])
+plot(D, main = "Variance explained", ylab = "Variance", xlab = "dimension")
+PC1 = D[1]*V[,1]
+PC2 = D[2]*V[,2]
+PC = V[,1:2]%*%diag(D[1:2]) #!!!
+all.equal(PC1, PC[,1])
+
+proteome_vs_imex_interaction_details_f_Percent_disorder_PC = cbind(proteome_vs_imex_interaction_details_f_Percent_disorder,PC1,PC2)
+all.equal(t(proteome_vs_imex_interaction_details_f_Percent_disorder_sel) == U%*%diag(D)%*%t(V))
+
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder_PC, aes(y = PC2, x =PC1, color = two_hybrid_vs_AP_MS)) +
+  geom_point(alpha =0.7) +
+#  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+#                labels = trans_format("log10", math_format(10^.x))) +
+#  scale_x_discrete(labels = plot_labels)+
+#  geom_abline(slope = 0, intercept = Mass_median, alpha =0.1) +
+  ylab("PC1")+
+  geom_smooth(method = "rlm")+
+  xlab("PC2")+
+  ggtitle("PCA",
+          subtitle = "") + facet_grid(.~two_hybrid_vs_AP_MS)
+
+```
 
 ```{r session}
 sessionInfo()

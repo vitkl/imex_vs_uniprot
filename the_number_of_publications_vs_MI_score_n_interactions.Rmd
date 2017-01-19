@@ -1,0 +1,413 @@
+---
+title: "What is the relationship between the number of interactions or MI score and the number of publications ?"
+author: "Vitalii Kleshchevnikov"
+date: "16 January 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+
+date = Sys.Date()
+## Please specify the date for which you want to perform analysis (if not today)
+date = as.Date("2017-01-06")
+
+## ## Use all Uniprot if reviewed == 1, only Swissprot data if reviewed == 2, 
+## ## TrEMBL data if reviewed == 3
+reviewed = c(1, 2)
+
+## ## Distinguish between isoforms or use only generic Uniprot IDs: TRUE / FALSE?
+isoforms = c(TRUE, FALSE)
+
+## missing_proteins = TRUE => proteins missing protein evidence are shown
+## missing_proteins = FALSE => proteins for which protein evidence exists are shown
+missing_proteins = TRUE
+```
+
+```{r dowlnload_all_IntAct, cache=F, fig.width=8}
+# IntAct FTP contains the following databases = c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
+#               "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+# this will take time and data traffic ~ 2.5GB
+
+url_intact = "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt"
+filename_intact = paste0("./Data/IntAct_MITAB27_release_", format(Sys.Date(), "%m-%Y.txt"))
+if(!file.exists(filename_intact)) {
+  downloader::download(url_intact, filename_intact)
+  gitignore = c(substr(filename_intact, 2, nchar(filename_intact)), readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+  }
+# Read all IntAct - do not attemp without 2.5 GB of free RAM
+library(data.table)
+all.IntAct = fread(filename_intact)
+# changing column names to data.table-compatible format
+{
+colnames_IntAct = colnames(all.IntAct)
+colnames(all.IntAct) = gsub(" ","_",colnames(all.IntAct))
+colnames(all.IntAct) = gsub("\\(|\\)","",colnames(all.IntAct))
+colnames(all.IntAct) = gsub("#","",colnames(all.IntAct))
+}
+# cleaning Taxid "taxid:9606(human)|taxid:9606(Homo sapiens)" to 9606
+{
+all.IntAct[, Taxid_interactor_A := gsub("taxid:|\\(.*$","",Taxid_interactor_A)]
+all.IntAct[, Taxid_interactor_B := gsub("taxid:|\\(.*$","",Taxid_interactor_B)]
+all.IntAct[, Host_organisms := gsub("taxid:|\\(.*$","",Host_organisms)]
+# saving identifier types and cleaning interactor ids
+all.IntAct[, interactor_IDs_databases_A := gsub(":.*$","",IDs_interactor_A)]
+all.IntAct[, interactor_IDs_databases_B := gsub(":.*$","",IDs_interactor_B)]
+all.IntAct[, IDs_interactor_A := gsub("^.*:","",IDs_interactor_A)]
+all.IntAct[, IDs_interactor_B := gsub("^.*:","",IDs_interactor_B)]
+all.IntAct[, bait_prey_status_A := gsub("^.*\\(|\\)","",Experimental_roles_interactor_A)]
+all.IntAct[, bait_prey_status_B := gsub("^.*\\(|\\)","",Experimental_roles_interactor_B)]
+all.IntAct[, Publication_Identifiers := gsub("^.*pubmed:|\\|.*$","",Publication_Identifiers)]
+all.IntAct[, Confidence_values := gsub("^intact-miscore:","",Confidence_values)]
+all.IntAct[, Confidence_values := gsub("-","NA",Confidence_values)]
+all.IntAct[, Confidence_values := as.numeric(Confidence_values)]
+all.IntAct[, Interaction_identifiers := unlist(gsubfn::strapplyc(Interaction_identifiers,"EBI-[[:digit:]]+",simplify = T)), by = Interaction_identifiers]
+}
+```
+
+
+
+```{r UniprotAC_to_geneID, fig.height=10, fig.width=10}
+{
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+SPECIES_IDs = character()
+source("SPECIES_NAME_TO_ID.R")
+count = 1
+for(species in SPECIES_NAME) {
+  x = SPECIES_NAME_TO_ID(species)
+  SPECIES_IDs[count] = x$SPECIES_ID
+  count = count+1
+  rm(list = "x")
+}
+}
+## Converting UniprotAC to geneID
+## Converting UniprotAC isoforms to generic
+{
+all.IntAct[,IDs_interactor_A_isoforms := IDs_interactor_A]
+all.IntAct[,IDs_interactor_B_isoforms := IDs_interactor_B]
+source("isoform_id_all_remover.R")
+all.IntAct[interactor_IDs_databases_A == "uniprotkb", IDs_interactor_A := isoform_id_all_remover(IDs_interactor_A)]
+all.IntAct[interactor_IDs_databases_B == "uniprotkb", IDs_interactor_B := isoform_id_all_remover(IDs_interactor_B)]
+}
+## copy all.IntAct (data.table doesn't make an explicit copy while assigning DT = data.table())
+all.IntAct.modif = copy(all.IntAct)
+
+## Uniprot to geneID mapping 
+#downloading the content of the folder containing species specific ID mapping
+{
+{# generating filenames
+library(RCurl)
+uniprotAC2geneID_url = "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/"
+filenames <- getURL(uniprotAC2geneID_url,dirlistonly = TRUE) 
+filenames = unlist(strsplit(filenames,"\n"))
+filenames = filenames[grep("idmapping.dat.gz",filenames)]
+uniprotAC2geneID_filename = paste0("./Data/uniprotAC2geneID","release_", format(Sys.Date(), "%m-%Y"),"_", filenames)
+uniprotAC2geneID_filename.dat = substr(uniprotAC2geneID_filename, 1, nchar(uniprotAC2geneID_filename)-3)
+}
+# downloading and unzipping files
+for(i in 1:length(uniprotAC2geneID_filename.dat)){
+  if(!file.exists(uniprotAC2geneID_filename.dat[i])) {
+    downloader::download(paste0(uniprotAC2geneID_url,filenames[i]), uniprotAC2geneID_filename[i])
+  R.utils::gunzip(uniprotAC2geneID_filename[i])
+  # make git ignore big files 
+  gitignore = c(substr(uniprotAC2geneID_filename.dat[i], 2, nchar(uniprotAC2geneID_filename.dat[i])),
+                readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+}
+}
+# reading files for uniprotAC to geneID mapping
+uniprotAC2geneID = data.table()
+for(i in 1:length(uniprotAC2geneID_filename.dat)){
+  temp = fread(uniprotAC2geneID_filename.dat[i], header = F)
+  temp = temp[V2 == "GeneID", .(V1, V3)]
+  uniprotAC2geneID = rbind(uniprotAC2geneID,temp)
+  rm(list = "temp")
+}
+}
+## map GeneIDs for IDs_interactor_A
+{
+colnames(uniprotAC2geneID)[2] = "IDs_interactor_A_GeneID"
+all.IntAct.modif = merge(x=all.IntAct.modif, y=uniprotAC2geneID, by.x = "IDs_interactor_A", by.y = "V1", all.x=TRUE, all.y = F)
+}
+## map GeneIDs for IDs_interactor_B
+{
+colnames(uniprotAC2geneID)[2] = "IDs_interactor_B_GeneID"
+all.IntAct.modif = merge(x=all.IntAct.modif, y=uniprotAC2geneID, by.x = "IDs_interactor_B", by.y = "V1", all.x=TRUE, all.y = F)
+rm(list = "uniprotAC2geneID")
+}
+```
+
+```{r GeneID_to_publication_IDs}
+## getting the publication ID for each gene
+{
+geneID2pubmed_url = "ftp://ftp.ncbi.nih.gov/gene/DATA/gene2pubmed.gz"
+geneID2pubmed_filename = paste0("./Data/geneID2pubmed_release_", format(Sys.Date(), "%m-%Y.gz"))
+geneID2pubmed_filename_txt = substr(geneID2pubmed_filename, 1, nchar(geneID2pubmed_filename)-3)
+if(!file.exists(geneID2pubmed_filename_txt)) {
+  downloader::download(geneID2pubmed_url, geneID2pubmed_filename)
+  R.utils::gunzip(geneID2pubmed_filename)
+  gitignore = c(substr(geneID2pubmed_filename, 2, nchar(geneID2pubmed_filename)-3), readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+}
+}
+
+## count the number of pubmed PMID per GeneIDs for IDs_interactor_A and B
+{
+geneID2pubmed = fread(geneID2pubmed_filename_txt, colClasses = c("character","character","character"))
+geneID2pubmed = geneID2pubmed[,.(GeneID, PubMed_ID)]
+
+geneID2pubmed[, interactor_A_total_PMID := length(PubMed_ID), by = GeneID]
+geneID2pubmed = geneID2pubmed[,unique(data.table(GeneID,interactor_A_total_PMID))][,GeneID := as.character(GeneID)]
+all.IntAct.modif = merge(all.IntAct.modif, geneID2pubmed, by.x = "IDs_interactor_A_GeneID", by.y = "GeneID", all.x=TRUE)
+colnames(geneID2pubmed)[2] = "interactor_B_total_PMID"
+all.IntAct.modif = merge(all.IntAct.modif, geneID2pubmed, by.x = "IDs_interactor_B_GeneID", by.y = "GeneID", all.x=TRUE)
+ colnames(all.IntAct.modif)
+ rm(list = "geneID2pubmed")
+}
+
+
+# Count the number of interactions per publication
+{
+all.IntAct.modif[,unique_interactions := apply(data.table(IDs_interactor_A,IDs_interactor_B,stringsAsFactors = F), 1,
+                                               function(a) { z = sort(a)
+                                               paste0(z[1],"_",z[2]) })]
+all.IntAct.modif[,unique_interactions_per_Publication := length(unique(unique_interactions)), by = Publication_Identifiers]
+all.IntAct.modif[,interaction_ids_per_Publication := length(unique(Interaction_identifiers)), by = Publication_Identifiers]
+all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",unique_interactions_per_Publication_nospoke := length(unique(unique_interactions)),
+                 by = Publication_Identifiers]
+all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)", interaction_ids_per_Publication_nospoke := length(unique(Interaction_identifiers)), by = Publication_Identifiers]
+}
+```
+
+```{r large_scal_small_scale_threshold}
+{
+# selecting large scale / small scale threshold 
+library(rafalib)
+mypar(1,2)
+plot(log10(all.IntAct.modif$interaction_ids_per_Publication), 
+     log10(all.IntAct.modif$unique_interactions_per_Publication),
+     main = "EBI interaction IDs per Publication vs unique interactions per Publication",
+     ylab = "unique interactions per Publication \n spoke-expanded interactions included",
+     xlab = "EBI interaction IDs per Publication")
+plot(log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+                            unique_interactions_per_Publication_nospoke]), 
+     log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+                            interaction_ids_per_Publication_nospoke]),
+     main = "unique interactions per Publication \n vs EBI interaction IDs per Publication",
+     xlab = "unique interactions per Publication \n spoke-expanded interactions excluded",
+     ylab = "EBI interaction IDs per Publication")
+
+mypar(1,2)
+hist(log10(all.IntAct.modif[,unique(data.table(unique_interactions_per_Publication,Publication_Identifiers))][,unique_interactions_per_Publication]),30, ylim = c(0,100))
+abline(v = 2)
+hist(log10(all.IntAct.modif[,unique(data.table(interaction_ids_per_Publication,Publication_Identifiers))][,interaction_ids_per_Publication]),30, ylim = c(0,100))
+abline(v = 2)
+}
+
+# tag interactions by the scale of the study
+{
+# tagging interactons
+all.IntAct.modif[,large_scale := as.numeric(interaction_ids_per_Publication > 100)]
+all.IntAct.modif[,small_scale := as.numeric(interaction_ids_per_Publication <= 100)]
+}
+```
+
+```{r count_n_interactions_per_protein}
+#Count the number of interactions formed by proteins encoded by GeneID
+{
+all.IntAct.modif[,unique_interactions_isoforms := apply(data.table(IDs_interactor_A_isoforms,IDs_interactor_B_isoforms,stringsAsFactors = F), 1,
+                                               function(a) { z = sort(a)
+                                               paste0(z[1],"_",z[2]) })]
+#====================
+  #UniprotID
+all.IntAct.modif[,unique_interactions_per_interactor_A := length(unique(grep(IDs_interactor_A, unique_interactions ,value = T))), by = IDs_interactor_A]
+all.IntAct.modif[,unique_interactions_per_interactor_B := length(unique(grep(IDs_interactor_B, unique_interactions ,value = T))), by = IDs_interactor_B]
+  #GeneID
+# all.IntAct.modif[,unique_interactions_per_interactor_A_GeneID := length(unique(grep(IDs_interactor_A, unique_interactions ,value = T))), by = IDs_interactor_A_GeneID]
+# all.IntAct.modif[,unique_interactions_per_interactor_B_GeneID := length(unique(grep(IDs_interactor_B, unique_interactions ,value = T))), by = IDs_interactor_B_GeneID]
+# all.IntAct.modif[is.na(IDs_interactor_A_GeneID),unique_interactions_per_interactor_A_GeneID := NA]
+# all.IntAct.modif[is.na(IDs_interactor_B_GeneID),unique_interactions_per_interactor_B_GeneID := NA]
+  #UniprotID isoform
+# all.IntAct.modif[,unique_interactions_per_interactor_A_isoforms := length(unique(grep(IDs_interactor_A_isoforms, unique_interactions_isoforms ,value = T))), by = IDs_interactor_A_isoforms]
+# all.IntAct.modif[,unique_interactions_per_interactor_B_isoforms := length(unique(grep(IDs_interactor_B_isoforms, unique_interactions_isoforms ,value = T))), by = IDs_interactor_B_isoforms]
+}
+```
+
+```{r interactions_to_interactors}
+# interactions to proteins and genes
+## tagging interactors by the scale of the study
+{
+all.IntAct.proteins_scale_l = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   large_scale = c(large_scale, large_scale))]
+all.IntAct.proteins_scale_s = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   small_scale = c(small_scale, small_scale))]
+all.IntAct.proteins_scale_l = unique(all.IntAct.proteins_scale_l)
+all.IntAct.proteins_scale_s = unique(all.IntAct.proteins_scale_s)
+all.IntAct.proteins_scale = merge(all.IntAct.proteins_scale_l,all.IntAct.proteins_scale_s, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins_scale[,large_small_scale := paste0(large_scale,".",small_scale)]
+all.IntAct.proteins_scale = all.IntAct.proteins_scale[!(small_scale ==0 & large_scale ==0), ]
+all.IntAct.proteins_scale = unique(all.IntAct.proteins_scale)
+}
+# Calculating aggregated MI score per GeneID (includes interactions between proteins encoded by that gene)
+{
+  all.IntAct.proteins.score = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   Confidence_values = as.numeric(c(Confidence_values,Confidence_values)),
+                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID))]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+  all.IntAct.proteins.score[,Median_MI_score := median(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Mean_MI_score := mean(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,sum_MI_score := sum(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Confidence_values := NULL]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+}
+# merging the number of interactions, the scale of the study, and the MIscore tables
+{
+all.IntAct.proteins = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   interactor_total_PMID = c(interactor_A_total_PMID,interactor_B_total_PMID),
+                   Taxid_interactor = c(Taxid_interactor_A,Taxid_interactor_B),
+                   interactor_IDs_databases = c(interactor_IDs_databases_A, interactor_IDs_databases_B),
+                   unique_interactions_per_interactor = c(unique_interactions_per_interactor_A, unique_interactions_per_interactor_B)
+                   )]
+all.IntAct.proteins = unique(all.IntAct.proteins)
+
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins_scale, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins.score, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+str(all.IntAct.proteins)
+}
+```
+
+```{r select_species_and_uniprot}
+{
+# Select only relevant species, only uniprotkb identifiers,
+  all.IntAct.proteins = all.IntAct.proteins[Taxid_interactor %in% SPECIES_IDs & interactor_IDs_databases == "uniprotkb",]
+  
+  # filter out proteins not mapped to geneID
+  all.IntAct.proteins = all.IntAct.proteins[,n_geneid := as.numeric(length(unique(interactor_GeneID))),by = IDs_interactor]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[,n_protid := as.numeric(length(unique(IDs_interactor))),by = interactor_GeneID][n_protid < max(n_protid),]
+  # tag proteins by the number of mappings - one_to_one or one_to_many
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid > 1 | n_protid > 1, gene_id_prot_id := "one_to_many"]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid == 1 & n_protid == 1, gene_id_prot_id := "one_to_one"]
+  
+  SPECIES_NAME_ID = data.table(SPECIES_ID = SPECIES_IDs, SPECIES_NAME = SPECIES_NAME)
+  all.IntAct.proteins = merge(all.IntAct.proteins, SPECIES_NAME_ID, by.x = "Taxid_interactor", by.y = "SPECIES_ID", all=TRUE)
+  all.IntAct.proteins = all.IntAct.proteins[complete.cases(all.IntAct.proteins),]
+  str(all.IntAct.proteins)
+}
+
+plot((all.IntAct.proteins$Median_MI_score),(all.IntAct.proteins$Mean_MI_score), main = "Median_MI_score vs Mean_MI_score")
+
+# how many geneID per protein?
+all.IntAct.proteins[,table(n_geneid,useNA = "ifany")]
+all.IntAct.proteins[,table(n_protid,useNA = "ifany")]
+mean(all.IntAct.modif[,is.na(Confidence_values)])
+mean(all.IntAct.proteins[,is.na(Median_MI_score)])
+```
+
+```{r publications_vs_MI_score, fig.height=10, fig.width=10}
+library(MASS)
+# plotting Median_MI_score as a function of the number of publications 
+library(ggplot2)
+{
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+ scale_x_log10() +
+   #geom_density_2d(bins = 15,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black")+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, mapping of geneID to UniprotAC")+
+    ylab("median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +     geom_smooth(method = "rlm", se = T) +ylim(0,1)+
+  facet_grid(SPECIES_NAME~gene_id_prot_id) + geom_point(size = 0.1, alpha = 0.05)+
+    theme(strip.text.y = element_text(angle = 0))
+}
+
+{
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, sum_MI_score))+ scale_x_log10() +
+   #geom_density_2d(bins = 15,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black")+
+    ggtitle("The relationship between the number of publications per gene and the sum of MI scores", subtitle = "line was fitted using robust linear regression, large and small scale experiments")+
+    ylab("the sum of MI scores for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +     geom_smooth(method = "rlm", se = T) +ylim(0,all.IntAct.proteins[,max(sum_MI_score)])+
+  facet_grid(SPECIES_NAME~large_small_scale) + geom_point(size = 0.1, alpha = 0.05)+
+    theme(strip.text.y = element_text(angle = 0))
+}
+# plotting Median_MI_score as a function of the number of publications and the scale of the study
+{
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+    scale_x_log10() +  #geom_density_2d(bins = 30,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, large and small scale experiments")+
+    ylab("median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +    geom_smooth(method = "rlm", se = T) +geom_point(size = 0.1, alpha = 0.05)+ylim(0,1)+
+    facet_grid(SPECIES_NAME ~ large_small_scale) +
+    theme(strip.text.y = element_text(angle = 0))
+}
+```
+
+```{r N_publications_vs_N_interactions, fig.height=10, fig.width=10}
+
+# plotting unique_interactions_per_interactor as a function of the number of publications 
+{
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+
+    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
+     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n mapping of geneID to UniprotAC")+
+    ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
+     geom_smooth(method = "rlm", se = T)+
+  facet_grid(SPECIES_NAME~gene_id_prot_id, scales = "free") + geom_point(size = 0.1, alpha = 0.05)+
+    theme(strip.text.y = element_text(angle = 0))
+}
+
+{
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+
+    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
+     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
+     geom_smooth(method = "rlm", se = T)+
+  facet_grid(SPECIES_NAME~large_small_scale, scales = "free") + geom_point(size = 1, alpha = 0.1)+
+    theme(strip.text.y = element_text(angle = 0))
+}
+```
+
+```{r interaction_properties, fig.height=10, fig.width=10}
+       # read the saved table with human_not_in_IMEx_protein_properties_processing chunk
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
+## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
+reviewed = 2
+isoforms = FALSE
+##============================================================================##
+source("SPECIES_NAME_TO_ID.R")
+proteome_vs_imex_interaction_details_all = data.table()
+library(dplyr)
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+      SPECIES_ID = SPECIES_IDs$SPECIES_ID
+
+filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+proteome_vs_imex_interaction_details_f = as.data.table(read.delim(filename, header = T, stringsAsFactors = F,quote=""))
+n = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", n)
+n = gsub("strain K12", "Escherichia coli, strain K12", n)
+proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms", "SPECIES_ID") := list(n,r,i,SPECIES_ID)]
+proteome_vs_imex_interaction_details_all = rbind(proteome_vs_imex_interaction_details_all,proteome_vs_imex_interaction_details_f, fill =T)
+    }}}
+all.IntAct.protein_interaction_details_all = merge(x = proteome_vs_imex_interaction_details_all, y=all.IntAct.proteins, by.x = "whole_proteome_IDs", by.y = "IDs_interactor", nomatch=0)
+all.IntAct.protein_interaction_details_all = all.IntAct.protein_interaction_details_all[two_hybrid_vs_AP_MS != "not in IMEx" & SPECIES_NAME.x %in% c("Homo sapiens", "Mus musculus", "S. cerevisiae, strain S288c", "Escherichia coli, strain K12"),]
+{
+ggplot(all.IntAct.protein_interaction_details_all, aes(interactor_total_PMID, unique_interactions_per_interactor, color = two_hybrid_vs_AP_MS))+
+    scale_x_log10()+ scale_y_log10()  + 
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
+     geom_smooth(method = "rlm", se = T)+
+  facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_point(size = 0.5, alpha = 0.1)+
+    theme(strip.text.y = element_text(angle = 0))
+}
+
+print(all.IntAct.protein_interaction_details_all[,table(SPECIES_NAME.x,large_small_scale, two_hybrid_vs_AP_MS)])
+```

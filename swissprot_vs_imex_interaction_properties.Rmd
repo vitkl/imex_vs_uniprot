@@ -170,13 +170,13 @@ proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS = factor(proteome_vs_
 ##=========================================================##
 ``` {r histogram_and_density, fig.width = 10, fig.height = 7}
 library(ggplot2)
-ggplot(proteome_vs_imex_interaction_details_f, aes(x = Mass, color =two_hybrid_vs_AP_MS, 
-                                                   fill = two_hybrid_vs_AP_MS)) +
-  geom_density(alpha =0.2) + scale_x_log10() +
-  xlab("protein mass, Da, log10 scale")+
-  ggtitle("density plot of the protein mass (overlay for different detection methods)") #+facet_grid(two_hybrid_vs_AP_MS~Organism)
+#ggplot(proteome_vs_imex_interaction_details_f, aes(x = Mass, color =two_hybrid_vs_AP_MS, 
+#                                                   fill = two_hybrid_vs_AP_MS)) +
+#  geom_density(alpha =0.2) + scale_x_log10() +
+#  xlab("protein mass, Da, log10 scale")+
+#  ggtitle("density plot of the protein mass (overlay for different detection methods)") #+facet_grid(two_hybrid_vs_AP_MS~Organism)
 ggplot(proteome_vs_imex_interaction_details_f, aes(x = Mass,color = two_hybrid_vs_AP_MS)) +
-  scale_x_log10() + geom_histogram(position = "identity", bins = 50,alpha =0.1) +
+  scale_x_log10() + geom_freqpoly(position = "identity", bins = 50,alpha =0.1) +
   xlab("protein mass, Da, log10 scale") + 
   ggtitle("histogram of the protein mass (overlay for different detection methods)")
 #+facet_grid(two_hybrid_vs_AP_MS~Organism)

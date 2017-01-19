@@ -1,9 +1,12 @@
+
 --- 
-title: Characterisation of model species interactome available from 
-  primary molecular interaction databases 
-author: "Vitalii Kleshchevnikov" 
-date: "21 December 2016" 
-output: html_document 
+title: Characterisation of model species interactome available from primary molecular
+  interaction databases
+author: "Vitalii Kleshchevnikov"
+date: "21 December 2016"
+output:
+  html_document: default
+  word_document: default
 --- 
  
 ```{r setup, include=FALSE} 
@@ -66,21 +69,23 @@ The amounts of interaction data generated per year is growing exponentially maki
 Solving some of these challenges may be easier than the others. In particular, to solve the last challenge we can prioritize curation efforts for already published interactions to cover unrepresented proteins and we can encourage authors to submit their results to the databases prior to publishing. We can also encourage research of underrepresented parts of the interactome. However, for both of those aims, we need to characterize the interactome already present in interaction databases. Specifically, to learn how available interactome covers the proteome of main model species, if there are any biases to proteins with no available interactions and if any major protein interaction detection methods exhibit any biases towards specific groups of proteins. 
 The other helpful to look at the problem is to search for underrepresented in interaction databases but in general well-researched proteins.
 
-# Aims of the study
+# Aims of the study 
 
 1. Find out how available interactome covers the proteome of main model species. Considering either all UniProtKB or SwissProt entries only as the proteome (canonical identifiers as well as protein isoforms). Consider all interactions from IMEx-compliant databases as interactome.  
+
 2. Compare the coverage of proteome by interactome from IMEx to the interactome from BioGRID (the other major primary database).
 
 3. Find out if proteins with no available interactions stand out by specific functions (Gene Ontology, GO: biological process and molecular function), cellular localization (GO), molecular mass, or protein evidence status from SwissProt
 
-4. Are proteins with high fraction of intrinsically disordered domains more likely to have interactions available and do they have more interactions (if normalized for how well-studied proteins are?
-
 4. Find out if major protein interaction detection methods (two-hybrid and AP-MS, AP-WB?) exhibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
 
-### 5. Find out if there are any proteins which are in general well researched (many associated publications or manual GO annotations) but underrepresented in IntAct (low MI score)
 5. What is the relationship between the number of interactions or MI score and the number of publicationions or GO terms per protein?
 
-6. If that is possible to measure: do intermediate filaments (or other highly insoluble proteins) really have higher rates of false-discovered interactions?
+6. Are proteins with high fraction of intrinsically disordered domains more likely to have interactions available and do they have more interactions (if normalized for how well-studied proteins are)?
+
+7. Find out if there are any proteins which are in general well researched (many associated publications or manual GO annotations) but underrepresented in IntAct (low MI score)
+
+8. If that is possible to measure: do intermediate filaments (or other highly insoluble proteins) really have higher rates of false-discovered interactions?
 
 # Methods - data processing and analysis
 
@@ -224,7 +229,7 @@ interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("Drosophila melanoga
 
 # Results
 
-## how well available interactome covers the proteome
+## 1. How well available interactome covers the proteome
 
 ### Available interactome covers substantial fraction of the reviewed proteome of main model species
 
@@ -352,6 +357,7 @@ all.IntAct[, Publication_Identifiers := gsub("^.*pubmed:|\\|.*$","",Publication_
 all.IntAct[, Confidence_values := gsub("^intact-miscore:","",Confidence_values)]
 all.IntAct[, Confidence_values := gsub("-","NA",Confidence_values)]
 all.IntAct[, Confidence_values := as.numeric(Confidence_values)]
+all.IntAct[, Interaction_identifiers := unlist(gsubfn::strapplyc(Interaction_identifiers,"EBI-[[:digit:]]+",simplify = T))]
 }
 
 # checking mixed mouse / human interactions
@@ -389,10 +395,10 @@ all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == "9606", table(Ho
 
 ```
 
-Surprisingly, `r the_host_for_mouse_human_pairs[["9606"]]` interactions between mouse and human proteins were discovered in human rather than mouse cells (only `r the_host_for_mouse_human_pairs[["10090"]]`) suggesting that researchers use mouse proteins as baits (`r mouse_as_bait_mouse_baits` mouse baits total, `r mouse_as_bait_human_preys` human preys total, including isoforms, from `r N_pmid_mouse_as_bait_in_human` publications) to find interactions directly relevant to human interactome research, including human disease.
+Surprisingly, `r the_host_for_mouse_human_pairs[["9606"]]` interactions between mouse and human proteins were discovered in human rather than mouse cells (only `r the_host_for_mouse_human_pairs[["10090"]]`) suggesting that researchers use mouse rather than human proteins as baits (`r mouse_as_bait_mouse_baits` mouse baits total, `r mouse_as_bait_human_preys` human preys total, including isoforms, from `r N_pmid_mouse_as_bait_in_human` publications) to find interactions directly relevant to human interactome research, including human disease.
 
 
-### BioGRID database (as obtained from Mentha) overlaps significantly with IMEx databases
+## 2. BioGRID database (as obtained from Mentha) overlaps significantly with IMEx databases
 
 ```{r biogrid_vs_IMEx_vs_Uniprot_processing}
 ## Enter SPECIES_NAME 
@@ -516,41 +522,32 @@ popViewport()
 }
 ```
 
-## Which proteins are missing?
+## 3. Which proteins are missing?
 
 ```{r human_not_in_IMEx_protein_properties_processing}
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
-SPECIES_NAME = "Homo sapiens"
-## only reviewed = 2 is relevant for this analysis
+## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
 reviewed = 2
 isoforms = FALSE
 ##============================================================================##
 source("SPECIES_NAME_TO_ID.R")
 library(dplyr)
-#for (r in reviewed) {
-#  for (i in isoforms) {
-#    for (n in SPECIES_NAME) {
-r = reviewed
-i = isoforms
-n = SPECIES_NAME
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
      ##============================================================================##
       ## querying Uniprot for the list of proteins (only mapped to Uniprot)
       ## downolading length, mass, SNPs, isoforms, annotation score, existence attribute
       SPECIES_IDs = SPECIES_NAME_TO_ID(n)
       SPECIES_ID = SPECIES_IDs$SPECIES_ID
       ## reading logic table and getting list of proteins
-      if(SPECIES_NAME != "strain K12"){
+      if(n != "strain K12"){
       filename_vs_3 = paste("./analysis/","proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")}
-      if(SPECIES_NAME == "strain K12"){
+      if(n == "strain K12"){
       filename_vs_3 = paste("./analysis/","proteome_vs_interactome_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")}
       biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F))
-      IDs = dplyr::filter(biogrid_from_mentha_vs_proteome_vs_imex_f, whole_proteome_Uniprot==1)%>% dplyr::select(whole_proteome_IDs)
-      filename_perl = paste0("./Data/IDs_for_PERL_",date,".txt")
-      filename_out_of_perl = paste0("./Data/Swissprot_list_from_proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,"")
-      file.create(filename_out_of_perl)
-      write(IDs$whole_proteome_IDs, file = filename_perl)
       source("download_whole_proteome.R")
-      whole_proteome_query = download_whole_proteome(SPECIES_ID, date = "2016-12-14")
+      whole_proteome_query = download_whole_proteome(SPECIES_ID, date = date)
       uniprot_query = dplyr::filter(whole_proteome_query, Status == "reviewed")
       ##============================================================================##
       ## merging information from Uniprot to the logic table
@@ -568,6 +565,9 @@ n = SPECIES_NAME
       ## saving combined logic table + protein properties from Uniprot
       filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
       write.table(proteome_vs_imex_details_f,filename_vs_2,col.names=T,row.names=F,sep="\t",quote=F)
+    }
+  }
+  }
 ```
 
 ### Olfactory receptors are a major group of proteins not represented in IntAct
@@ -582,6 +582,13 @@ n = SPECIES_NAME
       ##============================================================================##
       ## Analysis
       # read the saved table
+SPECIES_NAME = "Homo sapiens"
+n = SPECIES_NAME
+## only reviewed = 2 is relevant for this analysis
+reviewed = 2
+r = reviewed
+isoforms = FALSE
+i = isoforms
       filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
       proteome_vs_imex_details_f = as.data.frame(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
       proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
@@ -594,87 +601,396 @@ n = SPECIES_NAME
       {proteome_vs_imex_details_f_minus_odor = proteome_vs_imex_details_f[-grep("Odor", 
                                                                                 proteome_vs_imex_details_f$Protein.names),]
       proteome_vs_imex_details_f_minus_odor_olf = proteome_vs_imex_details_f_minus_odor[-grep("Olfactory",
-                                                                                              proteome_vs_imex_details_f$Protein.names),]
+                                                                                              proteome_vs_imex_details_f_minus_odor$Protein.names),]
       proteome_vs_imex_details_f_minus_odor_olf.c = rbind(cbind(proteome_vs_imex_details_f, olfac = 
                                                               rep("all SwissProt", nrow(proteome_vs_imex_details_f))),
                                                         cbind(proteome_vs_imex_details_f_minus_odor_olf, olfac = rep("SwissProt excluding \n olfactory receptors",nrow(proteome_vs_imex_details_f_minus_odor_olf))))}
+      # the number of odor receptors excluded
+n_odor_receptors = length(unique(grep("Odor", proteome_vs_imex_details_f$Protein.names, value = F))) + length(unique(grep("Olfactory", proteome_vs_imex_details_f_minus_odor$Protein.names, value = F))) 
           ## density with and without olfactory receptors:
       ggplot(proteome_vs_imex_details_f_minus_odor_olf.c, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, alpha =0.7, label = olfac)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(olfac~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution of protein mass for proteins with and without interaction evidence")
 ```
 
-The difference in protein mass between proteins present and absent in the interactome is highly unlikely to be attributed to chance. Wilcox rank test on the whole population of proteins and Monte-Carlo sampling support this statement.
+This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test on the whole population of proteins, Monte-Carlo sampling (is it useful?), permutation of labels followed by Wilcox rank test - Supplementary figure 3,4,5). Removing `r n_odor_receptors` olfactory receptors does not change this trend.
 
 ```{r human_not_in_IMEx_proteins_are_shorter_Wilcox}
            ## testing the difference in protein mass distributions
             ##of proteins absent/present in IMEx using Wilcox rank test
       SwissProt_not_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_not_IMEX"]
       SwissProt_and_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_and_IMEX"]
-      wilcox.test.r = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
+      wilcox.test.r = wilcox.test(log10(SwissProt_not_IMEX), log10(SwissProt_and_IMEX), conf.int = T)
+      ttest_r = t.test(log10(SwissProt_not_IMEX), log10(SwissProt_and_IMEX), conf.int = T)
       wilcox.test.r
-                 ## testing the difference in protein mass distributions
+                 ## testing the difference in protein mass distributions after removing odor receptors
             ##of proteins absent/present in IMEx using Wilcox rank test excluding olfactory receptors
       SwissProt_not_IMEX = proteome_vs_imex_details_f_minus_odor_olf$Mass[proteome_vs_imex_details_f_minus_odor_olf$whole_proteome_Uniprot_IMEx=="SwissProt_not_IMEX"]
       SwissProt_and_IMEX = proteome_vs_imex_details_f_minus_odor_olf$Mass[proteome_vs_imex_details_f_minus_odor_olf$whole_proteome_Uniprot_IMEx=="SwissProt_and_IMEX"]
       wilcox.test.r = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
       wilcox.test.r
-      
-                 ## is the distibution of mass or log(mass) normal?
-      library(rafalib)
-      mypar(2,2)
-          
-      
-      popsd(log10(SwissProt_not_IMEX))
-      median(log10(SwissProt_not_IMEX))
-      mad(log10(SwissProt_not_IMEX))
-      {
-      qqnorm(log10(SwissProt_not_IMEX), main = "SwissProt_not_IMEX, log(protein mass)")
-      qqline(log10(SwissProt_not_IMEX))
-      qqnorm(log10(SwissProt_and_IMEX), main = "SwissProt_and_IMEX, log(protein mass)")
-      qqline(log10(SwissProt_and_IMEX))
-      qqnorm((SwissProt_not_IMEX), main = "SwissProt_not_IMEX, protein mass")
-      qqline((SwissProt_not_IMEX))
-      qqnorm((SwissProt_and_IMEX), main = "SwissProt_and_IMEX, protein mass")
-      qqline((SwissProt_and_IMEX))
-      }
+```
 
-            ## it indeed is
-      
-                  ## Monte-Carlo simulation
-            ## is there a significant difference in protein mass?
-      # code can be used for things other than mass
-      set.seed(1)
-      # sample size
-      Ns <- seq(5, 350, 20)
-      lengthNs = length(Ns)
-      # number of simulations
-      B = 1000
-      # function which takes samples and does Wilcox test
-      simulation = function(n){  
-       # x = cbind( matrix(sample(SwissProt_not_IMEX, B*n),B,n)
-       # y = matrix(sample(SwissProt_and_IMEX, B*n),B,n)
-       # genefilter::rowttests()
-        wilcox.test.rr = matrix(0, 1, 3)
-        x = sample(SwissProt_not_IMEX, n)
-        y = sample(SwissProt_and_IMEX, n)
-        wilcox.test.rr[1,c(1,2)] = wilcox.test(x, y, conf.int = T)$conf.int
-        wilcox.test.rr[1,3] = wilcox.test(x, y, conf.int = T)$p.value
-        return(wilcox.test.rr)
-      }
-      wilcox.test.rr = matrix(0, lengthNs, 3)
-      # looping Monte-Carlo over samples sizes ]
-     # for (n in 1:lengthNs) {
-     #   z =replicate(B, simulation(Ns[n]), simplify = T)
-     #   wilcox.test.rr[n,] = rowMeans(z)
-     # }
-      xx =cbind(wilcox.test.rr, Ns)
-      qplot(xx[,4], xx[,3], ylab = "Wilcox test p-val", xlab = "proteins sampled, N")
+### Most of the human proteins with no available interactions (from IMEx) are membrane proteins
+
+### If a protein is missing protein evidence in Uniprot it is also more likely to be missing from IntAct
+
+```{r not_in_imex_missing_protein_evidence}
 
 ```
 
-## What is the relationship between the number of interactions or MI score and the number of publicationions or GO terms per protein?
+## 4. Do major protein interaction detection methods (two-hybrid and AP-MS) exhibit any bias towards biochemical properties of the proteins involved?
+
+```{r querying_PSICQUIC_cleaning_and_transforming_interaction_types}
+
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
+## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
+reviewed = 2
+isoforms = FALSE
+##============================================================================##
+source("SPECIES_NAME_TO_ID.R")
+library(dplyr)
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+      SPECIES_ID = SPECIES_IDs$SPECIES_ID
+      
+
+databases <- c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
+               "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+
+source("query_PSICQUIC_for_interactions.R")
+twohybrids_all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, 
+                                                   SPECIES_NAME = n, 
+                                                   databases = databases, date,
+                                                   detmethod = "transcriptional complementation assay")
+complementation_all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, 
+                                                              SPECIES_NAME = n, 
+                                                              databases = databases, date,
+                                                              detmethod = "protein complementation assay")
+ap_ms_all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, 
+                                                         SPECIES_NAME = n, 
+                                                         databases = databases, date,
+                                                         detmethod = "affinity chromatography technology",
+                                                         pmethod = "partial identification of protein sequence")
+
+##=========================================================##
+# extracting interactor ID-s from interactions (MI-TAB 2.5)
+source("interactions_to_interactors.R")
+twohybrids_all_interactors = interactions_to_interactors(twohybrids_all_interactions)
+complementation_all_interactors = interactions_to_interactors(complementation_all_interactions)
+ap_ms_all_interactors = interactions_to_interactors(ap_ms_all_interactions)
+
+# filtering interactors for uniprotkb only indentifiers 
+# filtering for SPECIES_ID only proteins
+source("uniprotkb_and_SPECIES_ID_interactor_selector.R")
+twohybrids_all_interactors_SPECIES_ID_only = uniprotkb_and_SPECIES_ID_interactor_selector(twohybrids_all_interactors, SPECIES_ID)
+complementation_all_interactors_SPECIES_ID_only = uniprotkb_and_SPECIES_ID_interactor_selector(complementation_all_interactors, SPECIES_ID)
+ap_ms_all_interactors_SPECIES_ID_only = uniprotkb_and_SPECIES_ID_interactor_selector(ap_ms_all_interactors, SPECIES_ID)
+
+# Removing all isoform IDs (XXXXXX-X+ => XXXXXX) from IDs
+  source("isoform_id_all_remover.R")
+  twohybrids_all_interactors_SPECIES_ID_only$interactor_IDs = isoform_id_all_remover(twohybrids_all_interactors_SPECIES_ID_only$interactor_IDs)
+  complementation_all_interactors_SPECIES_ID_only$interactor_IDs = isoform_id_all_remover(complementation_all_interactors_SPECIES_ID_only$interactor_IDs)
+  ap_ms_all_interactors_SPECIES_ID_only$interactor_IDs = isoform_id_all_remover(ap_ms_all_interactors_SPECIES_ID_only$interactor_IDs)
+  
+# preparing interaction detection method data for logic table: selecting unique proteins and adding the column of ones
+unique_twohybrids_interactors_SPECIES_ID_only = unique(cbind(twohybrids_all_interactors_SPECIES_ID_only[c("interactor_IDs")], 1))
+colnames(unique_twohybrids_interactors_SPECIES_ID_only)[2] = "two_hybrid"
+unique_complementation_interactors_SPECIES_ID_only = unique(cbind(complementation_all_interactors_SPECIES_ID_only[c("interactor_IDs")], 1))
+colnames(unique_complementation_interactors_SPECIES_ID_only)[2] = "all_protein_complementation"
+unique_ap_ms_interactors_SPECIES_ID_only = unique(cbind(ap_ms_all_interactors_SPECIES_ID_only[c("interactor_IDs")], 1))
+colnames(unique_ap_ms_interactors_SPECIES_ID_only)[2] = "AP_MS"
+
+# loading logic table made by "swissprot_vs_imex_protein_properties" script or by 
+filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+proteome_vs_imex_details_f = as.data.frame(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
+
+# merging new results with the logic table
+proteome_vs_imex_interaction_details_t1 = merge(proteome_vs_imex_details_f, 
+                                   unique_twohybrids_interactors_SPECIES_ID_only, 
+                                   by.x = "whole_proteome_IDs",
+                                   by.y = "interactor_IDs",
+                                   all.x = T, all.y = F)
+proteome_vs_imex_interaction_details_t2 = merge(proteome_vs_imex_interaction_details_t1, 
+                                               unique_complementation_interactors_SPECIES_ID_only, 
+                                               by.x = "whole_proteome_IDs",
+                                               by.y = "interactor_IDs",
+                                               all.x = T, all.y = F)
+proteome_vs_imex_interaction_details_f = merge(proteome_vs_imex_interaction_details_t2, 
+                                               unique_ap_ms_interactors_SPECIES_ID_only, 
+                                                by.x = "whole_proteome_IDs",
+                                                by.y = "interactor_IDs",
+                                                all.x = T, all.y = F)
+proteome_vs_imex_interaction_details_f[is.na(proteome_vs_imex_interaction_details_f)] = 0
+
+# adding factor combination variable - two_hybrid and AP_MS
+proteome_vs_imex_interaction_details_f[,length(proteome_vs_imex_interaction_details_f)+1] = interaction(proteome_vs_imex_interaction_details_f$two_hybrid, proteome_vs_imex_interaction_details_f$AP_MS, sep = "_")
+colnames(proteome_vs_imex_interaction_details_f)[length(proteome_vs_imex_interaction_details_f)] = paste0("two_hybrid", "_vs_","AP_MS")
+levels(proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS) = c("not two-hybrid, and not AP-MS", "two-hybrid, not AP-MS","not two-hybrid, AP-MS", "two-hybrid and AP-MS")
+proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS = as.character(proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS)
+proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS[proteome_vs_imex_interaction_details_f$IMEx!=1] = "not in IMEx"
+
+# saving combined logic table with protein properties from Uniprot and interaction properties combined
+filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+write.table(proteome_vs_imex_interaction_details_f,filename,col.names=T,row.names=F,sep="\t",quote=F)
+    }
+  }
+}
+```
+
+```{r interaction_types_combine_and_plot,  fig.width = 10, fig.height = 10}
+# read the table saved before 
+
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
+## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
+reviewed = 2
+isoforms = FALSE
+##============================================================================##
+source("SPECIES_NAME_TO_ID.R")
+proteome_vs_imex_interaction_details_all = data.table()
+library(dplyr)
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+      SPECIES_ID = SPECIES_IDs$SPECIES_ID
+
+filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+proteome_vs_imex_interaction_details_f = as.data.table(read.delim(filename, header = T, stringsAsFactors = F,quote=""))
+n = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", n)
+n = gsub("strain K12", "Escherichia coli, strain K12", n)
+proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms", "SPECIES_ID") := list(n,r,i,SPECIES_ID)]
+proteome_vs_imex_interaction_details_all = rbind(proteome_vs_imex_interaction_details_all,proteome_vs_imex_interaction_details_f, fill =T)
+    }}}
+
+proteome_vs_imex_interaction_details_all[, Median_mass := median((Mass)), by = .(SPECIES_NAME,two_hybrid_vs_AP_MS)]
+
+#library(ggplot2)
+#ggplot(proteome_vs_imex_interaction_details_all, aes(x = Mass, color =two_hybrid_vs_AP_MS)) +
+#  geom_density(alpha =0.2) + scale_x_log10() +
+#  xlab("protein mass, Da, log10 scale")+
+#  ggtitle("density plot of the protein mass (overlay for different detection methods)") +
+#  facet_grid(SPECIES_NAME~., scales = "free_y")+theme(strip.text.y = element_text(angle = 0))+geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass))
+
+#ggplot(proteome_vs_imex_interaction_details_all, aes(x = Mass,color = two_hybrid_vs_AP_MS)) +
+#  scale_x_log10() + geom_freqpoly(position = "identity", bins = 50,alpha =0.8) +
+#  xlab("protein mass, Da, log10 scale")+
+#  ggtitle("density plot of the protein mass (overlay for different detection methods)") +
+#  facet_grid(SPECIES_NAME~., scales = "free_y")+theme(strip.text.y = element_text(angle = 0))+geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass))
+
+
+
+proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(gsub("_"," ",two_hybrid_vs_AP_MS),", (median mass: ", signif(Median_mass/1000,3)," kDa)"))]
+proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(signif(Median_mass/1000,3)," kDa)"))]
+
+library(scales) 
+ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_violin(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x))) + geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass)) +
+  ylab("Mass, Da, log10 scale")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does protein interaction detection method depend on the protein length?",
+          subtitle = "all violins have the same area")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))
+
+
+## linear model code below
+# ============================================
+
+# IMEx_two_hybrid_AP_MS
+mypar(2,2)
+for(sp in SPECIES_NAME){
+sp = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", sp)
+sp = gsub("strain K12", "Escherichia coli, strain K12", sp)
+fit_rlm = rlm(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == sp,])
+coefs <- coef(fit_rlm)
+
+## Visual explanation
+a <- -0.25
+lgth <- .1
+cols <- brewer.pal(8,"Dark2")
+
+boxplot(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == sp,], 
+           vertical=TRUE, pch=1, method="jitter",las=1,cex.axis= 0.70, main = paste0(sp, ": protein length vs interaction detmethod, rlm"), cex.main=0.99)
+abline(h=0)
+arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
+abline(h=coefs[1],col=cols[1])
+#IMEx
+arrows(2+a,coefs[1],2+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+segments(2+2*a,coefs[1]+coefs[2],2-2*a,coefs[1]+coefs[2],col=cols[2])
+#two-hybrid
+arrows(3+a,coefs[1],3+a,coefs[1]+coefs[3],lwd=3,col=cols[3],length=lgth)
+segments(3+2*a,coefs[1]+coefs[3],3-2*a,coefs[1]+coefs[3],col=cols[2])
+#AP_MS
+arrows(4+a,coefs[1],4+a,coefs[1]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(4+2*a,coefs[1]+coefs[4],4-2*a,coefs[1]+coefs[4],col=cols[2])
+#two-hybrid and #AP_MS
+arrows(5+a,coefs[1],5+a,coefs[1]+coefs[5],lwd=3,col=cols[5],length=lgth)
+segments(5+2*a,coefs[1]+coefs[5],5-2*a,coefs[1]+coefs[5],col=cols[2])
+# two_hybrid vs AP_MS significance testing
+C <- matrix(c(0,0,1,0,-1),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[3] - coefs[5])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(3,coefs[1]+coefs[3]-0.3,5,coefs[1]+coefs[5]-0.3,lwd=3,col=cols[6],length=lgth)
+text(4,(coefs[1]+coefs[3]-0.35 + coefs[1]+coefs[5]-0.35)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+# two_hybrid vs AP_MS_and_two_hybrid significance testing
+C <- matrix(c(0,0,0,1,-1),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[4] - coefs[5])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(4,coefs[1]+coefs[4]+0.3,5,coefs[1]+coefs[5]+0.3,lwd=3,col=cols[6],length=lgth)
+text(4.5,(coefs[1]+coefs[4]+0.35 + coefs[1]+coefs[5]+0.35)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+# other_methods vs AP_MS significance testing
+C <- matrix(c(0,-1,1,0,0),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[3] - coefs[2])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(3,coefs[1]+coefs[3]-0.4,2,coefs[1]+coefs[2]-0.4,lwd=3,col=cols[6],length=lgth)
+text(2.5,(coefs[1]+coefs[3]-0.45 + coefs[1]+coefs[2]-0.45)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+# other_methods vs AP_MS_and_two_hybrid significance testing
+C <- matrix(c(0,-1,0,1,0),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[4] - coefs[2])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(4,coefs[1]+coefs[4]+0.4,2,coefs[1]+coefs[2]+0.4,lwd=3,col=cols[6],length=lgth)
+text(3,(coefs[1]+coefs[4]+0.45 + coefs[1]+coefs[2]+0.45)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+
+legend("bottomright",names(coefs),fill=cols,cex=.75,bg="white")
+}
+# ============================================
+# IMEx_two_hybrid_AP_MS - plain linear model
+proteome_vs_imex_interaction_details_all[,IMEx_two_hybrid_AP_MS := paste0(IMEx,two_hybrid,AP_MS)]
+library(MASS)
+fit_lm = lm(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+X = model.matrix(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+summary(fit_lm)
+library(rafalib)
+library(multcomp)
+library(MASS)
+imagemat(X)
+coefs <- coef(fit_lm)
+
+## Visual explanation
+library(RColorBrewer)
+a <- -0.25
+lgth <- .1
+cols <- brewer.pal(8,"Dark2")
+
+{
+boxplot(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",], 
+           vertical=TRUE, pch=1, method="jitter",las=1,cex.lab   = 0.65, main = "How does protein interaction detection method depend on the protein length? lm")
+abline(h=0)
+arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
+abline(h=coefs[1],col=cols[1])
+#IMEx
+arrows(2+a,coefs[1],2+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+segments(2+2*a,coefs[1]+coefs[2],2-2*a,coefs[1]+coefs[2],col=cols[2])
+#two-hybrid
+arrows(3+a,coefs[1],3+a,coefs[1]+coefs[3],lwd=3,col=cols[3],length=lgth)
+segments(3+2*a,coefs[1]+coefs[3],3-2*a,coefs[1]+coefs[3],col=cols[2])
+#AP_MS
+arrows(4+a,coefs[1],4+a,coefs[1]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(4+2*a,coefs[1]+coefs[4],4-2*a,coefs[1]+coefs[4],col=cols[2])
+#two-hybrid and #AP_MS
+arrows(5+a,coefs[1],5+a,coefs[1]+coefs[5],lwd=3,col=cols[5],length=lgth)
+segments(5+2*a,coefs[1]+coefs[5],5-2*a,coefs[1]+coefs[5],col=cols[2])
+legend("bottomright",names(coefs),fill=cols,cex=.75,bg="white")
+}
+# Error bars and significance testing
+C <- matrix(c(0,0,0,1,-1),1)
+two_hybridvsAP_MS <- glht(fit_lm, linfct=C)
+summary(two_hybridvsAP_MS)
+coefs[4] - coefs[3]
+
+#t(C) %*% coefs
+#Sigma.hat <- sum(fit$residuals^2)/(nrow(X) - ncol(X)) * solve(t(X) %*% X)
+#signif(Sigma.hat, 2)
+#sqrt(t(C) %*% Sigma.hat %*% C)
+
+# ============================================
+# Draft model
+# log10(Mass)~IMEx*two_hybrid*AP_MS
+proteome_vs_imex_interaction_details_all[,IMEx_two_hybrid_AP_MS := paste0(IMEx,two_hybrid,AP_MS)]
+fit = lm(log10(Mass)~IMEx*two_hybrid*AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+X = model.matrix(log10(Mass)~IMEx*two_hybrid*AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+summary(fit)
+
+library(rafalib)
+imagemat(X)
+coefs <- coef(fit)
+
+## Visual explanation
+library(RColorBrewer)
+a <- -0.25
+lgth <- .1
+cols <- brewer.pal(8,"Dark2")
+{
+boxplot(split(log10(proteome_vs_imex_interaction_details_all$Mass), proteome_vs_imex_interaction_details_all$IMEx_two_hybrid_AP_MS, drop = TRUE), 
+           vertical=TRUE, pch=1, method="jitter")
+abline(h=0)
+arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
+abline(h=coefs[1],col=cols[1])
+#IMEx
+arrows(2+a,coefs[1],2+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+arrows(3+a,coefs[1],3+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+arrows(4+a,coefs[1],4+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+arrows(5+a,coefs[1],5+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+segments(2+2*a,coefs[1]+coefs[2],5-2*a,coefs[1]+coefs[2],col=cols[2])
+mean100 = proteome_vs_imex_interaction_details_all[IMEx_two_hybrid_AP_MS == "100", mean(log10(Mass))]
+segments(2+2*a,mean100,2-2*a,mean100,col=cols[8])
+#two-hybrid
+arrows(4,coefs[1]+coefs[2],4,coefs[1]+coefs[2]+coefs[3],lwd=3,col=cols[3],length=lgth)
+arrows(5,coefs[1]+coefs[2],5,coefs[1]+coefs[2]+coefs[3],lwd=3,col=cols[3],length=lgth)
+segments(4+2*a,coefs[1]+coefs[2]+coefs[3],5-2*a,coefs[1]+coefs[2]+coefs[3],col=cols[3])
+#AP_MS
+arrows(3-a,coefs[1]+coefs[2],3-a,coefs[1]+coefs[2]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(3+2*a,coefs[1]+coefs[2]+coefs[4],3-2*a,coefs[1]+coefs[2]+coefs[4],col=cols[4])
+arrows(5-a,coefs[1]+coefs[2]+coefs[3],5-a,coefs[1]+coefs[2]+coefs[3]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(5+2*a,coefs[1]+coefs[2]+coefs[3]+coefs[4],5-2*a,coefs[1]+coefs[2]+coefs[3]+coefs[4],col=cols[4])
+#two-hybrid and #AP_MS
+arrows(5-2*a,coefs[1]+coefs[2]+coefs[4]+coefs[3],5-2*a,coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4],lwd=3,col=cols[5],length=lgth)
+segments(5+2*a,coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4],5-2*a,coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4],col=cols[5])
+legend("bottomright",names(coefs),fill=cols,cex=.75,bg="white")
+}
+mean111 = proteome_vs_imex_interaction_details_all[IMEx_two_hybrid_AP_MS == "111", mean(log10(Mass))]
+coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4]
+
+#two_hybrid vs AP_MS test
+#library(multcomp) ##Available from CRAN
+#C <- matrix(c(0,0,1,-1,0,0,0,0),1)
+#two_hybridvsL2AP_MS <- glht(fit, linfct=C)
+#summary(two_hybridvsL2AP_MS)
+#coefs[4] - coefs[3]
+
+#t(C) %*% coefs
+#Sigma.hat <- sum(fit$residuals^2)/(nrow(X) - ncol(X)) * solve(t(X) %*% X)
+#signif(Sigma.hat, 2)
+#sqrt(t(C) %*% Sigma.hat %*% C)
+
+## Anova
+#anova(fit)
+#now the interactions:
+
+
+```
+
+## 5. What is the relationship between the number of interactions or MI score and the number of publications?
 
 ```{r N_publications_vs_MIscore, fig.height=10, fig.width=10}
+{
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+SPECIES_IDs = character()
+source("SPECIES_NAME_TO_ID.R")
+count = 1
+for(species in SPECIES_NAME) {
+  x = SPECIES_NAME_TO_ID(species)
+  SPECIES_IDs[count] = x$SPECIES_ID
+  count = count+1
+  rm(list = "x")
+}
+}
 ## Converting UniprotAC to geneID
 ## Converting UniprotAC isoforms to generic
 {
@@ -686,7 +1002,10 @@ all.IntAct[interactor_IDs_databases_B == "uniprotkb", IDs_interactor_B := isofor
 }
 ## copy all.IntAct (data.table doesn't make an explicit copy while assigning DT = data.table())
 all.IntAct.modif = copy(all.IntAct)
-## downloading the content of the folder containing species specific ID mapping
+
+## Uniprot to geneID mapping 
+#downloading the content of the folder containing species specific ID mapping
+{
 {# generating filenames
 library(RCurl)
 uniprotAC2geneID_url = "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/"
@@ -715,29 +1034,21 @@ for(i in 1:length(uniprotAC2geneID_filename.dat)){
   uniprotAC2geneID = rbind(uniprotAC2geneID,temp)
   rm(list = "temp")
 }
-
+}
 ## map GeneIDs for IDs_interactor_A
 {
 colnames(uniprotAC2geneID)[2] = "IDs_interactor_A_GeneID"
 all.IntAct.modif = merge(x=all.IntAct.modif, y=uniprotAC2geneID, by.x = "IDs_interactor_A", by.y = "V1", all.x=TRUE, all.y = F)
-#colnames(all.IntAct.modif)
-# sum(is.na(all.IntAct.modif$IDs_interactor_A_GeneID))
 }
 ## map GeneIDs for IDs_interactor_B
-{#setkey(all.IntAct,IDs_interactor_A)
-#x = identical(all.IntAct[,paste0(IDs_interactor_A,IDs_interactor_B)] , all.IntAct.modif[,paste0(IDs_interactor_A,IDs_interactor_B)])
-#all.IntAct[IDs_interactor_A %in% c("Q03228","Q3J6C1","Q43393","Q52880","Q55168","Q55168", "A0A0H3K900"),paste0(IDs_interactor_A,"_",IDs_interactor_B)]
-#all.IntAct[IDs_interactor_A %in% c("Q03228","Q3J6C1","Q43393","Q52880","Q55168","Q55168", "A0A0H3K900"),paste0(IDs_interactor_A,"_",IDs_interactor_B)]
-#all.IntAct[IDs_interactor_A %in% c("Q03228","Q3J6C1","Q43393","Q52880","Q55168","Q55168", "A0A0H3K900")]
+{
 colnames(uniprotAC2geneID)[2] = "IDs_interactor_B_GeneID"
 all.IntAct.modif = merge(x=all.IntAct.modif, y=uniprotAC2geneID, by.x = "IDs_interactor_B", by.y = "V1", all.x=TRUE, all.y = F)
-# colnames(all.IntAct.modif)
-# sum(!is.na(all.IntAct.modif$IDs_interactor_B_GeneID))
 rm(list = "uniprotAC2geneID")
 }
 
-
 ## getting the publication ID for each gene
+{
 geneID2pubmed_url = "ftp://ftp.ncbi.nih.gov/gene/DATA/gene2pubmed.gz"
 geneID2pubmed_filename = paste0("./Data/geneID2pubmed_release_", format(Sys.Date(), "%m-%Y.gz"))
 geneID2pubmed_filename_txt = substr(geneID2pubmed_filename, 1, nchar(geneID2pubmed_filename)-3)
@@ -747,12 +1058,13 @@ if(!file.exists(geneID2pubmed_filename_txt)) {
   gitignore = c(substr(geneID2pubmed_filename, 2, nchar(geneID2pubmed_filename)-3), readLines(".gitignore"))
   write(gitignore, ".gitignore")
 }
-
-geneID2pubmed = fread(geneID2pubmed_filename_txt, colClasses = c("character","character","character"))
-geneID2pubmed = geneID2pubmed[,.(GeneID, PubMed_ID)]
+}
 
 ## count the number of pubmed PMID per GeneIDs for IDs_interactor_A and B
 {
+geneID2pubmed = fread(geneID2pubmed_filename_txt, colClasses = c("character","character","character"))
+geneID2pubmed = geneID2pubmed[,.(GeneID, PubMed_ID)]
+
 geneID2pubmed[, interactor_A_total_PMID := length(PubMed_ID), by = GeneID]
 geneID2pubmed = geneID2pubmed[,unique(data.table(GeneID,interactor_A_total_PMID))][,GeneID := as.character(GeneID)]
 all.IntAct.modif = merge(all.IntAct.modif, geneID2pubmed, by.x = "IDs_interactor_A_GeneID", by.y = "GeneID", all.x=TRUE)
@@ -763,55 +1075,160 @@ all.IntAct.modif = merge(all.IntAct.modif, geneID2pubmed, by.x = "IDs_interactor
 }
 
 
-#Count the number of interactions formed by proteins encoded by GeneID
+# Count the number of interactions per publication
 {
 all.IntAct.modif[,unique_interactions := apply(data.table(IDs_interactor_A,IDs_interactor_B,stringsAsFactors = F), 1,
                                                function(a) { z = sort(a)
                                                paste0(z[1],"_",z[2]) })]
-all.IntAct.modif[,unique_interactions_isoforms := apply(data.table(IDs_interactor_A,IDs_interactor_B,stringsAsFactors = F), 1,
+all.IntAct.modif[,unique_interactions_per_Publication := length(unique(unique_interactions)), by = Publication_Identifiers]
+all.IntAct.modif[,interaction_ids_per_Publication := length(unique(Interaction_identifiers)), by = Publication_Identifiers]
+#all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+#                 unique_interactions_per_Publication_nospoke := length(unique(unique_interactions)),
+#                 by = Publication_Identifiers]
+#all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+#                 interaction_ids_per_Publication_nospoke := length(unique(Interaction_identifiers)),
+#                 by = Publication_Identifiers]
+
+# selecting large scale / small scale threshold 
+library(rafalib)
+mypar(1,2)
+plot(log10(all.IntAct.modif$unique_interactions_per_Publication), 
+     log10(all.IntAct.modif$interaction_ids_per_Publication),
+     main = "unique interactions per Publication \n vs EBI interaction IDs per Publication",
+     xlab = "unique interactions per Publication \n spoke-expanded interactions included",
+     ylab = "EBI interaction IDs per Publication")
+#plot(log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+#                            unique_interactions_per_Publication_nospoke]), 
+#     log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+#                            interaction_ids_per_Publication_nospoke]),
+#     main = "unique interactions per Publication \n vs EBI interaction IDs per Publication",
+#     xlab = "unique interactions per Publication \n spoke-expanded interactions excluded",
+#     ylab = "EBI interaction IDs per Publication")
+
+mypar(1,2)
+hist(log10(all.IntAct.modif$unique_interactions_per_Publication),100)
+abline(v = 2.55)
+hist(log10(all.IntAct.modif$interaction_ids_per_Publication),100)
+abline(v = 2.55)
+#hist(log10(all.IntAct.modif$unique_interactions_per_Publication_nospoke),100)
+#abline(v = 2.55)
+#hist(log10(all.IntAct.modif$interaction_ids_per_Publication_nospoke),100)
+#abline(v = 2.55)
+}
+
+# tag interactions by the scale of the study
+{
+# tagging interactons
+all.IntAct.modif[,large_scale := as.numeric(interaction_ids_per_Publication > 10^2.55)]
+all.IntAct.modif[,small_scale := as.numeric(interaction_ids_per_Publication <= 10^2.55)]
+}
+
+#Count the number of interactions formed by proteins encoded by GeneID
+{
+all.IntAct.modif[,unique_interactions_isoforms := apply(data.table(IDs_interactor_A_isoforms,IDs_interactor_B_isoforms,stringsAsFactors = F), 1,
                                                function(a) { z = sort(a)
                                                paste0(z[1],"_",z[2]) })]
+#==================== ????? how do I properly split interactions into large/small scale?
+all.IntAct.modif[large_scale == 1,unique_interactions_large_scale := apply(data.table(IDs_interactor_A,IDs_interactor_B,large_scale ,stringsAsFactors = F), 1,
+                                               function(a) { z = sort(a[1:2])
+                                               paste0(z[1],"_",z[2],"_l",a[3]) })]
+all.IntAct.modif[small_scale == 1,unique_interactions_small_scale := apply(data.table(IDs_interactor_A,IDs_interactor_B,large_scale ,stringsAsFactors = F), 1,
+                                               function(a) { z = sort(a[1:2])
+                                               paste0(z[1],"_",z[2],"_l",a[3]) })]
+# all.IntAct.modif[large_scale == 1,unique_interactions_isoforms_large_scale := apply(data.table(IDs_interactor_A_isoforms,IDs_interactor_B_isoforms,large_scale ,stringsAsFactors = F), 1,
+#                                               function(a) { z = sort(a[1:2])
+#                                               paste0(z[1],"_",z[2],"_l",a[3]) })]
+# all.IntAct.modif[small_scale == 1,unique_interactions_isoforms_small_scale := apply(data.table(IDs_interactor_A_isoforms,IDs_interactor_B_isoforms,large_scale ,stringsAsFactors = F), 1,
+#                                               function(a) { z = sort(a[1:2])
+#                                               paste0(z[1],"_",z[2],"_l",a[3]) })]
+#====================
   #UniprotID
 all.IntAct.modif[,unique_interactions_per_interactor_A := length(unique(grep(IDs_interactor_A, unique_interactions ,value = T))), by = IDs_interactor_A]
 all.IntAct.modif[,unique_interactions_per_interactor_B := length(unique(grep(IDs_interactor_B, unique_interactions ,value = T))), by = IDs_interactor_B]
+all.IntAct.modif[,unique_interactions_per_interactor_A_large_scale := length(unique(grep(IDs_interactor_A, unique_interactions_large_scale ,value = T))), by = IDs_interactor_A]
+all.IntAct.modif[,unique_interactions_per_interactor_B_large_scale := length(unique(grep(IDs_interactor_B, unique_interactions_large_scale ,value = T))), by = IDs_interactor_B]
+all.IntAct.modif[,unique_interactions_per_interactor_A_small_scale := length(unique(grep(IDs_interactor_A, unique_interactions_small_scale ,value = T))), by = IDs_interactor_A]
+all.IntAct.modif[,unique_interactions_per_interactor_B_small_scale := length(unique(grep(IDs_interactor_B, unique_interactions_small_scale ,value = T))), by = IDs_interactor_B]
   #GeneID
-all.IntAct.modif[,unique_interactions_per_interactor_A_GeneID := length(unique(grep(IDs_interactor_A, unique_interactions ,value = T))), by = IDs_interactor_A_GeneID]
-all.IntAct.modif[,unique_interactions_per_interactor_B_GeneID := length(unique(grep(IDs_interactor_B, unique_interactions ,value = T))), by = IDs_interactor_B_GeneID]
+# all.IntAct.modif[,unique_interactions_per_interactor_A_GeneID := length(unique(grep(IDs_interactor_A, unique_interactions ,value = T))), by = IDs_interactor_A_GeneID]
+# all.IntAct.modif[,unique_interactions_per_interactor_B_GeneID := length(unique(grep(IDs_interactor_B, unique_interactions ,value = T))), by = IDs_interactor_B_GeneID]
+# all.IntAct.modif[is.na(IDs_interactor_A_GeneID),unique_interactions_per_interactor_A_GeneID := NA]
+# all.IntAct.modif[is.na(IDs_interactor_B_GeneID),unique_interactions_per_interactor_B_GeneID := NA]
   #UniprotID isoform
-all.IntAct.modif[,unique_interactions_per_interactor_A_isoforms := length(unique(grep(IDs_interactor_A_isoforms, unique_interactions_isoforms ,value = T))), by = IDs_interactor_A_isoforms]
-all.IntAct.modif[,unique_interactions_per_interactor_B_isoforms := length(unique(grep(IDs_interactor_B_isoforms, unique_interactions_isoforms ,value = T))), by = IDs_interactor_B_isoforms]
+# all.IntAct.modif[,unique_interactions_per_interactor_A_isoforms := length(unique(grep(IDs_interactor_A_isoforms, unique_interactions_isoforms ,value = T))), by = IDs_interactor_A_isoforms]
+# all.IntAct.modif[,unique_interactions_per_interactor_B_isoforms := length(unique(grep(IDs_interactor_B_isoforms, unique_interactions_isoforms ,value = T))), by = IDs_interactor_B_isoforms]
 }
 
+# ===========================================================
 # interactions to proteins and genes
 {
-  all.IntAct.proteins = all.IntAct.modif[,data.table(
+## tagging interactors by the scale of the study
+{
+all.IntAct.proteins_scale_l = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   large_scale = c(large_scale, large_scale))]
+all.IntAct.proteins_scale_s = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   small_scale = c(small_scale, small_scale))]
+all.IntAct.proteins_scale_l = unique(all.IntAct.proteins_scale_l)
+all.IntAct.proteins_scale_s = unique(all.IntAct.proteins_scale_s)
+all.IntAct.proteins_scale = merge(all.IntAct.proteins_scale_l,all.IntAct.proteins_scale_s, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins_scale[,large_small_scale := paste0(large_scale,".",small_scale)]
+all.IntAct.proteins_scale = all.IntAct.proteins_scale[!(small_scale ==0 & large_scale ==0), ]
+all.IntAct.proteins_scale = unique(all.IntAct.proteins_scale)
+}
+# Calculating aggregated MI score per GeneID (includes interactions between proteins encoded by that gene)
+{
+  all.IntAct.proteins.score = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   Confidence_values = as.numeric(c(Confidence_values,Confidence_values)),
+                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID))]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+  all.IntAct.proteins.score[,Median_MI_score := median(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Mean_MI_score := mean(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Confidence_values := NULL]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+}
+# merging the number of interactions, the scale of the study, and the MIscore tables
+{
+all.IntAct.proteins = all.IntAct.modif[,data.table(
                    IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
                    interactor_total_PMID = c(interactor_A_total_PMID,interactor_B_total_PMID),
-                   Confidence_values = as.numeric(c(Confidence_values,Confidence_values)),
                    Taxid_interactor = c(Taxid_interactor_A,Taxid_interactor_B),
                    interactor_IDs_databases = c(interactor_IDs_databases_A, interactor_IDs_databases_B),
-                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID),
                    unique_interactions_per_interactor = c(unique_interactions_per_interactor_A, unique_interactions_per_interactor_B),
-                   unique_interactions_per_gene = c(unique_interactions_per_interactor_A_GeneID, unique_interactions_per_interactor_B_GeneID),
-                   unique_interactions_per_interactor_isoforms = c(unique_interactions_per_interactor_A_isoforms, unique_interactions_per_interactor_B_isoforms))]
-  all.IntAct.proteins = unique(all.IntAct.proteins)
-  all.IntAct.proteins[,Median_MI_score := median(Confidence_values, na.rm = T), by = interactor_GeneID]
-  all.IntAct.proteins[,Mean_MI_score := mean(Confidence_values, na.rm = T), by = interactor_GeneID]
-  all.IntAct.proteins[,Confidence_values := NULL]
-  all.IntAct.proteins = unique(all.IntAct.proteins)
-  all.IntAct.proteins = all.IntAct.proteins[Taxid_interactor %in% c("9606", "10090", "559292","83333","7227", "6239","3702") & interactor_IDs_databases == "uniprotkb",]
-  # filter out proteins mapped to more than one geneID and not mapped to geneID
-  all.IntAct.proteins = all.IntAct.proteins[,n_geneid := as.numeric(length(interactor_GeneID)),by = IDs_interactor][n_geneid ==1,]
-  all.IntAct.proteins = all.IntAct.proteins[,n_protid := as.numeric(length(IDs_interactor)),by = interactor_GeneID][n_protid <10,]
-  # nrow(unique(all.IntAct.proteins[Taxid_interactor %in% c("9606"), ]))
-  # length(unique(all.IntAct.proteins[Taxid_interactor %in% c("9606"), IDs_interactor]))
-  SPECIES_NAME_ID = data.table(SPECIES_ID = c("9606", "10090", "559292","83333","7227", "6239","3702"), SPECIES_NAME)
+                   unique_interactions_per_interactor_large_scale = c(unique_interactions_per_interactor_A_large_scale, unique_interactions_per_interactor_B_large_scale),
+                   unique_interactions_per_interactor_small_scale = c(unique_interactions_per_interactor_A_small_scale, unique_interactions_per_interactor_B_small_scale)
+                   )]
+all.IntAct.proteins = unique(all.IntAct.proteins)
+
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins_scale, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins.score, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+str(all.IntAct.proteins)
+}
+{
+# Select only relevant species, only uniprotkb identifiers,
+  all.IntAct.proteins = all.IntAct.proteins[Taxid_interactor %in% SPECIES_IDs & interactor_IDs_databases == "uniprotkb",]
+  
+  # filter out proteins not mapped to geneID
+  all.IntAct.proteins = all.IntAct.proteins[,n_geneid := as.numeric(length(unique(interactor_GeneID))),by = IDs_interactor]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[,n_protid := as.numeric(length(unique(IDs_interactor))),by = interactor_GeneID][n_protid < max(n_protid),]
+  # tag proteins by the number of mappings - one_to_one or one_to_many
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid > 1 | n_protid > 1, gene_id_prot_id := "one_to_many"]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid == 1 & n_protid == 1, gene_id_prot_id := "one_to_one"]
+  
+  SPECIES_NAME_ID = data.table(SPECIES_ID = SPECIES_IDs, SPECIES_NAME = SPECIES_NAME)
   all.IntAct.proteins = merge(all.IntAct.proteins, SPECIES_NAME_ID, by.x = "Taxid_interactor", by.y = "SPECIES_ID", all=TRUE)
   all.IntAct.proteins = all.IntAct.proteins[complete.cases(all.IntAct.proteins),]
   str(all.IntAct.proteins)
 }
+}
 
-plot(all.IntAct.proteins$Median_MI_score,all.IntAct.proteins$Mean_MI_score, main = "Median_MI_score vs Mean_MI_score")
+plot((all.IntAct.proteins$Median_MI_score),(all.IntAct.proteins$Mean_MI_score), main = "Median_MI_score vs Mean_MI_score")
 
 # how many geneID per protein?
 all.IntAct.proteins[,table(n_geneid,useNA = "ifany")]
@@ -822,24 +1239,23 @@ mean(all.IntAct.proteins[,is.na(Median_MI_score)])
 library(MASS)
 # plotting Median_MI_score as a function of the number of publications 
 {
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+
-    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10() + 
-     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression")+
-    ylab("median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +
-     geom_smooth(method = "rlm", se = T) +ylim(0,1)+
-  facet_wrap(~SPECIES_NAME, scales = "free") + geom_point(size = 0.1, alpha = 0.05)
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+ scale_x_log10() +
+   #geom_density_2d(bins = 15,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black")+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, mapping of geneID to UniprotAC")+
+    ylab("median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +     geom_smooth(method = "rlm", se = T) +ylim(0,1)+
+  facet_grid(SPECIES_NAME~gene_id_prot_id) + geom_point(size = 0.1, alpha = 0.05)+
+    theme(strip.text.y = element_text(angle = 0))
 }
 # plotting Mean_MI_score as a function of the number of publications 
 {
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Mean_MI_score))+facet_wrap(~SPECIES_NAME, scales = "free") +
-    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10() + 
-     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and mean MI score", subtitle = "line was fitted using robust linear regression")+
-    ylab("mean MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +
-     geom_smooth(method = "rlm", se = T) +geom_point(size = 0.1, alpha = 0.05)+ylim(0,1)
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+    scale_x_log10() +  #geom_density_2d(bins = 30,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, large and small scale experiments")+
+    ylab("mean MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +    geom_smooth(method = "rlm", se = T) +geom_point(size = 0.1, alpha = 0.05)+ylim(0,1)+
+    facet_grid(SPECIES_NAME ~ large_small_scale) 
 }
-fit = rlm(Median_MI_score~interactor_total_PMID, data=all.IntAct.proteins)
+fit = lm(Median_MI_score~interactor_total_PMID*large_small_scale, data=all.IntAct.proteins)
 summary(fit)
 
 ```
@@ -851,34 +1267,26 @@ summary(fit)
 ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+
     geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
      scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC")+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n mapping of geneID to UniprotAC")+
     ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
-  facet_wrap(~SPECIES_NAME, scales = "free") + geom_point(size = 0.1, alpha = 0.05)
+  facet_grid(SPECIES_NAME~gene_id_prot_id, scales = "free") + geom_point(size = 0.1, alpha = 0.05)+
+    theme(strip.text.y = element_text(angle = 0))
 }
 
-# plotting unique_interactions_per_gene as a function of the number of publications 
 {
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_gene))+
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+
     geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
      scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC")+
-    ylab("the number of interactions (per gene) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
-  facet_wrap(~SPECIES_NAME, scales = "free") + geom_point(size = 0.1, alpha = 0.05)
-}
-
-# plotting unique_interactions_per_interactor_isoform as a function of the number of publications 
-{
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor_isoforms))+
-    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
-     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n including isoform-specific interactions")+
-    ylab("the number of interactions (per isoform) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
-     geom_smooth(method = "rlm", se = T)+
-  facet_wrap(~SPECIES_NAME, scales = "free") + geom_point(size = 0.1, alpha = 0.05)
+  facet_grid(SPECIES_NAME~large_small_scale, scales = "free") + geom_point(size = 0.1, alpha = 0.05)+
+    theme(strip.text.y = element_text(angle = 0))
 }
 ```
+
+## 6. Are proteins with high fraction of intrinsically disordered domains more likely to have interactions available
 
 # Supplementary figures
 
@@ -946,9 +1354,8 @@ popViewport()
 }
 ```
 
-Supplementary figure 2
 
-```{r BioGRID_vs_IMEx_vs_Uniprot_N_Uniprot&Species, cache=F, fig.width=8, fig.height=8, fig.cap="Supplementary figure 2" }
+```{r Supplementary2_BioGRID_vs_IMEx_vs_Uniprot_N_Uniprot&Species, cache=F, fig.width=8, fig.height=8, fig.cap="Supplementary figure 2" }
 ### combine the summaries for multiple species of how many interactors have non-uniprot identifiers
 interactome_identifiers_summary.all = data.frame()
 for (i in isoforms) {
@@ -996,4 +1403,105 @@ proteome_vs_interactome_plot
 
 ### ======================================================================== ###
 
+```
+
+```{r Supplementary3_protein_mass_distribution_qqplot, fig.width=8, fig.height=8, fig.cap="Supplementary figure 3. The distribution of the logarhythm base 10 of protein mass is approximately normal"}
+
+SPECIES_NAME = "Homo sapiens"
+n = SPECIES_NAME
+## only reviewed = 2 is relevant for this analysis
+reviewed = 2
+r = reviewed
+isoforms = FALSE
+i = isoforms
+      filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+      proteome_vs_imex_details_f = as.data.frame(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+      proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
+      proteome_vs_imex_details_f_minus_odor = proteome_vs_imex_details_f[-grep("Odor", 
+                                                                                proteome_vs_imex_details_f$Protein.names),]
+      proteome_vs_imex_details_f_minus_odor_olf = proteome_vs_imex_details_f_minus_odor[-grep("Olfactory",
+                                                                                              proteome_vs_imex_details_f_minus_odor$Protein.names),]
+      SwissProt_not_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_not_IMEX"]
+      SwissProt_and_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_and_IMEX"]
+                 ## is the distibution of mass or log(mass) normal?
+      library(rafalib)
+      mypar(2,2)
+      popsd(log10(SwissProt_not_IMEX))
+      median(log10(SwissProt_not_IMEX))
+      mad(log10(SwissProt_not_IMEX))
+      {
+      qqnorm(log10(SwissProt_not_IMEX), main = "SwissProt_not_IMEX, log(protein mass)")
+      qqline(log10(SwissProt_not_IMEX))
+      qqnorm(log10(SwissProt_and_IMEX), main = "SwissProt_and_IMEX, log(protein mass)")
+      qqline(log10(SwissProt_and_IMEX))
+      qqnorm((SwissProt_not_IMEX), main = "SwissProt_not_IMEX, protein mass")
+      qqline((SwissProt_not_IMEX))
+      qqnorm((SwissProt_and_IMEX), main = "SwissProt_and_IMEX, protein mass")
+      qqline((SwissProt_and_IMEX))
+      }
+
+            ## it indeed is
+      
+```
+
+```{r Supplementary4_protein_mass_distribution_monte_carlo, fig.width=8, fig.height=8, fig.cap="Supplementary figure 4. Monte-Carlo sampling can pick up the difference in protein mass between proteins present and missing from IntAct"}
+                  ## Monte-Carlo simulation
+            ## is there a significant difference in protein mass?
+      # code can be used for things other than mass
+      set.seed(1)
+      # sample size
+      Ns <- seq(5, 350, 20)
+      lengthNs = length(Ns)
+      # number of simulations
+      B = 1000
+      # function which takes samples and does Wilcox test
+      simulation = function(n){  
+       # x = cbind( matrix(sample(SwissProt_not_IMEX, B*n),B,n)
+       # y = matrix(sample(SwissProt_and_IMEX, B*n),B,n)
+       # genefilter::rowttests()
+        wilcox.test.rr = matrix(0, 1, 3)
+        x = sample(SwissProt_not_IMEX, n)
+        y = sample(SwissProt_and_IMEX, n)
+        wilcox.test.rr[1,c(1,2)] = wilcox.test(x, y, conf.int = T)$conf.int
+        wilcox.test.rr[1,3] = wilcox.test(x, y, conf.int = T)$p.value
+        return(wilcox.test.rr)
+      }
+      wilcox.test.rr = matrix(0, lengthNs, 3)
+      # looping Monte-Carlo over samples sizes ]
+     # for (n in 1:lengthNs) {
+     #   z =replicate(B, simulation(Ns[n]), simplify = T)
+     #   wilcox.test.rr[n,] = rowMeans(z)
+     # }
+      xx =cbind(wilcox.test.rr, Ns)
+      qplot(xx[,4], xx[,3], ylab = "Wilcox test p-val", xlab = "proteins sampled, N")
+```
+      
+```{r Supplementary4_protein_mass_distribution_permutations, fig.width=8, fig.height=8, fig.cap="Supplementary figure 4. Monte-Carlo sampling can pick up the difference in protein mass between proteins present and missing from IntAct"}
+# permutations - wilcox test
+proteome_vs_imex_details_f_shuffle = as.data.table(proteome_vs_imex_details_f[,c("Mass","whole_proteome_Uniprot_IMEx")])
+proteome_vs_imex_details_f_shuffle[,Mass := log10(Mass)]
+proteome_vs_imex_details_f_shuffle. = copy(proteome_vs_imex_details_f_shuffle)
+set.seed(1)
+wilcox.test.r10000 = replicate(10,{
+proteome_vs_imex_details_f_shuffle.[,whole_proteome_Uniprot_IMEx := sample(whole_proteome_Uniprot_IMEx)]
+      wilcox.test.r = wilcox.test(Mass~whole_proteome_Uniprot_IMEx,proteome_vs_imex_details_f_shuffle.)$statistic
+},simplify = T)
+# permutations - ttest
+ttest.r10000 = replicate(10,{
+proteome_vs_imex_details_f_shuffle.[,whole_proteome_Uniprot_IMEx := sample(whole_proteome_Uniprot_IMEx)]
+      t.test.r = t.test(Mass~whole_proteome_Uniprot_IMEx,proteome_vs_imex_details_f_shuffle.)$statistic
+},simplify = T)
+
+           ## testing the difference in protein mass distributions
+            ##of proteins absent/present in IMEx using Wilcox rank test
+wilcox.test.r = wilcox.test(Mass~whole_proteome_Uniprot_IMEx,proteome_vs_imex_details_f)
+ttest_r = t.test(Mass~whole_proteome_Uniprot_IMEx,proteome_vs_imex_details_f)
+{
+library(rafalib)
+mypar(1,2)
+hist(wilcox.test.r10000, xlim = c(min(wilcox.test.r10000),wilcox.test.r$statistic+wilcox.test.r$statistic/2))
+abline(v = wilcox.test.r$statistic, col = "red")
+hist(ttest.r10000, xlim = c(min(ttest.r10000),ttest_r$statistic+ttest_r$statistic/2))
+abline(v = ttest_r$statistic, col = "red")
+}
 ```
