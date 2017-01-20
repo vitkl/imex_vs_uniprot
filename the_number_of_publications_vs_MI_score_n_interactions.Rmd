@@ -26,7 +26,7 @@ isoforms = c(TRUE, FALSE)
 missing_proteins = TRUE
 ```
 
-```{r dowlnload_all_IntAct, cache=F, fig.width=8}
+```{r dowlnload_all_IntAct, cache=F, fig.width=8,echo = FALSE}
 # IntAct FTP contains the following databases = c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
 #               "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
 # this will take time and data traffic ~ 2.5GB
@@ -70,7 +70,7 @@ all.IntAct[, Interaction_identifiers := unlist(gsubfn::strapplyc(Interaction_ide
 
 
 
-```{r UniprotAC_to_geneID, fig.height=10, fig.width=10}
+```{r UniprotAC_to_geneID_start, fig.height=10, fig.width=10,echo = FALSE}
 {
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
 SPECIES_IDs = character()
@@ -97,11 +97,11 @@ all.IntAct.modif = copy(all.IntAct)
 
 ## Uniprot to geneID mapping 
 #downloading the content of the folder containing species specific ID mapping
-{
+
 {# generating filenames
 library(RCurl)
 uniprotAC2geneID_url = "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/"
-filenames <- getURL(uniprotAC2geneID_url,dirlistonly = TRUE) 
+filenames <- getURL(uniprotAC2geneID_url, dirlistonly = TRUE) 
 filenames = unlist(strsplit(filenames,"\n"))
 filenames = filenames[grep("idmapping.dat.gz",filenames)]
 uniprotAC2geneID_filename = paste0("./Data/uniprotAC2geneID","release_", format(Sys.Date(), "%m-%Y"),"_", filenames)
@@ -126,7 +126,7 @@ for(i in 1:length(uniprotAC2geneID_filename.dat)){
   uniprotAC2geneID = rbind(uniprotAC2geneID,temp)
   rm(list = "temp")
 }
-}
+
 ## map GeneIDs for IDs_interactor_A
 {
 colnames(uniprotAC2geneID)[2] = "IDs_interactor_A_GeneID"
@@ -140,7 +140,7 @@ rm(list = "uniprotAC2geneID")
 }
 ```
 
-```{r GeneID_to_publication_IDs}
+```{r GeneID_to_publication_IDs,echo = FALSE}
 ## getting the publication ID for each gene
 {
 geneID2pubmed_url = "ftp://ftp.ncbi.nih.gov/gene/DATA/gene2pubmed.gz"
@@ -182,29 +182,31 @@ all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)", int
 }
 ```
 
-```{r large_scal_small_scale_threshold}
+```{r large_scal_small_scale_threshold, fig.height=8, fig.width=8}
 {
 # selecting large scale / small scale threshold 
 library(rafalib)
 mypar(1,2)
-plot(log10(all.IntAct.modif$interaction_ids_per_Publication), 
-     log10(all.IntAct.modif$unique_interactions_per_Publication),
-     main = "EBI interaction IDs per Publication vs unique interactions per Publication",
-     ylab = "unique interactions per Publication \n spoke-expanded interactions included",
-     xlab = "EBI interaction IDs per Publication")
-plot(log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+plot(x = log10(all.IntAct.modif$interaction_ids_per_Publication), 
+     y = log10(all.IntAct.modif$unique_interactions_per_Publication),
+     main = "spoke-expanded interactions included",
+     ylab = "unique interactions per Publication, log10",
+     xlab = "EBI interaction IDs per Publication, log10", cex =0.5)
+plot(y = log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
                             unique_interactions_per_Publication_nospoke]), 
-     log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
+     x = log10(all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)",
                             interaction_ids_per_Publication_nospoke]),
-     main = "unique interactions per Publication \n vs EBI interaction IDs per Publication",
-     xlab = "unique interactions per Publication \n spoke-expanded interactions excluded",
-     ylab = "EBI interaction IDs per Publication")
-
+     main = "spoke-expanded interactions excluded",
+     ylab = "unique interactions per Publication, log10",
+     xlab = "EBI interaction IDs per Publication, log10", cex =0.5)
+}
+{
 mypar(1,2)
-hist(log10(all.IntAct.modif[,unique(data.table(unique_interactions_per_Publication,Publication_Identifiers))][,unique_interactions_per_Publication]),30, ylim = c(0,100))
-abline(v = 2)
-hist(log10(all.IntAct.modif[,unique(data.table(interaction_ids_per_Publication,Publication_Identifiers))][,interaction_ids_per_Publication]),30, ylim = c(0,100))
-abline(v = 2)
+hist(log10(all.IntAct.modif[,unique(data.table(unique_interactions_per_Publication,Publication_Identifiers))][,unique_interactions_per_Publication]),30, ylim = c(0,100), main = "Histogram: unique interactions per Publication", xlab = "unique interactions per Publication, log10, red line - threshold", cex =0.5)
+abline(v = 2, col = "red")
+hist(log10(all.IntAct.modif[,unique(data.table(interaction_ids_per_Publication,Publication_Identifiers))][,interaction_ids_per_Publication]),30, ylim = c(0,100), main = "Histogram: interaction IDs per Publication", xlab = "unique interactions per Publication, log10, red line - threshold", cex =0.5)
+abline(v = 2, col = "red")
+
 }
 
 # tag interactions by the scale of the study
@@ -236,7 +238,7 @@ all.IntAct.modif[,unique_interactions_per_interactor_B := length(unique(grep(IDs
 }
 ```
 
-```{r interactions_to_interactors}
+```{r scale_interactions_to_interactors}
 # interactions to proteins and genes
 ## tagging interactors by the scale of the study
 {
@@ -314,6 +316,8 @@ mean(all.IntAct.modif[,is.na(Confidence_values)])
 mean(all.IntAct.proteins[,is.na(Median_MI_score)])
 ```
 
+A large scale study is a study which provided more than 100 interaction IDs in IntAct.
+
 ```{r publications_vs_MI_score, fig.height=10, fig.width=10}
 library(MASS)
 # plotting Median_MI_score as a function of the number of publications 
@@ -322,7 +326,7 @@ library(ggplot2)
 ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+ scale_x_log10() +
    #geom_density_2d(bins = 15,aes(colour=..level..)) + 
      #scale_color_gradient(low = "grey", high = "black")+
-    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, mapping of geneID to UniprotAC")+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, mapping of geneID to UniprotAC, many-to-many vs one-to-one")+
     ylab("median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +     geom_smooth(method = "rlm", se = T) +ylim(0,1)+
   facet_grid(SPECIES_NAME~gene_id_prot_id) + geom_point(size = 0.1, alpha = 0.05)+
     theme(strip.text.y = element_text(angle = 0))
@@ -332,16 +336,16 @@ ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+ scale_
 ggplot(all.IntAct.proteins, aes(interactor_total_PMID, sum_MI_score))+ scale_x_log10() +
    #geom_density_2d(bins = 15,aes(colour=..level..)) + 
      #scale_color_gradient(low = "grey", high = "black")+
-    ggtitle("The relationship between the number of publications per gene and the sum of MI scores", subtitle = "line was fitted using robust linear regression, large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and the sum of MI scores", subtitle = "line was fitted using robust linear regression, large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
     ylab("the sum of MI scores for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +     geom_smooth(method = "rlm", se = T) +ylim(0,all.IntAct.proteins[,max(sum_MI_score)])+
-  facet_grid(SPECIES_NAME~large_small_scale) + geom_point(size = 0.1, alpha = 0.05)+
+  facet_grid(SPECIES_NAME~large_small_scale) + geom_point(size = 0.5, alpha = 0.1)+
     theme(strip.text.y = element_text(angle = 0))
 }
 # plotting Median_MI_score as a function of the number of publications and the scale of the study
 {
 ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+    scale_x_log10() +  #geom_density_2d(bins = 30,aes(colour=..level..)) + 
      #scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and median MI score", subtitle = "line was fitted using robust linear regression, large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
     ylab("median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +    geom_smooth(method = "rlm", se = T) +geom_point(size = 0.1, alpha = 0.05)+ylim(0,1)+
     facet_grid(SPECIES_NAME ~ large_small_scale) +
     theme(strip.text.y = element_text(angle = 0))
@@ -352,29 +356,25 @@ ggplot(all.IntAct.proteins, aes(interactor_total_PMID, Median_MI_score))+    sca
 
 # plotting unique_interactions_per_interactor as a function of the number of publications 
 {
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+
-    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
-     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor)) + scale_x_log10()+ scale_y_log10()+
     ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n mapping of geneID to UniprotAC")+
     ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
-  facet_grid(SPECIES_NAME~gene_id_prot_id, scales = "free") + geom_point(size = 0.1, alpha = 0.05)+
+  facet_grid(SPECIES_NAME~gene_id_prot_id, scales = "free") + geom_point(size = 0.5, alpha = 0.1)+
     theme(strip.text.y = element_text(angle = 0))
 }
 
 {
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+
-    geom_density_2d(bins = 30,aes(colour=..level..)) + scale_x_log10()+ scale_y_log10()  + 
-     scale_color_gradient(low = "grey", high = "black", breaks=c(0,10,50,100,200,500))+
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+  scale_x_log10()+ scale_y_log10()+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
     ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
-  facet_grid(SPECIES_NAME~large_small_scale, scales = "free") + geom_point(size = 1, alpha = 0.1)+
+  facet_grid(SPECIES_NAME~large_small_scale, scales = "free") + geom_point(size = 0.5, alpha = 0.1)+
     theme(strip.text.y = element_text(angle = 0))
 }
 ```
 
-```{r interaction_properties, fig.height=10, fig.width=10}
+```{r interaction_properties_vs_pubN, fig.height=10, fig.width=12}
        # read the saved table with human_not_in_IMEx_protein_properties_processing chunk
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
 ## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
@@ -402,12 +402,30 @@ all.IntAct.protein_interaction_details_all = all.IntAct.protein_interaction_deta
 {
 ggplot(all.IntAct.protein_interaction_details_all, aes(interactor_total_PMID, unique_interactions_per_interactor, color = two_hybrid_vs_AP_MS))+
     scale_x_log10()+ scale_y_log10()  + 
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
     ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
   facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_point(size = 0.5, alpha = 0.1)+
     theme(strip.text.y = element_text(angle = 0))
 }
+
+print(all.IntAct.protein_interaction_details_all[,table(SPECIES_NAME.x,large_small_scale, two_hybrid_vs_AP_MS)])
+```
+
+You can notice that lines for different methods are located at different heights, which tells us that different methods identify different number of interactions. Two plots below show what is the distribution of number of interactions (from large/small/both scale studies and interaction detection methods) per protein. 
+
+```{r interaction_properties_vs_unique interactors, fig.height=10, fig.width=12}
+       # read the saved table with human_not_in_IMEx_protein_properties_processing chunk
+library(scales)
+# spoke-expanded included
+library(ggplot2)
+ggplot(all.IntAct.protein_interaction_details_all, aes(y=unique_interactions_per_interactor, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS))+ 
+    ggtitle("The number of interactions ", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
+    ylab("the number of interactions per protein") + xlab("interaction detection method") +
+  facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_violin(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7)+
+  #scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+   #             labels = trans_format("log10", math_format(10^.x))) +
+    theme(strip.text.y = element_text(angle = 0), axis.text.x = element_text(angle = -35))
 
 print(all.IntAct.protein_interaction_details_all[,table(SPECIES_NAME.x,large_small_scale, two_hybrid_vs_AP_MS)])
 ```

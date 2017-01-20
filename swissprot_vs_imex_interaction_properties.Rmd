@@ -393,6 +393,242 @@ cell.process.two_hybrid = EBImage::readImage('./results/proteome_vs_imex_interac
 EBImage::display(cell.process.two_hybrid, title = "GO terms decribing proteins-interactors identified using \n two-hybrid (enrichment)")
 ```
 
+```{r linear_model}
+
+# read the table saved before 
+
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
+## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
+reviewed = 2
+isoforms = FALSE
+##============================================================================##
+source("SPECIES_NAME_TO_ID.R")
+proteome_vs_imex_interaction_details_all = data.table()
+library(dplyr)
+for (r in reviewed) {
+  for (i in isoforms) {
+    for (n in SPECIES_NAME) {
+      SPECIES_IDs = SPECIES_NAME_TO_ID(n)
+      SPECIES_ID = SPECIES_IDs$SPECIES_ID
+
+filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+proteome_vs_imex_interaction_details_f = as.data.table(read.delim(filename, header = T, stringsAsFactors = F,quote=""))
+n = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", n)
+n = gsub("strain K12", "Escherichia coli, strain K12", n)
+proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms", "SPECIES_ID") := list(n,r,i,SPECIES_ID)]
+proteome_vs_imex_interaction_details_all = rbind(proteome_vs_imex_interaction_details_all,proteome_vs_imex_interaction_details_f, fill =T)
+    }}}
+
+proteome_vs_imex_interaction_details_all[, Median_mass := median((Mass)), by = .(SPECIES_NAME,two_hybrid_vs_AP_MS)]
+
+#library(ggplot2)
+#ggplot(proteome_vs_imex_interaction_details_all, aes(x = Mass, color =two_hybrid_vs_AP_MS)) +
+#  geom_density(alpha =0.2) + scale_x_log10() +
+#  xlab("protein mass, Da, log10 scale")+
+#  ggtitle("density plot of the protein mass (overlay for different detection methods)") +
+#  facet_grid(SPECIES_NAME~., scales = "free_y")+theme(strip.text.y = element_text(angle = 0))+geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass))
+
+#ggplot(proteome_vs_imex_interaction_details_all, aes(x = Mass,color = two_hybrid_vs_AP_MS)) +
+#  scale_x_log10() + geom_freqpoly(position = "identity", bins = 50,alpha =0.8) +
+#  xlab("protein mass, Da, log10 scale")+
+#  ggtitle("density plot of the protein mass (overlay for different detection methods)") +
+#  facet_grid(SPECIES_NAME~., scales = "free_y")+theme(strip.text.y = element_text(angle = 0))+geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass))
+
+
+
+proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(gsub("_"," ",two_hybrid_vs_AP_MS),", (median mass: ", signif(Median_mass/1000,3)," kDa)"))]
+proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(signif(Median_mass/1000,3)," kDa)"))]
+
+library(scales) 
+ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+  geom_violin(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x))) + geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass)) +
+  ylab("Mass, Da, log10 scale")+
+  xlab("presence in IMEx, detection method")+
+  ggtitle("How does protein interaction detection method depend on the protein length?",
+          subtitle = "all violins have the same area")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))
+
+
+## linear model code below
+# ============================================
+
+# IMEx_two_hybrid_AP_MS
+mypar(2,2)
+for(sp in SPECIES_NAME){
+sp = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", sp)
+sp = gsub("strain K12", "Escherichia coli, strain K12", sp)
+fit_rlm = rlm(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == sp,])
+coefs <- coef(fit_rlm)
+
+## Visual explanation
+a <- -0.25
+lgth <- .1
+cols <- brewer.pal(8,"Dark2")
+
+boxplot(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == sp,], 
+           vertical=TRUE, pch=1, method="jitter",las=1,cex.axis= 0.70, main = paste0(sp, ": protein length vs interaction detmethod, rlm"), cex.main=0.99)
+abline(h=0)
+arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
+abline(h=coefs[1],col=cols[1])
+#IMEx
+arrows(2+a,coefs[1],2+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+segments(2+2*a,coefs[1]+coefs[2],2-2*a,coefs[1]+coefs[2],col=cols[2])
+#two-hybrid
+arrows(3+a,coefs[1],3+a,coefs[1]+coefs[3],lwd=3,col=cols[3],length=lgth)
+segments(3+2*a,coefs[1]+coefs[3],3-2*a,coefs[1]+coefs[3],col=cols[2])
+#AP_MS
+arrows(4+a,coefs[1],4+a,coefs[1]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(4+2*a,coefs[1]+coefs[4],4-2*a,coefs[1]+coefs[4],col=cols[2])
+#two-hybrid and #AP_MS
+arrows(5+a,coefs[1],5+a,coefs[1]+coefs[5],lwd=3,col=cols[5],length=lgth)
+segments(5+2*a,coefs[1]+coefs[5],5-2*a,coefs[1]+coefs[5],col=cols[2])
+# two_hybrid vs AP_MS significance testing
+C <- matrix(c(0,0,1,0,-1),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[3] - coefs[5])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(3,coefs[1]+coefs[3]-0.3,5,coefs[1]+coefs[5]-0.3,lwd=3,col=cols[6],length=lgth)
+text(4,(coefs[1]+coefs[3]-0.35 + coefs[1]+coefs[5]-0.35)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+# two_hybrid vs AP_MS_and_two_hybrid significance testing
+C <- matrix(c(0,0,0,1,-1),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[4] - coefs[5])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(4,coefs[1]+coefs[4]+0.3,5,coefs[1]+coefs[5]+0.3,lwd=3,col=cols[6],length=lgth)
+text(4.5,(coefs[1]+coefs[4]+0.35 + coefs[1]+coefs[5]+0.35)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+# other_methods vs AP_MS significance testing
+C <- matrix(c(0,-1,1,0,0),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[3] - coefs[2])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(3,coefs[1]+coefs[3]-0.4,2,coefs[1]+coefs[2]-0.4,lwd=3,col=cols[6],length=lgth)
+text(2.5,(coefs[1]+coefs[3]-0.45 + coefs[1]+coefs[2]-0.45)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+# other_methods vs AP_MS_and_two_hybrid significance testing
+C <- matrix(c(0,-1,0,1,0),1)
+two_hybridvsAP_MS <- glht(fit_rlm, linfct=C)
+Sigma.hat = two_hybridvsAP_MS$vcov
+p_val = pnorm((coefs[4] - coefs[2])/sqrt(C %*% Sigma.hat %*% t(C)),lower.tail = F)*2
+arrows(4,coefs[1]+coefs[4]+0.4,2,coefs[1]+coefs[2]+0.4,lwd=3,col=cols[6],length=lgth)
+text(3,(coefs[1]+coefs[4]+0.45 + coefs[1]+coefs[2]+0.45)/2,paste("p-value: ",signif(p_val,2)),cex =0.9)
+
+legend("bottomright",names(coefs),fill=cols,cex=.75,bg="white")
+}
+
+# ============================================
+# Draft model
+# IMEx_two_hybrid_AP_MS - plain linear model
+proteome_vs_imex_interaction_details_all[,IMEx_two_hybrid_AP_MS := paste0(IMEx,two_hybrid,AP_MS)]
+library(MASS)
+fit_lm = lm(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+X = model.matrix(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+summary(fit_lm)
+library(rafalib)
+library(multcomp)
+library(MASS)
+imagemat(X)
+coefs <- coef(fit_lm)
+
+## Visual explanation
+library(RColorBrewer)
+a <- -0.25
+lgth <- .1
+cols <- brewer.pal(8,"Dark2")
+
+{
+boxplot(log10(Mass)~two_hybrid_vs_AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",], 
+           vertical=TRUE, pch=1, method="jitter",las=1,cex.lab   = 0.65, main = "How does protein interaction detection method depend on the protein length? lm")
+abline(h=0)
+arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
+abline(h=coefs[1],col=cols[1])
+#IMEx
+arrows(2+a,coefs[1],2+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+segments(2+2*a,coefs[1]+coefs[2],2-2*a,coefs[1]+coefs[2],col=cols[2])
+#two-hybrid
+arrows(3+a,coefs[1],3+a,coefs[1]+coefs[3],lwd=3,col=cols[3],length=lgth)
+segments(3+2*a,coefs[1]+coefs[3],3-2*a,coefs[1]+coefs[3],col=cols[2])
+#AP_MS
+arrows(4+a,coefs[1],4+a,coefs[1]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(4+2*a,coefs[1]+coefs[4],4-2*a,coefs[1]+coefs[4],col=cols[2])
+#two-hybrid and #AP_MS
+arrows(5+a,coefs[1],5+a,coefs[1]+coefs[5],lwd=3,col=cols[5],length=lgth)
+segments(5+2*a,coefs[1]+coefs[5],5-2*a,coefs[1]+coefs[5],col=cols[2])
+legend("bottomright",names(coefs),fill=cols,cex=.75,bg="white")
+}
+# Error bars and significance testing
+C <- matrix(c(0,0,0,1,-1),1)
+two_hybridvsAP_MS <- glht(fit_lm, linfct=C)
+summary(two_hybridvsAP_MS)
+coefs[4] - coefs[3]
+
+#t(C) %*% coefs
+#Sigma.hat <- sum(fit$residuals^2)/(nrow(X) - ncol(X)) * solve(t(X) %*% X)
+#signif(Sigma.hat, 2)
+#sqrt(t(C) %*% Sigma.hat %*% C)
+# log10(Mass)~IMEx*two_hybrid*AP_MS
+proteome_vs_imex_interaction_details_all[,IMEx_two_hybrid_AP_MS := paste0(IMEx,two_hybrid,AP_MS)]
+fit = lm(log10(Mass)~IMEx*two_hybrid*AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+X = model.matrix(log10(Mass)~IMEx*two_hybrid*AP_MS, data = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",])
+summary(fit)
+
+library(rafalib)
+imagemat(X)
+coefs <- coef(fit)
+
+## Visual explanation
+library(RColorBrewer)
+a <- -0.25
+lgth <- .1
+cols <- brewer.pal(8,"Dark2")
+{
+boxplot(split(log10(proteome_vs_imex_interaction_details_all$Mass), proteome_vs_imex_interaction_details_all$IMEx_two_hybrid_AP_MS, drop = TRUE), 
+           vertical=TRUE, pch=1, method="jitter", main =  "completely screwed")
+abline(h=0)
+arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
+abline(h=coefs[1],col=cols[1])
+#IMEx
+arrows(2+a,coefs[1],2+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+arrows(3+a,coefs[1],3+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+arrows(4+a,coefs[1],4+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+arrows(5+a,coefs[1],5+a,coefs[1]+coefs[2],lwd=3,col=cols[2],length=lgth)
+segments(2+2*a,coefs[1]+coefs[2],5-2*a,coefs[1]+coefs[2],col=cols[2])
+mean100 = proteome_vs_imex_interaction_details_all[IMEx_two_hybrid_AP_MS == "100", mean(log10(Mass))]
+segments(2+2*a,mean100,2-2*a,mean100,col=cols[8])
+#two-hybrid
+arrows(4,coefs[1]+coefs[2],4,coefs[1]+coefs[2]+coefs[3],lwd=3,col=cols[3],length=lgth)
+arrows(5,coefs[1]+coefs[2],5,coefs[1]+coefs[2]+coefs[3],lwd=3,col=cols[3],length=lgth)
+segments(4+2*a,coefs[1]+coefs[2]+coefs[3],5-2*a,coefs[1]+coefs[2]+coefs[3],col=cols[3])
+#AP_MS
+arrows(3-a,coefs[1]+coefs[2],3-a,coefs[1]+coefs[2]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(3+2*a,coefs[1]+coefs[2]+coefs[4],3-2*a,coefs[1]+coefs[2]+coefs[4],col=cols[4])
+arrows(5-a,coefs[1]+coefs[2]+coefs[3],5-a,coefs[1]+coefs[2]+coefs[3]+coefs[4],lwd=3,col=cols[4],length=lgth)
+segments(5+2*a,coefs[1]+coefs[2]+coefs[3]+coefs[4],5-2*a,coefs[1]+coefs[2]+coefs[3]+coefs[4],col=cols[4])
+#two-hybrid and #AP_MS
+arrows(5-2*a,coefs[1]+coefs[2]+coefs[4]+coefs[3],5-2*a,coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4],lwd=3,col=cols[5],length=lgth)
+segments(5+2*a,coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4],5-2*a,coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4],col=cols[5])
+legend("bottomright",names(coefs),fill=cols,cex=.75,bg="white")
+}
+mean111 = proteome_vs_imex_interaction_details_all[IMEx_two_hybrid_AP_MS == "111", mean(log10(Mass))]
+coefs[1]+coefs[2]+coefs[3]+coefs[7]+coefs[4]
+
+#two_hybrid vs AP_MS test
+#library(multcomp) ##Available from CRAN
+#C <- matrix(c(0,0,1,-1,0,0,0,0),1)
+#two_hybridvsL2AP_MS <- glht(fit, linfct=C)
+#summary(two_hybridvsL2AP_MS)
+#coefs[4] - coefs[3]
+
+#t(C) %*% coefs
+#Sigma.hat <- sum(fit$residuals^2)/(nrow(X) - ncol(X)) * solve(t(X) %*% X)
+#signif(Sigma.hat, 2)
+#sqrt(t(C) %*% Sigma.hat %*% C)
+
+## Anova
+#anova(fit)
+#now the interactions:
+
+```
+
 detailed GO enrichment results available here - "./results/proteome_vs_imex_interaction_details_f_AP_MS_ClueGO/"
 and here "./results/proteome_vs_imex_interaction_details_f_AP_MS_ClueGO_under/"
 
