@@ -108,7 +108,7 @@ SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K
 
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
-date = as.Date("2017-01-06")
+date = as.Date("2017-01-31")
 
 ## ## Use all Uniprot if reviewed == 1, only Swissprot data if reviewed == 2, 
 ## ## TrEMBL data if reviewed == 3
@@ -400,6 +400,8 @@ Surprisingly, `r the_host_for_mouse_human_pairs[["9606"]]` interactions between 
 
 ## 2. BioGRID database (as obtained from Mentha) overlaps significantly with IMEx databases
 
+BioGRID database is the second major primary protein interaction database which when combined with IntAct contain all interactions information which has been curated to databases. BioGRID is characterised by shallow curation level (retains very little information about the experiment) and it identifies proteins using Entrez Gene ID while IntAct uses UniprotKB identifiers. This introduces additional mapping step
+
 ```{r biogrid_vs_IMEx_vs_Uniprot_processing}
 ## Enter SPECIES_NAME 
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
@@ -627,7 +629,7 @@ n_odor_receptors = length(unique(grep("Odor", proteome_vs_imex_details_f$Protein
       wilcox.test.r.min.olf = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
 ```
 
-This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test (Mass, Da, 95% confidence interval: `r wilcox.test.r$conf.int`, p-value: `r wilcox.test.r$p.value`) and Student t-test(log10 of Mass, Da, 95% confidence interval: `r ttest_r$conf.int`, p-value: `r ttest_r$p.value`) on the whole population of proteins, Monte-Carlo sampling (is it useful?), permutation of labels followed by Wilcox rank test (is it useful?) - Supplementary figure 3,4,5). Removing `r n_odor_receptors` olfactory receptors, evidently, does not change this trend (Wilcox rank test on Mass, Da, 95% confidence interval: `r wilcox.test.r.min.olf$conf.int`, p-value: `r wilcox.test.r.min.olf$p.value`).
+This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test (Mass, Da, 95% confidence interval: `r signif(wilcox.test.r$conf.int,3)`, p-value: `r signif(wilcox.test.r$p.value,3)`) and Student t-test(log10 of Mass, Da, 95% confidence interval: `r signif(ttest_r$conf.int,3)`, p-value: `r signif(ttest_r$p.value,3)`) on the whole population of proteins, Monte-Carlo sampling (is it useful?), permutation of labels followed by Wilcox rank test (is it useful?) - Supplementary figure 3,4,5). Removing `r signif(n_odor_receptors,3)` olfactory receptors, evidently, does not change this trend (Wilcox rank test on Mass, Da, 95% confidence interval: `r signif(wilcox.test.r.min.olf$conf.int,3)`, p-value: `r signif(wilcox.test.r.min.olf$p.value,3)`).
 
 
 ### Most of the human proteins with no available interactions (from IMEx) are membrane proteins
@@ -742,7 +744,7 @@ write.table(proteome_vs_imex_interaction_details_f,filename,col.names=T,row.name
 }
 ```
 
-```{r interaction_types_combine_and_plot,  fig.width = 10, fig.height = 10}
+```{r interaction_types_combine_and_plot,  fig.width = 10, fig.height = 10, fig.cap= "Figure 6"}
 # read the table saved before 
 library(rafalib)
 library(MASS)
@@ -784,8 +786,11 @@ ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_
   xlab("presence in IMEx, detection method")+
   ggtitle("How does protein interaction detection method depend on the protein length?",
           subtitle = "all violins have the same area")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))
+```
 
 
+
+```{r protein_length_det_method_rlm,  fig.width = 10, fig.height = 10, fig.cap= "Figure 7"}
 ## linear model code below
 # ============================================
 
@@ -879,9 +884,15 @@ legend("topright",names(coefs),fill=cols,cex=.75,bg="white")
 }
 ```
 
-## 5. What is the relationship between the number of interactions the number of publications or MI score and the number of publications?
+## 5. What is the relationship between the number of publications and the number of interactions (or MI score) ?
 
-```{r UniprotAC_to_geneID_start, fig.height=10, fig.width=10,echo = FALSE}
+   The problem of better studied proteins having more interactions despite all proteins having similar amounts of Mendelian-type mutations and therefore similar functional significance has been discussed in the literature a few years ago []. So we decided to have a fresh look and explore the problem more deeply.
+   Interaction is defined by two proteins which form it regardsless of how many times these proteins were spotted interacting. MI score is an empirical score proposed by IMEx consortium to evaluate the evidence that supports each given interaction []. Not every interaction has enough evidence to get an MI score. We have counted the number of interactions for each protein (Figure 8) and summed MI scores over interactions for each protein (Figure 9, this can be seen as the number of interactions combined with the confidence we have for their existence). We define a large scale study as a study which provided more than 100 interactions in IntAct (counting by interaction indentifiers).
+   The number of publications per gene was counted using NCBI gene to pubmed ID conversion table.
+   
+   Two figures below (Figure 8 and Figure 9) show how the number of interactions or the MI score depend on the number of publications (x-axis), species and the scale of the experiment (split into individual graphs). The trendline was fitted to the data using robust linear regression (black line) which less sensitive to outliers than linear regression (red line) and is therefore able to better capture the relationships. 
+
+```{r UniprotAC_to_geneID_start}
 {
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
 SPECIES_IDs = character()
@@ -951,7 +962,7 @@ rm(list = "uniprotAC2geneID")
 }
 ```
 
-```{r GeneID_to_publication_IDs,echo = FALSE}
+```{r GeneID_to_publication_IDs}
 ## getting the publication ID for each gene
 {
 geneID2pubmed_url = "ftp://ftp.ncbi.nih.gov/gene/DATA/gene2pubmed.gz"
@@ -993,42 +1004,34 @@ all.IntAct.modif[Expansion_methods != "psi-mi:\"MI:1060\"(spoke expansion)", int
 }
 ```
 
-```{r large_scal_small_scale_threshold, fig.height=8, fig.width=8}
-# tag interactions by the scale of the study
-{
-# tagging interactons
-all.IntAct.modif[,large_scale := as.numeric(interaction_ids_per_Publication > 100)]
-all.IntAct.modif[,small_scale := as.numeric(interaction_ids_per_Publication <= 100)]
-}
-```
-
 ```{r count_n_interactions_per_protein}
-#Count the number of interactions formed by proteins encoded by GeneID
+# Count the number of interactions (by UniprotID) formed by proteins encoded by GeneID
 {
-all.IntAct.modif[,unique_interactions_isoforms := apply(data.table(IDs_interactor_A_isoforms,IDs_interactor_B_isoforms,stringsAsFactors = F), 1,
-                                               function(a) { z = sort(a)
-                                               paste0(z[1],"_",z[2]) })]
-#====================
-  #UniprotID
+  # Counting UniprotID
 all.IntAct.modif[,unique_interactions_per_interactor_A := length(unique(grep(IDs_interactor_A, unique_interactions ,value = T))), by = IDs_interactor_A]
+
 all.IntAct.modif[,unique_interactions_per_interactor_B := length(unique(grep(IDs_interactor_B, unique_interactions ,value = T))), by = IDs_interactor_B]
 }
 ```
 
-```{r scale_interactions_to_interactors}
+```{r large_scal_small_scale_threshold}
+# tag interactions by the scale of the study
+{
+# tagging interactons
+all.IntAct.modif[,large_scale := ifelse(interaction_ids_per_Publication > 100, "large_scale", "small_scale")]
+}
+```
+
+```{r interactions_to_interactors}
 # interactions to proteins and genes
 ## tagging interactors by the scale of the study
 {
 all.IntAct.proteins_scale_l = all.IntAct.modif[,data.table(
                    IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
                    large_scale = c(large_scale, large_scale))]
-all.IntAct.proteins_scale_s = all.IntAct.modif[,data.table(
-                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
-                   small_scale = c(small_scale, small_scale))]
 all.IntAct.proteins_scale_l = unique(all.IntAct.proteins_scale_l)
-all.IntAct.proteins_scale_s = unique(all.IntAct.proteins_scale_s)
-all.IntAct.proteins_scale = merge(all.IntAct.proteins_scale_l,all.IntAct.proteins_scale_s, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
-all.IntAct.proteins_scale[,large_small_scale := paste0(large_scale,".",small_scale)]
+all.IntAct.proteins_scale = tidyr::spread(all.IntAct.proteins_scale_l, key = large_scale, value = large_scale, fill = 0)
+all.IntAct.proteins_scale[,large_small_scale := paste0(large_scale," and ",small_scale)]
 all.IntAct.proteins_scale = all.IntAct.proteins_scale[!(small_scale ==0 & large_scale ==0), ]
 all.IntAct.proteins_scale = unique(all.IntAct.proteins_scale)
 }
@@ -1055,12 +1058,12 @@ all.IntAct.proteins = all.IntAct.modif[,data.table(
                    unique_interactions_per_interactor = c(unique_interactions_per_interactor_A, unique_interactions_per_interactor_B)
                    )]
 all.IntAct.proteins = unique(all.IntAct.proteins)
+all.IntAct.proteins[,unique_interactions_per_interactor := sum(unique_interactions_per_interactor), by = IDs_interactor]
 
 all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins_scale, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
 all.IntAct.proteins= unique(all.IntAct.proteins)
 all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins.score, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
 all.IntAct.proteins= unique(all.IntAct.proteins)
-str(all.IntAct.proteins)
 }
 ```
 
@@ -1077,17 +1080,29 @@ str(all.IntAct.proteins)
   all.IntAct.proteins = all.IntAct.proteins[n_geneid > 1 | n_protid > 1, gene_id_prot_id := "one_to_many"]
   # filter out genes without proteins mapped to them - NA
   all.IntAct.proteins = all.IntAct.proteins[n_geneid == 1 & n_protid == 1, gene_id_prot_id := "one_to_one"]
-  
+
   SPECIES_NAME_ID = data.table(SPECIES_ID = SPECIES_IDs, SPECIES_NAME = SPECIES_NAME)
   all.IntAct.proteins = merge(all.IntAct.proteins, SPECIES_NAME_ID, by.x = "Taxid_interactor", by.y = "SPECIES_ID", all=TRUE)
   all.IntAct.proteins = all.IntAct.proteins[complete.cases(all.IntAct.proteins),]
-  str(all.IntAct.proteins)
+    # filter "one_to_many" and delete columns
+  all.IntAct.proteins = all.IntAct.proteins[gene_id_prot_id == "one_to_one",]
+  all.IntAct.proteins = all.IntAct.proteins[,c("Taxid_interactor","interactor_IDs_databases","large_scale","small_scale","interactor_GeneID","Median_MI_score","Mean_MI_score","n_geneid",'n_protid',"gene_id_prot_id") := NULL]
+  all.IntAct.proteins = unique(all.IntAct.proteins)
 }
 ```
 
-A large scale study is a study which provided more than 100 interaction IDs in IntAct.
+```{r N_publications_vs_N_interactions, fig.height=10, fig.width=10, fig.cap= "Figure 8"}
+# plotting unique_interactions_per_interactor as a function of the number of publications 
+{
+ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor)) +  scale_x_log10() + scale_y_log10() +
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
+    ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") + geom_smooth(method = "rlm", se = T) +
+  facet_grid(SPECIES_NAME~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1) +
+    theme(strip.text.y = element_text(angle = 0)) + geom_smooth(method = "lm", se = T, aes(color = "red"))+geom_text(aes(label=IDs_interactor), hjust=0, vjust=0)
+}
+```
 
-```{r publications_vs_MI_score, fig.height=10, fig.width=10}
+```{r publications_vs_MI_score, fig.height=10, fig.width=10, fig.cap= "Figure 9"}
 library(MASS)
 # plotting sum_MI_score as a function of the number of publications 
 library(ggplot2)
@@ -1097,25 +1112,94 @@ ggplot(all.IntAct.proteins, aes(interactor_total_PMID, sum_MI_score))+ scale_x_l
      #scale_color_gradient(low = "grey", high = "black")+
     ggtitle("The relationship between the number of publications per gene and the sum of MI scores", subtitle = "line was fitted using robust linear regression, large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
     ylab("the sum of MI scores for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications per gene") +     geom_smooth(method = "rlm", se = T) +ylim(0,all.IntAct.proteins[,max(sum_MI_score)])+
-  facet_grid(SPECIES_NAME~large_small_scale) + geom_point(size = 0.5, alpha = 0.1)+
-    theme(strip.text.y = element_text(angle = 0))
+  facet_grid(SPECIES_NAME~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1)+
+    theme(strip.text.y = element_text(angle = 0))+     geom_smooth(method = "lm", se = T, aes(color = "red"))
 }
 
 ```
 
-```{r N_publications_vs_N_interactions, fig.height=10, fig.width=10}
-# plotting unique_interactions_per_interactor as a function of the number of publications 
+  You can clearly see that the more studied overall the gene is (the more publications per gene there is) the more interactions proteins encoded by that gene tend to have and the more evidence there is for those interactions. Which is not surprising because articles tend to publish novel interactions and the more studies there is overall - the more studies look into protein interactions. What is quite surprising is that large scale experiments also exhibit this trend.
+  
+  Too explore this problem in more detail (for human only) we have decided to gradually increase the scale of the study and see how that changes the steepness of the line - the dependence between the number of interactions and how well studied the protein is.
+  
+
+```{r large_scale_threshold_test}
+# tag interactions by the scale of the study
+Ns = c(100,200,500,1000,2000,5000,10000,20000)
+coefs = matrix(nrow = length(Ns), ncol = 2)
+library(rafalib)
+mypar(length(Ns),1)
+for(i in 1:length(Ns)){
 {
-ggplot(all.IntAct.proteins, aes(interactor_total_PMID, unique_interactions_per_interactor))+  scale_x_log10()+ scale_y_log10()+
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
-    ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
-     geom_smooth(method = "rlm", se = T)+
-  facet_grid(SPECIES_NAME~large_small_scale, scales = "free") + geom_point(size = 0.5, alpha = 0.1)+
-    theme(strip.text.y = element_text(angle = 0))
+# tagging interactons
+all.IntAct.modif[,large_scale := as.numeric(interaction_ids_per_Publication >= Ns[i])]
+all.IntAct.modif[,small_scale := as.numeric(interaction_ids_per_Publication < Ns[i])]
+}
+# interactions to proteins and genes
+## tagging interactors by the scale of the study
+{
+all.IntAct.proteins_scale_l = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   large_scale = c(large_scale, large_scale))]
+all.IntAct.proteins_scale_s = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   small_scale = c(small_scale, small_scale))]
+all.IntAct.proteins_scale_l = unique(all.IntAct.proteins_scale_l)
+all.IntAct.proteins_scale_s = unique(all.IntAct.proteins_scale_s)
+all.IntAct.proteins_scale = merge(all.IntAct.proteins_scale_l,all.IntAct.proteins_scale_s, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins_scale[,large_small_scale := paste0(large_scale,".",small_scale)]
+all.IntAct.proteins_scale = all.IntAct.proteins_scale[!(small_scale ==0 & large_scale ==0), ]
+all.IntAct.proteins_scale = unique(all.IntAct.proteins_scale)
+}
+# Calculating aggregated MI score per GeneID (includes interactions between proteins encoded by that gene)
+{
+  all.IntAct.proteins.score = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   Confidence_values = as.numeric(c(Confidence_values,Confidence_values)),
+                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID))]
+  all.IntAct.proteins.score[,Confidence_values := NULL]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+}
+# merging the number of interactions, the scale of the study, and the MIscore tables
+{
+all.IntAct.proteins = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   interactor_total_PMID = c(interactor_A_total_PMID,interactor_B_total_PMID),
+                   Taxid_interactor = c(Taxid_interactor_A,Taxid_interactor_B),
+                   interactor_IDs_databases = c(interactor_IDs_databases_A, interactor_IDs_databases_B),
+                   unique_interactions_per_interactor = c(unique_interactions_per_interactor_A, unique_interactions_per_interactor_B)
+                   )]
+all.IntAct.proteins = unique(all.IntAct.proteins)
+
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins_scale, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins.score, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+}
+  {
+# Select only human, only uniprotkb identifiers, only large scale studies
+  all.IntAct.proteins = all.IntAct.proteins[Taxid_interactor == "9606" & interactor_IDs_databases == "uniprotkb" & large_small_scale == "1.0",]
+  
+  # filter out proteins not mapped to geneID
+  all.IntAct.proteins = all.IntAct.proteins[,n_geneid := as.numeric(length(unique(interactor_GeneID))),by = IDs_interactor]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[,n_protid := as.numeric(length(unique(IDs_interactor))),by = interactor_GeneID][n_protid < max(n_protid),]
+  # tag proteins by the number of mappings - one_to_one or one_to_many
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid > 1 | n_protid > 1, gene_id_prot_id := "one_to_many"]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid == 1 & n_protid == 1, gene_id_prot_id := "one_to_one"]
+  all.IntAct.proteins = all.IntAct.proteins[complete.cases(all.IntAct.proteins),]
+  all.IntAct.proteins= unique(all.IntAct.proteins)
+  }
+  rlm_res = rlm(log10(unique_interactions_per_interactor) ~ log10(interactor_total_PMID), all.IntAct.proteins)
+  coefs[i,] = c(nrow(all.IntAct.proteins),length(unique(all.IntAct.proteins$IDs_interactor)))#rlm_res$coefficients
+  #plot(log10(unique_interactions_per_interactor) ~ log10(interactor_total_PMID), all.IntAct.proteins)
+  #abline(rlm_res)
 }
 ```
+  
 
-```{r interaction_properties_vs_pubN, fig.height=10, fig.width=12}
+```{r interaction_properties_vs_pubN, fig.height=10, fig.width=12, fig.cap= "Figure 10"}
        # read the saved table with human_not_in_IMEx_protein_properties_processing chunk
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
 ## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
@@ -1139,14 +1223,14 @@ proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms"
 proteome_vs_imex_interaction_details_all = rbind(proteome_vs_imex_interaction_details_all,proteome_vs_imex_interaction_details_f, fill =T)
     }}}
 all.IntAct.protein_interaction_details_all = merge(x = proteome_vs_imex_interaction_details_all, y=all.IntAct.proteins, by.x = "whole_proteome_IDs", by.y = "IDs_interactor", nomatch=0)
-all.IntAct.protein_interaction_details_all = all.IntAct.protein_interaction_details_all[two_hybrid_vs_AP_MS != "not in IMEx" & SPECIES_NAME.x %in% c("Homo sapiens", "Mus musculus", "S. cerevisiae, strain S288c", "Escherichia coli, strain K12"),]
+all.IntAct.protein_interaction_details_all = all.IntAct.protein_interaction_details_all[two_hybrid_vs_AP_MS != "not in IMEx" & SPECIES_NAME %in% c("Homo sapiens", "Mus musculus", "S. cerevisiae, strain S288c", "Escherichia coli, strain K12"),]
 {
 ggplot(all.IntAct.protein_interaction_details_all, aes(interactor_total_PMID, unique_interactions_per_interactor, color = two_hybrid_vs_AP_MS))+
     scale_x_log10()+ scale_y_log10()  + 
     ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments: small 0.1, large 1.0, large and small 1.1")+
     ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
-  facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_point(size = 0.5, alpha = 0.1)+
+  facet_grid(SPECIES_NAME~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1)+
     theme(strip.text.y = element_text(angle = 0))
 }
 ```

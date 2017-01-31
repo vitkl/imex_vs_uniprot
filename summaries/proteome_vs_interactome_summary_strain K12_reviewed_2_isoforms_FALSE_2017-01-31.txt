@@ -1,0 +1,3 @@
+species.name	database	reviewed	isoforms	whole.proteome..Uniprot.	uncovered.whole.proteome	whole.proteome..interactome.available	interactome..but.not.in.Uniprot	reference.proteome..Uniprot.	uncovered.reference.proteome	reference.proteome..interactome.available	interactome..but.not.in.Uniprot.1	Overlap.between.interactome.and.the.reference.proteome..fraction	Overlap.between.interactome.and.the.whole.proteome..fraction
+strain K12	IMEx	2	FALSE	4434	1256	3178	10	4306	1132	3174	14	0.737111007895959	0.715121512151215
+strain K12	X0469.IntAct.	2	FALSE	4434	1287	3147	9	4306	1162	3144	12	0.730143985137018	0.708145814581458

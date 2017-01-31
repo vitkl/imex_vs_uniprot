@@ -1,0 +1,3 @@
+species.name	database	reviewed	isoforms	whole.proteome..Uniprot.	uncovered.whole.proteome	whole.proteome..interactome.available	interactome..but.not.in.Uniprot	reference.proteome..Uniprot.	uncovered.reference.proteome	reference.proteome..interactome.available	interactome..but.not.in.Uniprot.1	Overlap.between.interactome.and.the.reference.proteome..fraction	Overlap.between.interactome.and.the.whole.proteome..fraction
+Caenorhabditis elegans	IMEx	2	TRUE	5132	3461	1671	3383	5131	3460	1671	3383	0.325667511206393	0.196241926012918
+Caenorhabditis elegans	X0469.IntAct.	2	TRUE	5132	3560	1572	3236	5131	3559	1572	3236	0.306373026700448	0.184615384615385

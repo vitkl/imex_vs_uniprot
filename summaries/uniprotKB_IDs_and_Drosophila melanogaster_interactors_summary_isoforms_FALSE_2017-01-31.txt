@@ -1,0 +1,2 @@
+all.interactors	interactors.with.the.UniprotKB.identifier	interactors.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	SPECIES_ID.interactors	interactors.from.other.species
+11497	10739	758	7227	Drosophila melanogaster	10549	190
