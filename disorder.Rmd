@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE)
 ### Literature references
 A collection of intrinsic disorder characterizations from eukaryotic proteomes. - database used in this analysis
 https://www.ncbi.nlm.nih.gov/pubmed/27326998
+http://datadryad.org/bitstream/handle/10255/dryad.112108/Vincent_and_Schnell_2016.db.zip?sequence=1 
 
 Molecular signaling involving intrinsically disordered proteins in prostate cancer.
 https://www.ncbi.nlm.nih.gov/pubmed/27212129
@@ -24,6 +25,10 @@ https://www.ncbi.nlm.nih.gov/pubmed/27867910
 
 Origin of a folded repeat protein from an intrinsically disordered ancestor.
 https://www.ncbi.nlm.nih.gov/pubmed/27623012
+
+## getting interpro domain information 
+split interpro annotation into R-readable files:
+split -l 10000000 /Users/vitalii/Downloads/protein2ipr.dat /Users/vitalii/Downloads/interpro/interpro
 
 ### setting up parameters of the analysis
 ##=========================================================##

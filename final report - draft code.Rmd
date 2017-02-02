@@ -1,0 +1,85 @@
+  Too explore this problem in more detail (for human only) we have decided to gradually increase the scale of the study and see how that changes the steepness of the line - the dependence between the number of interactions and how well studied the protein is.
+  
+
+```{r large_scale_threshold_test}
+# tag interactions by the scale of the study
+Ns = c(100,200,500,1000,2000,5000,10000,20000)
+coefs = matrix(nrow = length(Ns), ncol = 2)
+library(rafalib)
+mypar(length(Ns),1)
+for(i in 1:length(Ns)){
+{
+# tagging interactons
+all.IntAct.modif[,large_scale := ifelse(interaction_ids_per_Publication >= Ns[i], "large_scale", "small_scale")]
+}
+
+# interactions to proteins and genes
+## tagging interactors by the scale of the study
+{
+all.IntAct.proteins_scale_l = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   large_scale = c(large_scale, large_scale))]
+all.IntAct.proteins_scale_l = unique(all.IntAct.proteins_scale_l)
+all.IntAct.proteins_scale = tidyr::spread(all.IntAct.proteins_scale_l, key = large_scale, value = large_scale, fill = "")
+all.IntAct.proteins_scale[,large_small_scale := paste0(large_scale," and ",small_scale)]
+all.IntAct.proteins_scale = all.IntAct.proteins_scale[!(small_scale ==0 & large_scale ==0), ]
+all.IntAct.proteins_scale = unique(all.IntAct.proteins_scale)
+}
+# Calculating aggregated MI score per GeneID (includes interactions between proteins encoded by that gene)
+{
+  all.IntAct.proteins.score = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   Confidence_values = as.numeric(c(Confidence_values,Confidence_values)),
+                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID))]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+  all.IntAct.proteins.score[,Median_MI_score := median(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Mean_MI_score := mean(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,sum_MI_score := sum(Confidence_values, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Confidence_values := NULL]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+}
+# merging the number of interactions, the scale of the study, and the MIscore tables
+{
+all.IntAct.proteins = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   interactor_total_PMID = c(interactor_A_total_PMID,interactor_B_total_PMID),
+                   Taxid_interactor = c(Taxid_interactor_A,Taxid_interactor_B),
+                   interactor_IDs_databases = c(interactor_IDs_databases_A, interactor_IDs_databases_B),
+                   unique_interactions_per_interactor = c(unique_interactions_per_interactor_A, unique_interactions_per_interactor_B)
+                   )]
+all.IntAct.proteins = unique(all.IntAct.proteins)
+all.IntAct.proteins[,unique_interactions_per_interactor := sum(unique_interactions_per_interactor), by = IDs_interactor]
+all.IntAct.proteins = unique(all.IntAct.proteins)
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins_scale, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+all.IntAct.proteins = merge(all.IntAct.proteins,all.IntAct.proteins.score, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins= unique(all.IntAct.proteins)
+}
+
+  {
+# Select only human, only uniprotkb identifiers, only large scale studies
+  all.IntAct.proteins = all.IntAct.proteins[Taxid_interactor == "9606" & interactor_IDs_databases == "uniprotkb" & large_small_scale == "1.0",]
+
+  # filter out proteins not mapped to geneID
+  all.IntAct.proteins = all.IntAct.proteins[,n_geneid := as.numeric(length(unique(interactor_GeneID))),by = IDs_interactor]
+  # filter out interactors without gene ids mapped to them
+  all.IntAct.proteins = all.IntAct.proteins[,n_protid := as.numeric(length(unique(IDs_interactor))),by = interactor_GeneID][n_protid < max(n_protid),]
+  # tag proteins by the number of mappings - one_to_one or one_to_many
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid > 1 | n_protid > 1, gene_id_prot_id := "one_to_many"]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins = all.IntAct.proteins[n_geneid == 1 & n_protid == 1, gene_id_prot_id := "one_to_one"]
+
+  SPECIES_NAME_ID = data.table(SPECIES_ID = SPECIES_IDs, SPECIES_NAME = SPECIES_NAME)
+  all.IntAct.proteins = merge(all.IntAct.proteins, SPECIES_NAME_ID, by.x = "Taxid_interactor", by.y = "SPECIES_ID", all=TRUE)
+  all.IntAct.proteins = all.IntAct.proteins[complete.cases(all.IntAct.proteins),]
+    # filter "one_to_many" and delete columns
+  all.IntAct.proteins = all.IntAct.proteins[gene_id_prot_id == "one_to_one",]
+  all.IntAct.proteins = all.IntAct.proteins[,c("Taxid_interactor","interactor_IDs_databases","large_scale","small_scale","interactor_GeneID","Median_MI_score","Mean_MI_score","n_geneid",'n_protid',"gene_id_prot_id") := NULL]
+  all.IntAct.proteins = unique(all.IntAct.proteins)
+}
+  rlm_res = rlm(log10(unique_interactions_per_interactor) ~ log10(interactor_total_PMID), all.IntAct.proteins)
+  coefs[i,] = rlm_res$coefficients#rlm_res$coefficients
+  #plot(log10(unique_interactions_per_interactor) ~ log10(interactor_total_PMID), all.IntAct.proteins)
+  #abline(rlm_res)
+}
+```
