@@ -36,16 +36,16 @@ The report was published on `r Sys.Date()`
  
    The structure and the function of the cell arise from interactions between molecules inside and outside it. Though proteins, nucleic acids, lipids and small molecules can all form important interactions, studies and literature focus mainly on interactions between proteins and other macromolecules. We can discover and study these molecular interactions using a number of experimental and computational techniques. This study focuses on molecular interactions identified in the experimental setting, most of which are represented in the literature and databases by protein-protein interactions (also protein-DNA interactions obtained, for example, by ChIP-Seq, but those are traditionally incorporated into genomic databases).  
  
-   Due to the nature of detection methods used, interactions come in two flavors: binary interactions and associations. Binary interactions are the interactions between two components, for example, two specific proteins, some detection methods (e.g. two-hybrid) identify those. To understand associations, we need to imagine we know proteins A, B and C constitute a complex and interact as shown in a figure 1 A. When we conduct an experiment, we choose the bait (the molecule experimentally treated to capture its interacting partners - called preys) to be protein A, and by detection method (e.g. affinity-purification mass spectrometry) we get both protein B and protein C detected as preys. Next step is to translate bait-prey relationship into a model of reality like the one shown in the figure 1 A. We call interactions between A-B and A-C associations because we cannot infer the true relationship between A, B, and C from this experiment design. In the other words, establishing that proteins are in direct physical contact is really challenging. However, to represent associations in a tabular format with each row corresponding to one interaction (e.g. A-B) we need to expand those. Two ways are commonly used to expand interactions, hub and spoke expansion, both shown in the figure 1 B. 
+   Due to the nature of detection methods used, interactions come in two flavours: binary interactions and associations. Binary interactions are the interactions between two components, for example, two specific proteins, some detection methods (e.g. two-hybrid) identify those. To understand associations, we need to imagine we know proteins A, B and C constitute a complex and interact as shown in a figure 1 A. When we conduct an experiment, we choose the bait (the molecule experimentally treated to capture its interacting partners - called preys) to be protein A, and by detection method (e.g. affinity-purification mass spectrometry) we get both protein B and protein C detected as preys. Next step is to translate bait-prey relationship into a model of reality like the one shown in the figure 1 A. We call interactions between A-B and A-C associations because we cannot infer the true relationship between A, B, and C from this experiment design. In the other words, establishing that proteins are in direct physical contact is really challenging. However, to represent associations in a tabular format with each row corresponding to one interaction (e.g. A-B) we need to expand those. Two ways are commonly used to expand interactions, hub and spoke expansion, both shown in the figure 1 B. 
 
 #### Defining interactome
 
-   The aggregation of all components and their interactions into a single network result in what we call interactome, the whole of all molecular interactions. You can also look into the subset of this network, for example, you can select only proteins, only those proteins that are expressed in the brain, and only the interactions between this protein identified experimentally in the brain cells. This example reflects the complexity and the diversity of the interactome - which is what you would expect from a system underlying the complexity and the diversity of the cell types, cellular behaviors, and functions. For the same reason, only by studying these interactions and how they change in specific cell types and under specific circumstances in combination with the functional analysis we can decipher cellular regulatory networks. The ultimate goal of the research in the field would be to capture all physical interactions and thoroughly describe them while avoiding false discoveries. 
+   The aggregation of all components and their interactions into a single network result in what we call interactome, the whole of all molecular interactions. You can also look into the subset of this network, for example, you can select only proteins, only those proteins that are expressed in the brain, and only the interactions between this protein identified experimentally in the brain cells. This example reflects the complexity and the diversity of the interactome - which is what you would expect from a system underlying the complexity and the diversity of the cell types, cellular behaviours, and functions. For the same reason, only by studying these interactions and how they change in specific cell types and under specific circumstances in combination with the functional analysis we can decipher cellular regulatory networks. The ultimate goal of the research in the field would be to capture all physical interactions and thoroughly describe them while avoiding false discoveries. 
 
 #### Experimental approaches for discovering interactions
 
    Experimental protein interaction detection methods can be classified into 3 main categories based on the evidence they provide and whether they can be used in a high-throughput manner:
-The first category is formed by methods using affinity purification of the bait and all the prey associated with it. Following that, preys can be identified using western-blotting and specific antibodies or using mass-spectrometry, which can be done in a high-throughput manner [Mann, ]. The main advantage of these methods is the ability to quantitatively characterize interactions [Mann, ] and capture many prey proteins per bait - the latter, however, presents the disadvantage of dealing with associations. The main disadvantage of these techniques is that for the reliable result it requires all interacting proteins to be soluble []. 
+The first category is formed by methods using affinity purification of the bait and all the prey associated with it. Following that, preys can be identified using western-blotting and specific antibodies or using mass-spectrometry, which can be done in a high-throughput manner [Mann, ]. The main advantage of these methods is the ability to quantitatively characterise interactions [Mann, ] and capture many prey proteins per bait - the latter, however, presents the disadvantage of dealing with associations. The main disadvantage of these techniques is that for the reliable result it requires all interacting proteins to be soluble []. 
    The second category is formed by protein complementation techniques which include two-hybrid (transcription factor complementation), the most widely used interaction detection method (including high-throughput experiments). In this method, pairs of proteins are tested for interaction and therefore all discovered interactions are binary (the main advantage of this method). Classic implementation of two-hybrid requires proteins to be soluble as well [], however, two-hybrid for membrane proteins was also developed []. The main disadvantage of two-hybrid methods are that they allow only qualitative characterisation of interactions [], are usually performed in yeast (thus, have a lower sensitivity) and are highly prone to false-positive results [].
    Final category consists of methods based on the structure of the protein complex. They can provide valuable information on how exactly physical interaction occurs but as for now are extremely labor-intensive and will always need complementary experiments showing if the proteins actually interact in the cellular context.
 
@@ -53,7 +53,7 @@ The first category is formed by methods using affinity purification of the bait 
 
    Four big challenges substantially complicate the study of molecular interactions, especially on the whole organism scale. The first being that we don't know the true nature of underlying our experimental results (all assays provide evidence that interaction is possible and some can provide quantitative description, but all are prone to error and the problem described in the figure 1 A) which lead to the necessity of combining interaction data from multiple experiments and complex statistical evaluation of how probable the interaction is based on that data (Bayesian approach [1]) rather than receiving confident yes-or-no result from single experiment. Interaction databases make an effort to score the interactions based on supporting evidence, however, this is usually done with non-probabilistic heuristic approaches, like MI score [PMCID: PMC4316181]. 
 
-   The second big challenge is the problem of "noise" - or false positives. Different interaction detection experiments are prone to these errors for different reasons, for example, in-vitro experiments (e.g. TAP-MS) may allow the interaction between proteins which are normally included in separate cellular compartments. Specific groups of proteins (based on their physical or chemical properties) may have a higher susceptibility to false positives, for example, intermediate filaments (e.g. nuclear lamins) have low solubility under non-denaturing conditions necessary for affinity-purification based techniques, which may lead to artifactual results. However plausible, this particular problem lacks empirical evidence and requires more investigation. A more general problem of noise will be adressed by more proteome-scale interactomics experiments (which can include enough samples to guarantee low false positive rate while still identifying interactions).
+   The second big challenge is the problem of "noise" - or false positives. Different interaction detection experiments are prone to these errors for different reasons, for example, in-vitro experiments (e.g. TAP-MS) may allow the interaction between proteins which are normally included in separate cellular compartments. Specific groups of proteins (based on their physical or chemical properties) may have a higher susceptibility to false positives, for example, intermediate filaments (e.g. nuclear lamins) have low solubility under non-denaturing conditions necessary for affinity-purification based techniques, which may lead to artifactual results. However plausible, this particular problem lacks empirical evidence and requires more investigation. A more general problem of noise will be addressed by more proteome-scale interactomics experiments (which can include enough samples to guarantee low false positive rate while still identifying interactions).
 
    The third big challenge is that our knowledge of interactome is incomplete and arises from the fact that experimental approaches have low statistical power and often miss out some real interactions. Also, many proteins, especially for non-popular model species, were not researched for protein interactions.
 
@@ -62,11 +62,11 @@ The first category is formed by methods using affinity purification of the bait 
 - the level of detail captured from articles to describe interactions,  
 - how often and if they are updated with new data.  
    The level of detail ranges from only mentioning the pairs of interactors and heuristic score assigned to them (STRING, updated once in 2 years) to the ones containing experiment details (detection method, bait/prey status, if available - quantitative data, experiment setup, protein variants), such as IntAct [PMCID: PMC3703241]. 
-   The amounts of interaction data generated per year is growing exponentially making manual curation of all this data into primary databases a daunting task. To prioritise curation efforts and reduce redundancy between databases (to curate different data using the same standards) IMEx consortium was formed in 2012 [PMCID: PMC3703241]. IMEx-compliant databases include all big primary databases excluding only BioGRID (which curates at the lower level of detail) and not active legacy databases.
+   The amount of interaction data generated per year is growing exponentially making manual curation of all this data into primary databases a daunting task. To prioritise curation efforts and reduce redundancy between databases (to curate different data using the same standards) IMEx consortium was formed in 2012 [PMCID: PMC3703241]. IMEx-compliant databases include all big primary databases excluding only BioGRID (which curates at the lower level of detail) and not active legacy databases.
 
 #### Motivation for this study
 
-   Solving some of these challenges may be easier than the others. In particular, to solve the last challenge we can prioritize curation efforts for already published interactions to cover unrepresented proteins and we can encourage authors to submit their results to the databases prior to publishing. We can also encourage research of underrepresented parts of the interactome. However, for both of those aims, we need to characterize the interactome already present in interaction databases. Specifically, to learn how available interactome covers the proteome of main model species, if there are any biases to proteins with no available interactions and if any major protein interaction detection methods exhibit any biases towards specific groups of proteins. 
+   Solving some of these challenges may be easier than the others. In particular, to solve the last challenge we can prioritise curation efforts for already published interactions to cover unrepresented proteins and we can encourage authors to submit their results to the databases prior to publishing. We can also encourage research of underrepresented parts of the interactome. However, for both of those aims, we need to characterise the interactome already present in interaction databases. Specifically, to learn how available interactome covers the proteome of main model species, if there are any biases to proteins with no available interactions and if any major protein interaction detection methods exhibit any biases towards specific groups of proteins. 
    The other helpful to look at the problem is to search for underrepresented in interaction databases but in general well-researched proteins.
 
 # Aims of the study 
@@ -75,13 +75,13 @@ The first category is formed by methods using affinity purification of the bait 
 
 2. Compare the coverage of proteome by interactome from IMEx to the interactome from BioGRID (the other major primary database).
 
-3. Find out if proteins with no available interactions stand out by specific functions (Gene Ontology, GO: biological process and molecular function), cellular localization (GO), molecular mass, or protein evidence status from SwissProt
+3. Find out if proteins with no available interactions stand out by specific functions (Gene Ontology, GO: biological process and molecular function), cellular localisation (GO), molecular mass, or protein evidence status from SwissProt
 
 4. Find out if major protein interaction detection methods (two-hybrid and AP-MS, AP-WB?) exhibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
 
-5. What is the relationship between the number of interactions or MI score and the number of publicationions or GO terms per protein?
+5. What is the relationship between the number of interactions or MI score and the number of publications or GO terms per protein?
 
-6. Are proteins with higher fraction of intrinsically disordered domains more likely to have interactions available and do they have more interactions (if normalized for how well-studied proteins are)?
+6. Are proteins with a higher fraction of intrinsically disordered domains more likely to have interactions available and do they have more interactions (if normalised for how well-studied proteins are)?
 
 7. Find out if there are any proteins which are in general well researched (many associated publications or manual GO annotations) but underrepresented in IntAct (low MI score)
 
@@ -91,17 +91,17 @@ The first category is formed by methods using affinity purification of the bait 
 
 ### Getting proteome from UniProtKB
 
-   Whole proteome (all UniProtKB) for each species was downloaded programmatically in R using UniProt rest API. SwissProt-proteome was subset from whole proteome by reviewed status column. UniProt identifies proteins by UniProtKB/AC (e.g. P04637, accession) which does not distinguish between protein isoforms. UniProt aggregates isoform information and identifiers (e.g. P04637-4) in a separate column with zero to many isoforms per each UniProtKB accession. To generate proteome list which includes protein isoforms, isoform accessions were extracted and combined with the list of generic accessions. In this analysis, protein evidence status and protein mass are only attributed to generic accessions. 
+   Whole proteome (all UniProtKB) for each species was downloaded programmatically in R using UniProt rest API. SwissProt-proteome was subset from the whole proteome by reviewed status column. UniProt identifies proteins by UniProtKB/AC (e.g. P04637, accession) which does not distinguish between protein isoforms. UniProt aggregates isoform information and identifiers (e.g. P04637-4) in a separate column with zero to many isoforms per each UniProtKB accession. To generate proteome list which includes protein isoforms, isoform accessions were extracted and combined with the list of generic accessions. In this analysis, protein evidence status and protein mass are only attributed to generic accessions. 
 
 ### Getting and transforming interactome data from IMEx databases and BioGRID
 
-   Interactome from all IMEx databases was downloaded programmatically in R using PSIQUIC package from Bioconductor [Paul Shannon (2015). PSICQUIC]. IMEx databases include IntAct, MINT, bhf-ucl, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo. The list of interactions (pairs of interactors) was transformed into the list of interactors preserving interactor identifiers, the type of interactor identifier, species information and the database interaction originates from. Only unique proteins wereIMEx databases contain interactions between proteins, RNA, DNA and small molecules, moreover, these interaction may involve molecules originating from different species. Therefore, to perform by species interactome/proteome comparison there is a need to remove non-UniProtKB/AC molecule identifiers (which removes non-protein molecules, although, may also remove small fraction of proteins which have no UniprotKB/AC) and there is a need to remove proteins originating from other species. Also, entries in IMEx databases has to be cleaned of tags and textual descriptions ("taxid:9606(human-h1299)|taxid:9606(Homo sapiens lung lymph node carcinoma)" to "9606") to make further analysis easier and cleaner.
+   Interactome from all IMEx databases was downloaded programmatically in R using PSIQUIC package from Bioconductor [Paul Shannon (2015). PSICQUIC]. IMEx databases include IntAct, MINT, bhf-ucl, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo. The list of interactions (pairs of interactors) was transformed into the list of interactors preserving interactor identifiers, the type of interactor identifier, species information and the database interaction originates from. Only unique proteins wereIMEx databases contain interactions between proteins, RNA, DNA and small molecules, moreover, these interaction may involve molecules originating from different species. Therefore, to perform by species interactome/proteome comparison there is a need to remove non-UniProtKB/AC molecule identifiers (which removes non-protein molecules, although, may also remove a small fraction of proteins which have no UniProtKB/AC) and there is a need to remove proteins originating from other species. Also, entries in IMEx databases has to be cleaned of tags and textual descriptions ("taxid:9606(human-h1299)|taxid:9606(Homo sapiens lung lymph node carcinoma)" to "9606") to make further analysis easier and cleaner.
    Next, when provided in the research articles protein isoform information is always included in IMEx databases, so to perform analysis excluding isoform information UniProtKB/AC were cleaned of -N suffix (P04637-4 to P04637).
 
 
 ### Disordered regions and physical properties
 
-   Information on disordered region content and biochemical properties of individual proteins were obtained from the dataset generated by Vincent and  Schnell in 2015 []. Briefly, Vincent and  Schnell used a number of disorder prediction algorithms (IUPred and DisEMBL) and their consensus to generate disordered region predictions for each protein which was be used to calculate the fraction of disordered regions in a protein. In addition, Vincent and  Schnell used localCIDER version 0.1.7 (Classification of Intrinsically Disordered Ensemble Regions) to calculate physical properties such as fraction of charged residues, mean hydrophobicity or charge separation for each protein. This was done for 10 eucariotic proteomes and written to SQLite-database which was made available online.
+   Information on disordered region content and biochemical properties of individual proteins were obtained from the dataset generated by Vincent and  Schnell in 2015 []. Briefly, Vincent and  Schnell used a number of disorder prediction algorithms (IUPred and DisEMBL) and their consensus to generate disordered region predictions for each protein which was be used to calculate the fraction of disordered regions in a protein. In addition, Vincent and  Schnell used localCIDER version 0.1.7 (Classification of Intrinsically Disordered Ensemble Regions) to calculate physical properties such as a fraction of charged residues, mean hydrophobicity or charge separation for each protein. This was done for 10 eukaryotic proteomes and written to SQLite-database which was made available online.
 
 ### Gene ontology enrichment analysis
 
@@ -238,7 +238,7 @@ interactome_identifiers_summary.all.s.m$SPECIES_NAME = gsub("Drosophila melanoga
 
 ### Available interactome covers substantial fraction of the reviewed proteome of main model species
 
-   In this section we compare the list of all proteins (per species) in Uniprot (reviewed part (or SwissProt) - Figure 2, reviewed and unreviewed parts (or all UniprotKB: SwissProt + trEMBL) - Supplementary Figure 1) to the list of protein which have interaction partners annotated in IMEx consortium databases. 
+   In this section, we compare the list of all proteins (per species) in Uniprot (reviewed part (or SwissProt) - Figure 2, reviewed and unreviewed parts (or all UniProtKB: SwissProt + trEMBL) - Supplementary Figure 1) to the list of proteins which have interaction partners annotated in IMEx consortium databases. 
    Non-canonical protein isoform identifiers (P32054-1) were converted to canonical identifiers (P32054) resulting in interactions "any isoform to any isoform" (Venn diagrams on the right) or isoform identifiers were preserved (Venn diagrams on the left). You can see that adding isoform information adds more proteins to the SwissProt list but not so many proteins to the IMEx list.
 
 ```{r IMEx_vs_Uniprot_venndiagram, cache=F, fig.width=8, fig.height=8, fig.cap="Figure 2"}
@@ -307,15 +307,15 @@ human_isoform = proteome_vs_interactome_summary.all_isof$whole.proteome..Uniprot
 human_isoform_with_interactions = proteome_vs_interactome_summary.all_isof$whole.proteome..interactome.available[proteome_vs_interactome_summary.all_isof["species.name"]=="Homo sapiens"] - proteome_vs_interactome_summary.all_noisof$whole.proteome..interactome.available[proteome_vs_interactome_summary.all_isof["species.name"]=="Homo sapiens"] + (proteome_vs_interactome_summary.all_isof$interactome..but.not.in.Uniprot[proteome_vs_interactome_summary.all_isof["species.name"]=="Homo sapiens"] - proteome_vs_interactome_summary.all_noisof$interactome..but.not.in.Uniprot[proteome_vs_interactome_summary.all_isof["species.name"]=="Homo sapiens"])
 ```
 
-   Overall - the best interactome annotated by IMEx databases is baker’s yeast, 2nd best interactome is *E.coli*. All other interactomes cover less than the half of their respective proteome (all UniprotKB, Supplementary figure 1). Overlap between the interactome and reviewed proteome (SwissProt) is significantly better. 
-   A large fraction of human, mouse, arabidopsis proteins-interactors and more than a half of drosophila and *C.elegans* proteins-interactors are absent in SwissProt (but included in trEMBL) – suggesting under-annotation by SwissProt-Uniprot team.
+   Overall - the best interactome annotated by IMEx databases is baker’s yeast, 2nd best interactome is *E.coli*. All other interactomes cover less than the half of their respective proteome (all UniProtKB, Supplementary figure 1). The overlap between the interactome and reviewed proteome (SwissProt) is significantly better. 
+   A large fraction of human, mouse, arabidopsis proteins-interactors and more than a half of drosophila and *C.elegans* proteins-interactors are absent in SwissProt (but included in trEMBL) – suggesting under-annotation by the SwissProt-Uniprot team.
 Protein isoforms (in multicellular model organisms) are almost not annotated in the interactome. Human is an exception – `r human_isoform_with_interactions` protein isoforms out of `r human_isoform`. Other molecular interaction databases (active BioGRID, inactive HPRD) do not record isoform information.
 
 ### Mouse and human proteins are commonly combined for interaction experiments
 
-   The fact that researchers tend to put proteins from other species (mostly human) into mouse experiments or tend to put mouse proteins into cell from other species (mostly human) is also common for interaction detection experiments and is clearly seen in the figure 3: half of the mouse interactors are from the other species. This holds true both for IMEx databases (figure 3) and for BioGRID. However, this analysis doesn't show which proteins (mouse or human) where used as bait to capture interactions in which cells (mouse or human).
+   The fact that researchers tend to put proteins from other species (mostly human) into mouse experiments or tend to put mouse proteins into cells from other species (mostly human) is also common for interaction detection experiments and is clearly seen in figure 3: half of the mouse interactors are from the other species. This holds true both for IMEx databases (figure 3) and for BioGRID. However, this analysis doesn't show which proteins (mouse or human) were used as bait to capture interactions in which cells (mouse or human).
 
-   Figure 3 also displays how many interactors do not have Uniprot indentifiers - those are small molecules, RNA, DNA or a small fraction of proteins not mapped to Uniprot. Big fraction of *C.elegans* interactors are coming from single experiment mapping trascrition factors to their sites []
+   Figure 3 also displays how many interactors do not have Uniprot identifiers - those are small molecules, RNA, DNA or a small fraction of proteins not mapped to UniProt. Big fraction of *C.elegans* interactors are coming from single experiment mapping transcription factors to their sites []
 
 ```{r IMEx_vs_Uniprot_N_Uniprot&Species, cache=F, fig.width=8, fig.height=8, fig.cap="Figure 3" }
 # plot how many interactors have non-uniprot and non-given-species identifiers
@@ -329,8 +329,8 @@ proteome_vs_interactome_plot
 # ggsave(filename, proteome_vs_interactome_plot, width = 12, height = 12)
 ```
 
-   Interchangable use of mouse and human proteins generates interaction data which is hard to reuse and introduces imprecision due to the fact that it requires mapping between homologous proteins. However, this may not be the biggest problem with studying the interactions between mouse and human proteins and trying to correctly intrepret results. Recent studies of intrinsically disordered proteins show that linear amino acid motifs located in disordered regions frequently mediate protein-protein interactions [], for example, disordered region of p53 mediates its ability to recruit transcription-activating proteins to the promoter []. More importantily, these linear amino acid motifs can evolve quickly, for example, allowing cancer cells to escape control by P53 []. So, while the interaction between mouse protein A and human protein B can exist, that might not be true for the interaction bewteen human protein A and human protein B, and vice-verse.
-   On the other hand, some researchers advocate that interactions important for cellular function should be conserved between species [].
+   Interchangeable use of mouse and human proteins generates interaction data which is hard to reuse and introduces imprecision due to the fact that it requires the mapping between homologous proteins. However, this may not be the biggest problem with studying the interactions between mouse and human proteins and trying to correctly interpret results. Recent studies of intrinsically disordered proteins show that linear amino acid motifs located in disordered regions frequently mediate protein-protein interactions [], for example, the disordered region of p53 mediates its ability to recruit transcription-activating proteins to the promoter []. More importantly, these linear amino acid motifs can evolve quickly, for example, allowing cancer cells to escape control by P53 []. So, while the interaction between mouse protein A and human protein B can exist, that might not be true for the interaction between human protein A and human protein B, and vice-verse.
+   On the other hand, some researchers advocate that interactions important for the cellular function should be conserved between species [].
 
 ```{r dowlnload_all_IntAct, cache=F, fig.width=8}
 # IntAct FTP contains the following databases = c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
@@ -414,8 +414,8 @@ all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == "9606", table(Ho
 
 ## 2. BioGRID database (as obtained from Mentha) overlaps significantly with IMEx databases
 
-   BioGRID database is the second major primary protein interaction database which when combined with IntAct contains all interactions information which has been curated to currently active public databases (major inactive or legacy databases include HPRD and BIND). BioGRID is characterised by shallow curation level (retains only some information about the interaction and the experiment) and identifies proteins using Entrez Gene ID while IntAct uses UniprotKB identifiers. Entrez Gene ID does not allow to distinguish between different protein isoforms. In our analysis, this difference introduces additional mapping step (Gene ID to UniprotKB). Mentha database has imported all BioGRID-stored interactions and has mapped Gene ID to UniprotKB, so we used Mentha to get BioGRID-stored interactions. Mentha doesn't import interactions for *E.coli*, therefore *E.coli* is absent in this analysis.
-   BioGRID has recently incorporated a large scale study aimed, in part, for find interacting partners for the proteins missing them []. 
+   BioGRID database is the second major primary protein interaction database which when combined with IntAct contains all interactions information which has been curated to currently active public databases (major inactive or legacy databases include HPRD and BIND). BioGRID is characterised by shallow curation level (retains only some information about the interaction and the experiment) and identifies proteins using Entrez Gene ID while IntAct uses UniProtKB identifiers. Entrez Gene ID does not allow to distinguish between different protein isoforms. In our analysis, this difference introduces additional mapping step (Gene ID to UniProtKB). Mentha database has imported all BioGRID-stored interactions and has mapped Gene ID to UniProtKB, so we used Mentha to get BioGRID-stored interactions. Mentha doesn't import interactions for *E.coli*, therefore *E.coli* is absent in this analysis.
+   BioGRID has recently incorporated a large-scale study aimed, in part, for find interacting partners for the proteins missing them []. 
 
 ```{r biogrid_vs_IMEx_vs_Uniprot_processing}
 ## Enter SPECIES_NAME 
@@ -602,7 +602,7 @@ for (r in reviewed) {
 ### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
 
    Protein length or mass are physical properties of a protein which can, in theory, influence it's usage as a bait in experiments and it's detection in case methods depend on protein length. Proteins length is also important biologically. Longer proteins can have multiple functional domains and, therefore, more interactions.
-The distributions of protein mass has a very long right tail - there is much more big proteins than normal distribution would predict (Supplementary figure 3), which only allows to use non-parametric statistical tests (Wilcox test). Log10 transformation of protein mass, though, makes extreme values less extreme and is approximately normally distributed.
+The distribution of protein mass has a very long right tail - there are much more big proteins than a normal distribution would predict (Supplementary figure 3), which only allows using non-parametric statistical tests (Wilcox test). Log10 transformation of protein mass, though, makes extreme values less extreme and is approximately normally distributed.
 
 ```{r human_not_in_IMEx_proteins_are_shorter_density, fig.width=8, fig.height=5, fig.cap="Figure 5" }
       ##============================================================================##
@@ -655,7 +655,7 @@ This difference in protein mass between proteins present and absent in the inter
 
 ### Major experimental role types (bait/prey/neutral component) are not substantially influenced by the mass of the protein
 
-Exprimental role of the protein (bait/prey/neutral component) can in theory be influenced by protein mass. For example, it may be easier to clone shorter proteins for use as bait/prey. So it important to see if exprimental role is really influenced by protein mass.
+The experimental role of the protein (bait/prey/neutral component) can, in theory, be influenced by protein mass. For example, it may be easier to clone shorter proteins for use as bait/prey. So it important to see if the experimental role is really influenced by protein mass.
 
 ```{r human_not_in_IMEx_bait_vs_non_bait, fig.width=8, fig.height=5, fig.cap="Figure 5" }
 bait_vs_non_bait = copy(all.IntAct[,.(IDs_interactor_A, IDs_interactor_B, Taxid_interactor_A, Taxid_interactor_B, bait_prey_status_A,bait_prey_status_B,interactor_IDs_databases_A,interactor_IDs_databases_B)])
@@ -684,7 +684,7 @@ ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status_label)) +geom_de
 
 ```
 
-Evidently, experimental role of a protein is not substantially influenced by the mass of the protein.
+Evidently, the experimental role of a protein is not substantially influenced by the mass of the protein.
 
 
 ### Most of the human proteins with no available interactions (from IMEx databases) are membrane proteins
@@ -701,12 +701,12 @@ Evidently, experimental role of a protein is not substantially influenced by the
 
 ## 4. Do major protein interaction detection methods (two-hybrid and AP-MS) exhibit a bias towards biochemical properties of the proteins involved?
 
-   The problem of bias in interactomics is often discussed in research papes and in the community. Now we will focus on the bias in experimental detection method. We choose to compare two major families of methods: two-hybrid and affinity-purification-mass-spectrometry (AP-MS). We define two-hybrid using PSI-MI ontology: detection method = "transcriptional complementation assay"" - all methods which belong to this type (which are children terms in ontology). We define AP-MS using two PSI-MI ontology terms: detection method = "affinity chromatography technology" and participant identification method = "partial identification of protein sequence". 
-   We get interations detected using these methods by querying PSICQUIC. We use word formulations rather than ontology term identifiers because PSICQUIC package in R is not equipped to handle quotes in the query text ("MI:0004" AND "MI:0102").
+   The problem of bias in interactomics is often discussed in research papes and in the community. Now we will focus on the bias in the experimental detection method. We choose to compare two major families of methods: two-hybrid and affinity-purification-mass-spectrometry (AP-MS). We define two-hybrid using PSI-MI ontology: detection method = "transcriptional complementation assay" - all methods which belong to this type (which are children terms in the ontology). We define AP-MS using two PSI-MI ontology terms: detection method = "affinity chromatography technology" and participant identification method = "partial identification of protein sequence". 
+   We get interactions detected using these methods by querying PSICQUIC. We use word formulations rather than ontology term identifiers because PSICQUIC package in R is not equipped to handle quotes in the query text ("MI:0004" AND "MI:0102").
 
 ### AP-MS is biased towards longer proteins
 
-   Unlike the experimental role type, whether a protein interaction is detected using a partucular interaction detection method is influenced by the mass of that protein.
+   Unlike the experimental role type, whether a protein interaction is detected using a particular interaction detection method is influenced by the mass of that protein.
 
 ```{r querying_PSICQUIC_cleaning_and_transforming_interaction_types}
 
@@ -852,7 +852,9 @@ ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_
           subtitle = "all violins have the same area")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))
 ```
 
-   The statistical significance of the difference in protein mass across protein detection methods was tested using linear model approach. 
+   The statistical significance of the difference in protein mass across protein detection methods was tested using linear model approach. Linear model offers way to perform multiple statistical tests (ANOVA and posthoc ttests) in R. Linear model takes a group assignment for a protein (only two-hybrid, only AP-MS, both two-hybrid and AP-MS, other methods - a vector 0s and 1s where 1 show which group a protein belongs to) and the mass of that protein. Using these parameters for each of the proteins linear model can learn the mean of each group as well as provide a way to calculate errors for each of the between-group comparisons. The robust linear model used for this test is less sensitive to the extreme values.
+   The results of statistical tests can be visualised on a plot. In the box plot below, each vertical arrow points to the mean mass of the proteins in a particular group. The middle line of the boxplot represents a median which happens to coincide with mean because the distribution of logarithm base 10 of mass is approximately normally distributed.
+   Each yellow arrow shows the p-value and the difference in protein mass between two corresponding groups.
 
 ```{r protein_length_det_method_rlm,  fig.width = 10, fig.height = 8, fig.cap= "Figure 7"}
 ## linear model code below
@@ -948,13 +950,15 @@ legend("topright",names(coefs),fill=cols,cex=.75,bg="white")
 }
 ```
 
+   The figure X shows that the mass of the proteins which were identified interacting using AP-MS technique is on average higher that the mass of the proteins identified using two-hybrid or the other methods.
+
 ## 5. How does the number of interactions (or MI score) depend on the number of publications?
 
-   The problem of better studied proteins having more interactions despite all proteins having similar amounts of Mendelian-type mutations and therefore similar functional significance has been discussed in the literature a few years ago []. So we decided to have a fresh look and explore the problem more deeply.
-   Interaction is defined by two proteins which form it regardsless of how many times these proteins were spotted interacting. MI score is an empirical score proposed by IMEx consortium to evaluate the evidence that supports each given interaction []. Not every interaction has enough evidence to get an MI score. We have counted the number of interactions for each protein (Figure 8) and summed MI scores over interactions for each protein (Figure 9, this can be seen as the number of interactions combined with the confidence we have for their existence). We define a large scale study as a study which provided more than 100 interactions in IntAct (counting by interaction indentifiers).
-   The number of publications per gene was counted using NCBI gene to pubmed ID conversion table.
+   The problem of better-studied proteins having more interactions despite all proteins having similar amounts of Mendelian-type mutations and therefore similar functional significance has been discussed in the literature a few years ago []. So we decided to have a fresh look and explore the problem more deeply.
+   Interaction is defined by two proteins which form it regardless of how many times these proteins were spotted interacting. MI score is an empirical score proposed by IMEx consortium to evaluate the evidence that supports each given interaction []. Not every interaction has enough evidence to get an MI score. We have counted the number of interactions for each protein (Figure 8) and summed MI scores over interactions for each protein (Figure 9, this can be seen as the number of interactions combined with the confidence we have for their existence). We define a large-scale study as a study which provided more than 100 interactions in IntAct (counting by interaction identifiers).
+   The number of publications per gene was counted using NCBI gene to PubMed ID conversion table.
    
-   Two figures below (Figure 8 and Figure 9) show how the number of interactions or the MI score depend on the number of publications (x-axis), species and the scale of the experiment (split into individual graphs). The trendline was fitted to the data using robust linear regression (black line) which less sensitive to outliers than linear regression (red line) and is therefore able to better capture the relationships. 
+   Two figures below (Figure 8 and Figure 9) show how the number of interactions or the MI score depends on the number of publications (x-axis), species and the scale of the experiment (split into individual graphs). The trendline was fitted to the data using robust linear regression (black line) which less sensitive to outliers than linear regression (red line) and is, therefore, able to better capture the relationships. 
    
 
 ```{r UniprotAC_to_geneID_start}
@@ -1186,7 +1190,8 @@ ggplot(all.IntAct.proteins.with.geneID, aes(interactor_total_PMID, sum_MI_score)
 
 ```
 
-  You can clearly see that the more studied overall the gene is (the more publications per gene there is) the more interactions proteins encoded by that gene tend to have and the more evidence there is for those interactions. Which is not surprising because journals tend to publish novel interactions, and the more studies there is overall - the more studies look into protein interactions. What is quite surprising is that large scale experiments also exhibit this trend. The exception are human and mouse large scale studies, where recent datasets specifically attempted to find interactions for understudied proteins[].
+
+  You can clearly see that the more studied overall the gene is (the more publications per gene there is) the more interactions proteins encoded by that gene tend to have and the more evidence there is for those interactions. Which is not surprising because journals tend to publish novel interactions, and the more studies there is overall - the more studies look into protein interactions. What is quite surprising is that large scale experiments also exhibit this trend. The exception is human and mouse large scale studies, where recent datasets specifically attempted to find interactions for understudied proteins[].
   
 
 ```{r interaction_properties_vs_pubN, fig.height=9, fig.width=10, fig.cap= "Figure 10"}
@@ -1227,9 +1232,11 @@ ggplot(all.IntAct.protein_interaction_details_all, aes(interactor_total_PMID, un
 }
 ```
 
-You can notice that trendlines for different methods are located at different heights, which tells us that different methods identify different number of interactions across both large and small scale studies. Some trends are not meaningful due to low number of proteins contained in the group they describe. 
+
+You can notice that trendlines for different methods are located at different heights, which tells us that different methods identify a different number of interactions across both large and small scale studies. Some trends are not meaningful due to a low number of proteins contained in the group they describe. 
 
 The plot below shows how the distribution of the number of interacting partners depends on the protein detection method. Spoke expanded interactions are included.
+
 
 ```{r interaction_properties_vs_unique_interactors, fig.height=8, fig.width=10}
        # read the saved table with human_not_in_IMEx_protein_properties_processing chunk
@@ -1341,20 +1348,23 @@ proteome_vs_imex_interaction_details_f_Percent_disorder[,whole_proteome_IDs_PMID
 proteome_vs_imex_interaction_details_f_Percent_disorder = unique(proteome_vs_imex_interaction_details_f_Percent_disorder)
 ```
 
+
    Proteins without interacting partners annotated in IMEx are less studied overall both in yeast, human and mouse (species with different available interactome coverage). In fact, many of these proteins lack evidence at the protein or transcript level (as shown in Uniprot).
+
 
 ```{r presence_in_IMEx_vs_publications, fig.height=8, fig.width=8}
 ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = whole_proteome_IDs_PMID, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of studies , log10 scale")+ ggtitle("the distribution of the number of studies for proteins with \n and without interacting partners annotated in IMEx") 
 ```
 
-## 6. Are proteins with higher fraction of intrinsically disordered domains more likely to have interactions available?
+
+## 6. Are proteins with a higher fraction of intrinsically disordered domains more likely to have interactions available?
 
 ### interaction information is not available for proteins with similar fraction of intrinsically disordered domains
 
    Is not exactly clear - more research in needed. The dataset generated by Vincent and Schnell has weird consensus disordered domain prediction (combining many prediction algorithms) while individual disordered domain prediction algorithms show contradicting results. For better quality disordered domain prediction we can use MobiDB (http://mobidb.bio.unipd.it), however, it's API is not very usable for proteome-wide study (it only allows to query protein by protein (other options are not very useful) and no more that 1 request/sec).
    Plots below show the distribution and the distribution density of the fraction of disordered regions (split by prediction algorithm) in a protein and the presence of that protein in IMEx databases.
    
-```{r physical_properties_plot_disord_dom, fig.height=5, fig.width=12}
+```{r physical_properties_plot_disord_dom, fig.height=10, fig.width=12}
 z = numeric(length(SPECIES_NAME))
 for(i in 1:length(SPECIES_NAME)){
 sp = proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == SPECIES_NAME[i],]
@@ -1367,9 +1377,12 @@ ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_
 ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")
 ```
 
+
 ### proteins with interaction information available tend to have higher fraction of charged residues and lower mean hydropathy
 
+
 The fraction of charged residues and the mean hydropathy are the physical properties of the protein which can influence protein's solubility and disorderliness.
+
 
 ```{r physical_properties_plot_FCR, fig.height=5, fig.width=8}
 z = numeric(length(SPECIES_NAME))
@@ -1400,20 +1413,20 @@ ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropat
 
 P-values for the differences: `r z[1]`, `r z[2]`, `r z[3]`.
 
-Proteins which don't have interacton evidence in IntAct tend to have lower fraction of charged residues and higher mean hydropathy. This correlates well with the GO (cellular component) enrichment result: these proteins are largely membrane proteins (this was done in cytoscape, not in R yet).
+Proteins which don't have interaction evidence in IntAct tend to have a lower fraction of charged residues and higher mean hydropathy. This correlates well with the GO (cellular component) enrichment result: these proteins are largely membrane proteins (this was done in Cytoscape, not in R yet).
 
 
-## 7. Do proteins with higher fraction of intrinsically disordered domains have more interacting partners?
+## 7. Do proteins with a higher fraction of intrinsically disordered domains have more interacting partners?
 
-  Recent attempt to correct for the study bias (explored in the previous chapter) while accessing whether a particular group of proteins form higher (or lower) number of interactions by Cerrano group [PMCID:PMC4523822] showed that it's possible and important to do so. Performing this correction as described in Cerrano's paper can allow to evaluate whether proteins with intrinsically disordered domains actually form more interactions.
+  Recent attempt to correct for the study bias (explored in the previous chapter) while accessing whether a particular group of proteins form higher (or lower) number of interactions by Cerrano group [PMCID:PMC4523822] showed that it's possible and important to do so. Performing this correction as described in Cerrano's paper can allow evaluating whether proteins with intrinsically disordered domains actually form more interactions.
   One previous study [PMID:18924110] has already pointed out that proteins with disordered domains are more likely to be detected in protein interaction screens in yeast. We test whether that's true across multiple species.
   
 ### Disordered domains and the number of publications
 
-  As an alternative to splitting proteins into the ones which have lond disordered domains and which don't we can look at the continuous fraction of disordered domains. This measure can be less influenced by study bias.
+  As an alternative to splitting proteins into the ones which have long disordered domains and which don't, we can look at the continuous fraction of disordered domains. This measure can be less influenced by study bias.
 
   The plot below shows the relationship between the fraction of disordered domains and the number of publications. 
-  Second plot is a quantile-quantile plot which shows that the distribuition of the fraction of disordered domains is far from normal. Square root or logarithmic transformations do not change that
+  The second plot is a quantile-quantile plot which shows that the distribution of the fraction of disordered domains is far from normal. Square root or logarithmic transformations do not change that.
   
 ```{r disord_domain_vs_publications, fig.height=5, fig.width=12}
 ggplot(Percent_disorder_types_for_plot, aes(x = whole_proteome_IDs_PMID, y = percent_disorder, label = SPECIES_NAME)) +geom_point(size = 0.05)+ scale_x_log10() + facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +ylab("fraction of disordered regions, 0...100")+xlab("the number of studies, log10 scale")  + ggtitle("the number of studies vs the fraction of disordered regions") +geom_smooth(method = "rlm")
@@ -1422,9 +1435,9 @@ ggplot(Percent_disorder_types_for_plot, aes( sample = percent_disorder,color = w
 
 ```
 
-   From these graphs we can conclude that the fraction of disordered domains does not depend on the number of studies.
+   From these graphs, we can conclude that the fraction of disordered domains can vary depend on the number of studies.
 
-   If disordered regions are often needed for molecular interactions we would expect that proteins with higher fraction of disordered regions will tend to have more interacting partners (irrespective of the study bias).
+   If disordered regions are often needed for molecular interactions we would expect that proteins with a higher fraction of disordered regions will tend to have more interacting partners (irrespective of the study bias).
 
 ```{r disord_domain_vs_n_interactions, fig.height=5, fig.width=12}
 # Percent_disorder_types_for_plot has disorder prediction algorithms and the results in rows(melted form) - only for disorder graphs
@@ -1433,7 +1446,7 @@ ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, y = unique_int
 cor(Percent_disorder_types_for_plot$percent_disorder,Percent_disorder_types_for_plot$unique_interactions_per_interactor)
 ```
 
-   As you can see from the loess-fitted curve (red, loess stands for local polynimial regression), the proteins with low fraction of disordered domains tend to have less interactions while further increasing the fraction of disordered regions doesn't change the trend. More general trend is shown in blue - robust linear regression. Whether that's the result of chance or study bias is yet to be tested.
+   As you can see from the loess-fitted curve (red, loess stands for local polynomial regression), the proteins with a low fraction of disordered domains tend to have fewer interactions while further increasing the fraction of disordered regions doesn't change the trend. The more general trend is shown in blue - robust linear regression. Whether that's the result of chance or study bias is yet to be tested.
    
    In theory, the length of the protein can influence the number of interaction partners of the protein: the longer the protein the more functional and structural domains it has and the more molecular interactions that function will require.
    
@@ -1445,7 +1458,7 @@ ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Length, 
 
    The analysis shows that the number of interacting partners correlates with the protein length in yeast, but not in human or mouse.
    
-   The sum length of disordered regions per protein can be a better predictor of the number of interacting partners, because it captures both the presence of disordered regions and the fact that longer proteins have more functional domains. 
+   The sum length of disordered regions per protein can be a better predictor of the number of interacting partners because it captures both the presence of disordered regions and the fact that longer proteins have more functional domains. 
 
 ```{r protein_mass*disord_domain_vs_n_interactions, fig.height=5, fig.width=12}
 # Percent_disorder_types_for_plot has disorder prediction algorithms and the results in rows(melted form) - only for disorder graphs
@@ -1505,10 +1518,11 @@ domains = unique(domains)
 
 domains[, domains_per_protein := .N, by = UniprotID]
 
-x = merge(proteome_vs_imex_interaction_details_f_Percent_disorder, domains[,unique(data.table(UniprotID = UniprotID, domains_per_protein = domains_per_protein))], by.x = "whole_proteome_IDs", by.y = "UniprotID", all = T)
+proteome_vs_imex_interaction_details_f_Percent_disorder.interpro = merge(proteome_vs_imex_interaction_details_f_Percent_disorder, domains[,unique(data.table(UniprotID = UniprotID, domains_per_protein = domains_per_protein))], by.x = "whole_proteome_IDs", by.y = "UniprotID", all = T)
 
 ```
 
+coming soon
 
 # Supplementary figures
 
