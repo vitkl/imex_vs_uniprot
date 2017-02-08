@@ -651,7 +651,7 @@ n_odor_receptors = length(unique(grep("Odor", proteome_vs_imex_details_f$Protein
       wilcox.test.r.min.olf = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
 ```
 
-This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test (Mass, Da, 95% confidence interval: `r signif(wilcox.test.r$conf.int,3)`, p-value: `r signif(wilcox.test.r$p.value,3)`) and Student t-test(log10 of Mass, Da, 95% confidence interval: `r signif(ttest_r$conf.int,3)`, p-value: `r signif(ttest_r$p.value,3)`) on the whole population of proteins, Monte-Carlo sampling (is it useful?), permutation of labels followed by Wilcox rank test (is it useful?) - Supplementary figure 3,4,5). Removing `r signif(n_odor_receptors,3)` olfactory receptors, evidently, does not change this trend (Wilcox rank test on Mass, Da, 95% confidence interval: `r signif(wilcox.test.r.min.olf$conf.int,3)`, p-value: `r signif(wilcox.test.r.min.olf$p.value,3)`).
+This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test (Mass, Da, 95% confidence interval: `r cat(signif(wilcox.test.r$conf.int,3))`, p-value: `r signif(wilcox.test.r$p.value,3)`) and Student t-test(log10 of Mass, Da, 95% confidence interval: `r signif(ttest_r$conf.int,3)`, p-value: `r signif(ttest_r$p.value,3)`) on the whole population of proteins, Monte-Carlo sampling (is it useful?), permutation of labels followed by Wilcox rank test (is it useful?) - Supplementary figure 3,4,5). Removing `r signif(n_odor_receptors,3)` olfactory receptors, evidently, does not change this trend (Wilcox rank test on Mass, Da, 95% confidence interval: `r signif(wilcox.test.r.min.olf$conf.int,3)`, p-value: `r signif(wilcox.test.r.min.olf$p.value,3)`).
 
 ### Major experimental role types (bait/prey/neutral component) are not substantially influenced by the mass of the protein
 
@@ -677,14 +677,19 @@ bait_vs_non_bait[,mean_mass_per_role := mean(Mass), by = bait_prey_status]
 bait_vs_non_bait[,N_bait_prey_status := .N, by = bait_prey_status]
 bait_vs_non_bait[,bait_prey_status_label := paste(bait_prey_status,", N =", N_bait_prey_status)]
 
-ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status)) +geom_density(bins = 100)+ scale_x_log10() + facet_grid(bait_prey_status_label~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution density of protein mass by experimental role \n (for proteins in IMEx)")
+ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status)) +geom_density(bins = 100)+ scale_x_log10() + facet_grid(bait_prey_status_label~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution density of protein mass grouped by experimental role \n (for proteins in IMEx)")
+```
+ 
+ 
+   We can now select only the most frequent experimental roles
 
+```{r human_not_in_IMEx_bait_vs_non_bait2, fig.width=8, fig.height=5, fig.cap="Figure 5" }
 bait_vs_non_bait = bait_vs_non_bait[N_bait_prey_status > 1000,]
-ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status_label)) +geom_density(bins = 100)+ scale_x_log10()  + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution density of protein mass by experimental role \n (for proteins in IMEx)")
+ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status_label)) +geom_density(bins = 100)+ scale_x_log10()  + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution density of protein mass grouped by experimental role \n (for proteins in IMEx)")
 
 ```
 
-Evidently, the experimental role of a protein is not substantially influenced by the mass of the protein.
+   Evidently, the experimental role of a protein is not substantially influenced by the mass of the protein.
 
 
 ### Most of the human proteins with no available interactions (from IMEx databases) are membrane proteins
@@ -1372,9 +1377,9 @@ z[i] =wilcox.test(Hydropathy_m~whole_proteome_Uniprot_IMEx, data = sp)$p.value
 }
 Percent_disorder_types_for_plot = melt(data = proteome_vs_imex_interaction_details_f_Percent_disorder,variable.name ="disorder_pred_algorithm",value.name ="percent_disorder",measure.vars =c("IUPRED_PD","COILS_PD","HOTLOOPS_PD","REM465_PD","ICHR_consensus_PD"))
 
-ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100") + ggtitle("the distribution of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")
+ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10()
 
-ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")
+ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10()
 ```
 
 
@@ -1421,21 +1426,27 @@ Proteins which don't have interaction evidence in IntAct tend to have a lower fr
   Recent attempt to correct for the study bias (explored in the previous chapter) while accessing whether a particular group of proteins form higher (or lower) number of interactions by Cerrano group [PMCID:PMC4523822] showed that it's possible and important to do so. Performing this correction as described in Cerrano's paper can allow evaluating whether proteins with intrinsically disordered domains actually form more interactions.
   One previous study [PMID:18924110] has already pointed out that proteins with disordered domains are more likely to be detected in protein interaction screens in yeast. We test whether that's true across multiple species.
   
-### Disordered domains and the number of publications
+### The number of studies vs the fraction predicted disordered regions
 
   As an alternative to splitting proteins into the ones which have long disordered domains and which don't, we can look at the continuous fraction of disordered domains. This measure can be less influenced by study bias.
 
   The plot below shows the relationship between the fraction of disordered domains and the number of publications. 
-  The second plot is a quantile-quantile plot which shows that the distribution of the fraction of disordered domains is far from normal. Square root or logarithmic transformations do not change that.
+
   
 ```{r disord_domain_vs_publications, fig.height=5, fig.width=12}
-ggplot(Percent_disorder_types_for_plot, aes(x = whole_proteome_IDs_PMID, y = percent_disorder, label = SPECIES_NAME)) +geom_point(size = 0.05)+ scale_x_log10() + facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +ylab("fraction of disordered regions, 0...100")+xlab("the number of studies, log10 scale")  + ggtitle("the number of studies vs the fraction of disordered regions") +geom_smooth(method = "rlm")
-
+ggplot(Percent_disorder_types_for_plot, aes(x = whole_proteome_IDs_PMID, y = percent_disorder, label = SPECIES_NAME)) +geom_point(size = 0.05)+ scale_x_log10() + facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +ylab("fraction of disordered regions, 0...100")+xlab("the number of studies, log10 scale")  + ggtitle("the number of studies vs the fraction of disordered regions") +geom_smooth(method = "rlm", color = "blue")+geom_smooth(method = "loess", color = "red")
+```
+  
+  The second plot is a quantile-quantile plot which shows that the distribution of the fraction of disordered domains is far from normal. Square root or logarithmic transformations do not change that.
+  
+```{r disord_domain_vs_publications_qqplot, fig.height=5, fig.width=12}
 ggplot(Percent_disorder_types_for_plot, aes( sample = percent_disorder,color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_qq()+ facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) + ggtitle("QQ-plot: the fraction of disordered regions")
 
 ```
 
-   From these graphs, we can conclude that the fraction of disordered domains can vary depend on the number of studies.
+   From these graphs, we can conclude that the fraction of disordered domains can vary depend on the number of studies and disordered region prediction algorithm (which may reflect the bias of disordered region prediction algorithms.
+
+### Proteins with a low fraction of disordered domains tend to have fewer interactions
 
    If disordered regions are often needed for molecular interactions we would expect that proteins with a higher fraction of disordered regions will tend to have more interacting partners (irrespective of the study bias).
 
@@ -1446,8 +1457,11 @@ ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, y = unique_int
 cor(Percent_disorder_types_for_plot$percent_disorder,Percent_disorder_types_for_plot$unique_interactions_per_interactor)
 ```
 
-   As you can see from the loess-fitted curve (red, loess stands for local polynomial regression), the proteins with a low fraction of disordered domains tend to have fewer interactions while further increasing the fraction of disordered regions doesn't change the trend. The more general trend is shown in blue - robust linear regression. Whether that's the result of chance or study bias is yet to be tested.
-   
+   As you can see from the loess-fitted curve (red, loess stands for local polynomial regression), the proteins with a low fraction of disordered domains tend to have fewer interactions while further increasing the fraction of disordered regions doesn't change the trend. The more general trend is shown in blue - robust linear regression. 
+   Whether these trends are the result of chance or study bias is yet to be tested.
+
+### The longer yeast protein is the more interactions it has (doesn't hold true for human)
+
    In theory, the length of the protein can influence the number of interaction partners of the protein: the longer the protein the more functional and structural domains it has and the more molecular interactions that function will require.
    
 ```{r protein_mass_vs_n_interactions, fig.height=8, fig.width=8}
@@ -1458,14 +1472,17 @@ ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Length, 
 
    The analysis shows that the number of interacting partners correlates with the protein length in yeast, but not in human or mouse.
    
+### The length of the disordered regions and the number of interactions
+   
    The sum length of disordered regions per protein can be a better predictor of the number of interacting partners because it captures both the presence of disordered regions and the fact that longer proteins have more functional domains. 
 
 ```{r protein_mass*disord_domain_vs_n_interactions, fig.height=5, fig.width=12}
 # Percent_disorder_types_for_plot has disorder prediction algorithms and the results in rows(melted form) - only for disorder graphs
 Percent_disorder_types_for_plot[, length_disorder := percent_disorder*Length/100]
 
-ggplot(Percent_disorder_types_for_plot, aes(x = length_disorder, y = unique_interactions_per_interactor, label = SPECIES_NAME)) +geom_point(alpha =0.7)+ scale_y_log10()+geom_smooth(method = "rlm")+ scale_x_log10()+ facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) + xlab("the length of disordered regions, N amino acid residues, log10 scale")+ ylab("the number of interacting partners, log10 scale")  + ggtitle("the number of interacting partners as a function of the length of disordered regions \n line fitted using rlm")
+ggplot(Percent_disorder_types_for_plot, aes(x = length_disorder, y = unique_interactions_per_interactor, label = SPECIES_NAME)) +geom_point(alpha =0.7)+ scale_y_log10()+geom_smooth(method = "rlm", color = "blue")+geom_smooth(method = "loess", color = "red")+ scale_x_log10()+ facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) + xlab("the length of disordered regions, N amino acid residues, log10 scale")+ ylab("the number of interacting partners, log10 scale")  + ggtitle("the number of interacting partners as a function of the length of disordered regions \n line fitted using rlm")
 ``` 
+
 
 ## 8. The number of protein domains (InterPro) and the number of interactions
 
@@ -1511,6 +1528,11 @@ proteins2domains = function(proteins, interpro_files){
   return(domains)
 }
 
+filename.int = paste("./analysis/","proteome_vs_imex_interaction_details_f_Percent_disorder.interpro", date,".txt", sep = "")
+filename.dom = paste("./analysis/","proteome_vs_imex_interpro_domains", date,".txt", sep = "")
+
+if(!(file.exists(filename.int) & file.exists(filename.dom))){
+  
 interpro_files = get_interpro()
 proteins = proteome_vs_imex_interaction_details_f_Percent_disorder$whole_proteome_IDs
 domains = proteins2domains(proteins, interpro_files)
@@ -1520,7 +1542,29 @@ domains[, domains_per_protein := .N, by = UniprotID]
 
 proteome_vs_imex_interaction_details_f_Percent_disorder.interpro = merge(proteome_vs_imex_interaction_details_f_Percent_disorder, domains[,unique(data.table(UniprotID = UniprotID, domains_per_protein = domains_per_protein))], by.x = "whole_proteome_IDs", by.y = "UniprotID", all = T)
 
+write.table(proteome_vs_imex_interaction_details_f_Percent_disorder.interpro, filename.int, col.names=T,row.names=F,sep="\t",quote=F)
+write.table(domains, filename.dom, col.names=T,row.names=F,sep="\t",quote=F)
+}
+
+if(file.exists(filename.int) & file.exists(filename.dom)){
+  proteome_vs_imex_interaction_details_f_Percent_disorder.interpro = fread(filename.int)
+  domains = fread(filename.dom)
+}
 ```
+
+
+```{r N_domain_vs_n_publications, fig.height=8, fig.width=8}
+# proteome_vs_imex_interaction_details_f_Percent_disorder has disorder prediction algorithms and the results in columns (spread form) 
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder.interpro, aes(x = whole_proteome_IDs_PMID  , y = domains_per_protein, label = SPECIES_NAME)) +geom_point()+scale_x_log10()+ scale_y_log10()+geom_smooth(method = "rlm")+ facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +ylab("the number of protein domains, log10 scale")+xlab("the number of studies, log10 scale")  + ggtitle("the number of studies vs the number of protein domains \n line fitted using rlm, curve using loess")
+
+``` 
+
+
+```{r N_domain_vs_n_interactions, fig.height=8, fig.width=8}
+# proteome_vs_imex_interaction_details_f_Percent_disorder has disorder prediction algorithms and the results in columns (spread form) 
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder.interpro, aes(x = domains_per_protein, y = unique_interactions_per_interactor, label = SPECIES_NAME)) +geom_point()+scale_x_log10()+ scale_y_log10()+geom_smooth(method = "rlm")+ facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of protein domains, log10 scale")+ylab("the number of interacting partners, log10 scale")  + ggtitle("the number of protein domains vs the number of interacting partners \n line fitted using rlm, curve using loess")
+
+``` 
 
 coming soon
 
