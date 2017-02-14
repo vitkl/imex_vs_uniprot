@@ -11,6 +11,7 @@ intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins 
   ## type in exact database names (the list below is default for the function)
   databases <- c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
                  "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+  databases = "IMEx"
   
   ## Query PSICQUIC for interactions, get MI-TAB-2.5, save, return
   source("query_PSICQUIC_for_interactions.R")

@@ -1,0 +1,2 @@
+all.interactors	interacting.partners.with.the.UniprotKB.identifier	interacting.partners.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	interacting.partners.from.given.species	interacting.partners.from.other.species
+10750	10750	0	10090	Mus musculus	5559	5191

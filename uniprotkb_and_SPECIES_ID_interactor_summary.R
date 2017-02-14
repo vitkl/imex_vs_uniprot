@@ -13,12 +13,12 @@ all_interactors_not_SPECIES_ID_only = filter(all_interactors_uniprotkb_only, int
 
 summary_intact_vs_uniprot = data.frame(
   "all interactors" = length(unique(all_interactors$interactor_IDs)),
-  "interactors with the UniprotKB identifier" = length(unique(all_interactors_uniprotkb_only$interactor_IDs)),
-  "interactors with the other identifier" = length(unique(all_interactors_other_only$interactor_IDs)),
+  "interacting partners with the UniprotKB identifier" = length(unique(all_interactors_uniprotkb_only$interactor_IDs)),
+  "interacting partners with the other identifier" = length(unique(all_interactors_other_only$interactor_IDs)),
   "SPECIES_ID" = SPECIES_ID,
   "SPECIES_NAME" = SPECIES_NAME,
-  "SPECIES_ID interactors" = length(unique(all_interactors_SPECIES_ID_only$interactor_IDs)),
-  "interactors from other species" = length(unique(all_interactors_not_SPECIES_ID_only$interactor_IDs))
+  "interacting partners from given species" = length(unique(all_interactors_SPECIES_ID_only$interactor_IDs)),
+  "interacting partners from other species" = length(unique(all_interactors_not_SPECIES_ID_only$interactor_IDs))
 )
 summary_intact_vs_uniprot2 = (summary_intact_vs_uniprot)
 return(summary_intact_vs_uniprot2)

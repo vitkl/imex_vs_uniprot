@@ -1,0 +1,8 @@
+all.interactors	interacting.partners.with.the.UniprotKB.identifier	interacting.partners.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	interacting.partners.from.given.species	interacting.partners.from.other.species
+31832	29100	2732	9606	Homo sapiens	21116	8072
+17299	16667	632	10090	Mus musculus	8776	7906
+7284	6778	506	559292	strain ATCC 204508	6024	754
+3419	3323	96	83333	strain K12	3194	129
+11497	10739	758	7227	Drosophila melanogaster	10549	190
+9790	5126	4664	6239	Caenorhabditis elegans	5074	52
+6010	5728	282	3702	Arabidopsis thaliana	5517	211

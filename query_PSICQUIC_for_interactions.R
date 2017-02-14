@@ -1,7 +1,7 @@
 ## the function to query PSICQUIC for interactions given:
 ### SPECIES_NAME
 ### SPECIES_ID (default NA)
-### databases
+### databases (Default - all IMEx databases MI:0959)
 ### date - option allows to read already saved files
 ### detmethod - optional
 ### pmethod - optional
@@ -10,7 +10,15 @@ query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, d
 
 ## checks if databases argument was provided, if not - sets default - all IMEX databases
 if(is.na(databases)[1]){ 
-  databases = c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+    databases_url = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry?action=STATUS&tags=%22MI:0959%22&format=txt"
+    databases_temp = readLines(databases_url)
+    databases = gsub("=.+","", databases_temp)
+}
+## checks if databases argument is "IMEx", if yes - sets default - all IMEX databases
+if(databases == "IMEx"){
+    databases_url = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry?action=STATUS&tags=%22MI:0959%22&format=txt"
+    databases_temp = readLines(databases_url)
+    databases = gsub("=.+","", databases_temp)
 }
 
 ## Converts SPECIES_NAME to SPECIES_ID if SPECIES_ID is not stated
@@ -18,6 +26,7 @@ if(is.na(SPECIES_ID) & !is.na(SPECIES_NAME)) {
   source("SPECIES_NAME_TO_ID.R")
   SPECIES_ID = SPECIES_NAME_TO_ID(SPECIES_NAME)$SPECIES_ID }
 else {SPECIES_ID = SPECIES_ID}
+
 ##============================================================================##
   ## Constructs database filename and PSICQUIC_query depending on 
   ## whether detmethod and pmethod were provided as arguments
@@ -35,32 +44,44 @@ if(is.na(detmethod)){
     database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_",date, sep = "")
     PSICQUIC_query = paste("species:",SPECIES_ID, sep = "")
 }
+
 ## Checks if databases have been queried today, if not - sends query to the database
 if(!file.exists(database.name)) {
   print("dowloaded using PSICQUIC")
-## Load PSICQUIC functionality
-library(PSICQUIC)
-psicquic <- PSICQUIC()
-providers <- providers(psicquic)
-
-# query databases for all known SPECIES_ID protein interactions
-SPECIES_ID_interactome = data.frame()
-NO_SPECIES_ID_interactome = character(length = length(databases))
-for(indices in 1:length(databases)) {
-  if(databases[indices] %in% providers) {
-    ## Query
-    SPECIES_ID_interactome_d <- rawQuery(psicquic, databases[indices], PSICQUIC_query)
-    ## add query results to the single table if the table format is compatible
-    if(ncol(SPECIES_ID_interactome_d)==ncol(SPECIES_ID_interactome) | (indices==1)) {
-      SPECIES_ID_interactome <- rbind(SPECIES_ID_interactome, SPECIES_ID_interactome_d)
+  ## Load PSICQUIC functionality
+  require(PSICQUIC)
+  psicquic <- PSICQUIC()
+  providers <- providers(psicquic)
+    
+  # query databases for all known SPECIES_ID protein interactions
+  require(data.table)
+  SPECIES_ID_interactome = data.table()
+  NO_SPECIES_ID_interactome = character(length = length(databases))
+  for(indices in 1:length(databases)) {
+    if(databases[indices] %in% providers) {
+      ## Query for the number of interactions
+      PSICQUIC_query1 = paste0(PSICQUIC_query, "?format=count") 
+      N_interactions <- unlist(rawQuery(psicquic, databases[indices], PSICQUIC_query1))
+      ## if there are any interactions - Query for the interactions by 1000 at a time
+      if(N_interactions > 0){
+        N_start = 1
+        N_nrows = 2500
+        for(n_starts in seq(from = N_start, to = N_interactions, by = N_nrows)){
+          PSICQUIC_query2 = paste0(PSICQUIC_query, "?format=tab27&firstResult=", n_starts,"&maxResults=", N_nrows) 
+          SPECIES_ID_interactome_d <- as.data.table(rawQuery(psicquic, databases[indices], PSICQUIC_query2))
+          SPECIES_ID_interactome <- rbind(SPECIES_ID_interactome, SPECIES_ID_interactome_d)
+        }
+      }
+## if the query finds no interactors
+      else {
+      NO_SPECIES_ID_interactome[indices] = databases[indices]
+      }
     }
-    ## if the query finds no proteins or the table format is not compatible
-    ## save that information
+## if the database is not active
     else {
       NO_SPECIES_ID_interactome[indices] = databases[indices]
     }
   }
-}
 ##============================================================================##
 ## Save dowloaded query result into file 
 save(SPECIES_ID_interactome, file = database.name)

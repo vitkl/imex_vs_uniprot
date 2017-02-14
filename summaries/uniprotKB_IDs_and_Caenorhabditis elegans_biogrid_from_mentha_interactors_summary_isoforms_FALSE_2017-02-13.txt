@@ -1,0 +1,2 @@
+all.interactors	interacting.partners.with.the.UniprotKB.identifier	interacting.partners.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	interacting.partners.from.given.species	interacting.partners.from.other.species
+916	916	0	6239	Caenorhabditis elegans	878	38
