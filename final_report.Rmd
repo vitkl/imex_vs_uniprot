@@ -1219,7 +1219,7 @@ ggplot(all.IntAct.proteins.with.geneID2, aes(interactor_total_PMID, unique_inter
    
    Now, we can separate proteins whose interacting partners were indentified in both large and small scale studies into separate group and see how that can change the trend.
 
-```{r N_publications_vs_N_interactions_3groups, fig.height=9, fig.width=9, fig.cap= "Figure 8"}
+```{r N_publications_vs_N_interactions_3groups2, fig.height=9, fig.width=9, fig.cap= "Figure 8"}
 # plotting unique_interactions_per_interactor as a function of the number of publications 
 {
 ggplot(all.IntAct.proteins.with.geneID, aes(interactor_total_PMID, unique_interactions_per_interactor)) +  scale_x_log10() + scale_y_log10() +
@@ -1310,7 +1310,7 @@ all.IntAct.proteins_500= unique(all.IntAct.proteins_500)
 }
 ```
 
-```{r N_publications_vs_N_interactions_3groups, fig.height=9, fig.width=9, fig.cap= "Figure 8"}
+```{r N_publications_vs_N_interactions_3groups3, fig.height=9, fig.width=9, fig.cap= "Figure 8"}
 # plotting unique_interactions_per_interactor as a function of the number of publications 
 {
 ggplot(all.IntAct.proteins.with.geneID_500, aes(interactor_total_PMID, unique_interactions_per_interactor)) +  scale_x_log10() + scale_y_log10() +
