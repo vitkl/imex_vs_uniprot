@@ -2,6 +2,8 @@
 /Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt
 /Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt
 /Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt
 /Data/small_scale_100_02_17_all_IntAct.txt
 /Data/large_scale_100_02_17_all_IntAct.txt
 /Data/small_scale_100_02_17_all_IntAct.txt.gz
@@ -197,3 +199,4 @@ biogrid
 analysis
 from_cytoscape
 “.RData”
+.Rproj.user/

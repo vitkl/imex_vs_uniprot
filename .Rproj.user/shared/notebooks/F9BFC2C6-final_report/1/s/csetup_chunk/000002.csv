@@ -2,3 +2,5 @@
 "0","date = Sys.Date()"
 "0","## Please specify the date for which you want to perform analysis (if not today)"
 "0","date = as.Date(""2017-02-23"")"
+"0","# git update-index --assume-unchanged .RData "
+"0","# http://stackoverflow.com/questions/21043132/gitignore-just-doesnt-work-i-cant-get-it-to-ignore-ds-store-gitignore-fil"

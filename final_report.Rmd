@@ -16,6 +16,7 @@ date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
 date = as.Date("2017-02-23")
 # git update-index --assume-unchanged .RData 
+# http://stackoverflow.com/questions/21043132/gitignore-just-doesnt-work-i-cant-get-it-to-ignore-ds-store-gitignore-fil
 ``` 
 
 The report was published on `r Sys.Date()`. All data used in the report as available on `r date`.
@@ -595,12 +596,43 @@ for (r in reviewed) {
   }
 ```
 
-### Olfactory receptors are a major group of proteins not represented in IntAct
+### Olfactory receptors are a major group of human proteins not represented in IntAct
 
    coming soon
 
 ```{r human_not_in_IMEx_protein_properties_GOenrichment}
-
+##====================================================================
+suppressPackageStartupMessages({
+      library(data.table)
+      library(qvalue)
+      library(ggplot2)
+      })
+##====================================================================
+# read the saved table
+SPECIES_NAME = "Homo sapiens"
+n = SPECIES_NAME
+## only reviewed = 2 is relevant for this analysis
+reviewed = 2
+r = reviewed
+isoforms = FALSE
+i = isoforms
+      filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+      proteome_vs_imex_details_f = as.data.table(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+      proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
+##====================================================================
+uniprot2enrichedGOterms = function(my_protein_set, reference_set){
+  suppressPackageStartupMessages({
+      library(clusterProfiler)
+      library(org.Hs.eg.db)})
+ego <-  enrichGO(gene = my_protein_set, org.Hs.eg.db, keytype = "UNIPROT", ont = "BP",
+  pvalueCutoff = 1, pAdjustMethod = "BH", universe = reference_set, qvalueCutoff = 1,
+  minGSSize = 10, maxGSSize = Inf, readable = FALSE)
+ego_sorted = as.data.table(as.data.frame(ego)[order(as.data.frame(ego)$p.adjust),])
+}
+enrichedGOterms = uniprot2enrichedGOterms(
+  my_protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,whole_proteome_IDs],
+  reference_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]
+  )
 ```
 
 ### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
@@ -609,7 +641,6 @@ for (r in reviewed) {
 The distribution of protein mass has a very long right tail - there are much more big proteins than a normal distribution would predict (Supplementary figure 3), which only allows using non-parametric statistical tests (Wilcox test). Log10 transformation of protein mass, though, makes extreme values less extreme and is approximately normally distributed.
 
 ```{r human_not_in_IMEx_proteins_are_shorter_density, fig.width=8, fig.height=5, fig.cap="Figure 5" }
-      ##============================================================================##
       ## Analysis
       # read the saved table
 SPECIES_NAME = "Homo sapiens"
