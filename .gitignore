@@ -1,3 +1,57 @@
+/Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/small_scale_100_02_17_all_IntAct.txt
+/Data/large_scale_100_02_17_all_IntAct.txt
+/Data/small_scale_100_02_17_all_IntAct.txt.gz
+/Data/large_scale_100_02_17_all_IntAct.txt.gz
+/Data/uniprotAC2geneIDrelease_02-2017_MOUSE_10090_idmapping.dat
+/Data/uniprotAC2geneIDrelease_02-2017_HUMAN_9606_idmapping.dat
+/Data/uniprotAC2geneIDrelease_02-2017_ARATH_3702_idmapping.dat
+/Data/databaseName_IntAct...MBInfo_speciesID_83333_strain K12_detmethod_%22MI:0004%22_pmethod_%22MI:0433%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_83333_strain K12_detmethod_%22MI:0090%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_83333_strain K12_detmethod_%22MI:0018%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_559292_strain ATCC 204508_detmethod_%22MI:0004%22_pmethod_%22MI:0433%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_559292_strain ATCC 204508_detmethod_%22MI:0090%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_559292_strain ATCC 204508_detmethod_%22MI:0018%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_10090_Mus musculus_detmethod_%22MI:0004%22_pmethod_%22MI:0433%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_10090_Mus musculus_detmethod_%22MI:0090%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_10090_Mus musculus_detmethod_%22MI:0018%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_9606_Homo sapiens_detmethod_%22MI:0004%22_pmethod_%22MI:0433%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_9606_Homo sapiens_detmethod_%22MI:0090%22_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_9606_Homo sapiens_detmethod_%22MI:0018%22_2017-02-23
+/Data/databaseName_mentha...mentha_speciesID_3702_Arabidopsis thaliana_2017-02-23
+/Data/databaseName_mentha...mentha_speciesID_6239_Caenorhabditis elegans_2017-02-23
+/Data/databaseName_mentha...mentha_speciesID_7227_Drosophila melanogaster_2017-02-23
+/Data/databaseName_mentha...mentha_speciesID_559292_strain ATCC 204508_2017-02-23
+/Data/databaseName_mentha...mentha_speciesID_10090_Mus musculus_2017-02-23
+/Data/databaseName_mentha...mentha_speciesID_9606_Homo sapiens_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_3702_Arabidopsis thaliana_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_6239_Caenorhabditis elegans_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_7227_Drosophila melanogaster_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_83333_strain K12_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_559292_strain ATCC 204508_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_10090_Mus musculus_2017-02-23
+/Data/databaseName_IntAct...MBInfo_speciesID_9606_Homo sapiens_2017-02-23
+/Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt
+/Data/small_scale_100_02_17_all_IntAct.txt
+/Data/large_scale_100_02_17_all_IntAct.txt
+/Data/small_scale_100_02_17_all_IntAct.txt.gz
+/Data/large_scale_100_02_17_all_IntAct.txt.gz
+/Data/small_scale_100_02_17_all_IntAct.txt
+/Data/large_scale_100_02_17_all_IntAct.txt
+/Data/small_scale_100_02_17_all_IntAct.txt.gz
+/Data/large_scale_100_02_17_all_IntAct.txt.gz
+/Data/small_scale_100_02_17_all_IntAct.txt
+/Data/large_scale_100_02_17_all_IntAct.txt
+/Data/small_scale_100_02_17_all_IntAct.txt.gz
+/Data/large_scale_100_02_17_all_IntAct.txt.gz
+/Data/small_scale_100_02_17_all_IntAct.txt
+/Data/large_scale_100_02_17_all_IntAct.txt
+/Data/small_scale_02_17_all_IntAct.txt
+/Data/large_scale_02_17_all_IntAct.txt
 /Data/protein2ipr_release_02-2017.dat
 /Data/protein2ipr_release_02-2017/aa
 /Data/protein2ipr_release_02-2017/ab
@@ -121,3 +175,25 @@
 /Data/intact.txt
 /results/cluego
 .Rproj.user
+.RData
+/Users/vitalii/Desktop/VItalii_EBI/imex_vs_uniprot/.RData
+summaries/
+Data/
+results/
+biogrid/
+analysis/
+from_cytoscape/
+/summaries/
+/Data/
+/results/
+/biogrid/
+/analysis/
+/from_cytoscape/
+**/.RData
+summaries
+Data
+results
+biogrid
+analysis
+from_cytoscape
+“.RData”

@@ -1,2 +1,2 @@
 all.interactors	interacting.partners.with.the.UniprotKB.identifier	interacting.partners.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	interacting.partners.from.given.species	interacting.partners.from.other.species
-9790	5126	4664	6239	Caenorhabditis elegans	5074	52
+9789	5125	4664	6239	Caenorhabditis elegans	5073	52

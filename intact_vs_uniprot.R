@@ -1,4 +1,4 @@
-intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins = TRUE, date = Sys.Date()) {
+intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins = TRUE, date = Sys.Date(), databases) {
   ## The function below downloads reference proteome list from Uniprot, saves it,
   ## finds and returns Proteome_ID and SPECIES_ID for given SPECIES_NAME
 
@@ -7,11 +7,6 @@ intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins 
   
   SPECIES_ID = SPECIES_IDs$SPECIES_ID;
   Proteome_ID = SPECIES_IDs$Proteome_ID;
-  
-  ## type in exact database names (the list below is default for the function)
-  databases <- c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
-                 "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
-  databases = "IMEx"
   
   ## Query PSICQUIC for interactions, get MI-TAB-2.5, save, return
   source("query_PSICQUIC_for_interactions.R")

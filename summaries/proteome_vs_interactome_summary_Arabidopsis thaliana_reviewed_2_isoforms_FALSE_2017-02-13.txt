@@ -1,3 +1,3 @@
 species.name	database	reviewed	isoforms	whole.proteome..Uniprot.	uncovered.whole.proteome	whole.proteome..interactome.available	interactome..but.not.in.Uniprot	reference.proteome..Uniprot.	uncovered.reference.proteome	reference.proteome..interactome.available	interactome..but.not.in.Uniprot.1	Overlap.between.interactome.and.the.reference.proteome..fraction	Overlap.between.interactome.and.the.whole.proteome..fraction
-Arabidopsis thaliana	IMEx	2	FALSE	15113	11120	3993	1500	15040	11048	3992	1501	0.265425531914894	0.240353939685788
-Arabidopsis thaliana	X0469.IntAct.	2	FALSE	15113	11354	3759	1463	15040	11282	3758	1464	0.249867021276596	0.226268584843195
+Arabidopsis thaliana	IMEx	2	FALSE	15113	11536	3577	1409	15040	11464	3576	1410	0.237765957446808	0.216499213170318
+Arabidopsis thaliana	X0469.IntAct.	2	FALSE	15113	11799	3314	1372	15040	11727	3313	1373	0.220279255319149	0.200581043457209

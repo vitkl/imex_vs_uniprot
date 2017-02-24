@@ -1,2 +1,2 @@
 all.interactors	interacting.partners.with.the.UniprotKB.identifier	interacting.partners.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	interacting.partners.from.given.species	interacting.partners.from.other.species
-6010	5728	282	3702	Arabidopsis thaliana	5517	211
+5445	5209	236	3702	Arabidopsis thaliana	5000	209

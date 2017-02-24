@@ -14,7 +14,8 @@ knitr::opts_chunk$set(echo = FALSE, results = "hide", warning = FALSE, message =
 
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
-date = as.Date("2017-02-13")
+date = as.Date("2017-02-23")
+# git update-index --assume-unchanged .RData 
 ``` 
 
 The report was published on `r Sys.Date()`. All data used in the report as available on `r date`.
@@ -133,11 +134,16 @@ missing_proteins = TRUE
 ## The code below queries databases, saves and processes results, 
 ## gives summary on how many interactors have Uniprot IDs or belong to the SPECIES_NAME
 ## generates table with 0 and 1 for the combination of SPECIES_NAME, reviewed, isoforms
+
+  ## type in exact database names (the list below is the default for the function)
+  databases <- c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
+                 "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
+
 source("intact_vs_uniprot.R")
 for (i in isoforms) {
   for (r in reviewed) {
     for (n in SPECIES_NAME) {
-      intact_vs_uniprot(SPECIES_NAME = n, reviewed = r, isoforms = i, missing_proteins = TRUE, date = date)
+      intact_vs_uniprot(SPECIES_NAME = n, reviewed = r, isoforms = i, missing_proteins = TRUE, date = date, databases = databases)
       message(paste("- ",n," -  reviewed", r, " -  isoforms included", i))
     }
   }
@@ -221,15 +227,12 @@ proteome_vs_interactome_summary.all$species.name = gsub("strain K12", "Escherich
 SPECIES_NAME = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", SPECIES_NAME)
 SPECIES_NAME = gsub("strain K12", "Escherichia coli, strain K12", SPECIES_NAME)
 library(dplyr)
-proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn)
-proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == TRUE)
-proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, database == IMExdatabase)
-proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn)
-proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, isoforms == FALSE)
-proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, database == IMExdatabase)
+proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == TRUE & database == IMExdatabase)
+proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == FALSE & database == IMExdatabase)
 
 library(VennDiagram)
 {
+source("double.venn.prot.R")
 grid.newpage()
 
 if(reviewed_venn == 2){plotname = paste0("Proteome (SwissProt) coverage by interaction databases(",IMExdatabase,")")
@@ -257,12 +260,10 @@ for (i in 1:length(SPECIES_NAME)) {
   popViewport()
   
   pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+1))
-  source("double.venn.prot.R")
   venn = double.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
   popViewport()
   
   pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+1))
-  source("double.venn.prot.R")
   venn = double.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
   popViewport()
 }
@@ -476,7 +477,7 @@ if(!file.exists(filename_intact)) {
   gitignore = c(substr(filename_intact, 2, nchar(filename_intact)), readLines(".gitignore"))
   write(gitignore, ".gitignore")
   }
-# Read all IntAct - do not attemp without 2.5 GB of free RAM
+# Read all IntAct
 library(data.table)
 all.IntAct = fread(filename_intact)
 # changing column names to data.table-compatible format
@@ -743,7 +744,6 @@ for (r in reviewed) {
 
 databases <- c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
                "HPIDb","I2D-IMEx","InnateDB-IMEx", "MolCon", "UniProt", "MBInfo")
-databases = "IMEx"
 
 source("query_PSICQUIC_for_interactions.R")
 twohybrids_all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, 
@@ -1113,6 +1113,42 @@ all.IntAct.modif[,N_interaction_IDs_per_interactor_B := length(unique(Interactio
 # tagging interactons
 all.IntAct.modif[,large_scale := ifelse(interaction_ids_per_Publication > 100, "large_scale", "small_scale")]
 }
+
+# save tables for separate MI score calculation in large-scale vs small-scale studies (threshold 100):
+scale_of_study_files = c(paste0("./Data/small_scale_100_",format(Sys.Date(),"%m_%y"),"_all_IntAct.txt"),paste0("./Data/large_scale_100_",format(Sys.Date(),"%m_%y"),"_all_IntAct.txt"))
+if(mean(file.exists(paste0(scale_of_study_files,".gz"))) != 1){
+small_scale_dat = copy(all.IntAct)
+{
+small_scale_dat[,interaction_ids_per_Publication := length(unique(Interaction_identifiers)), by = Publication_Identifiers]
+small_scale.index = small_scale_dat$interaction_ids_per_Publication < 100
+large_scale.index = small_scale_dat$interaction_ids_per_Publication >= 100
+rm(small_scale_dat)
+}
+
+{
+url_intact = "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt"
+filename_intact = paste0("./Data/IntAct_MITAB27_release_", format(Sys.Date(), "%m-%Y.txt"))
+if(!file.exists(filename_intact)) {
+  downloader::download(url_intact, filename_intact)
+  gitignore = c(substr(filename_intact, 2, nchar(filename_intact)), readLines(".gitignore"))
+  write(gitignore, ".gitignore")
+  }
+# Read all IntAct
+library(data.table)
+all.IntAct.tab = fread(filename_intact)
+
+fwrite(all.IntAct.tab[small_scale.index,],
+       file = scale_of_study_files[1], 
+       sep = "\t", col.names = TRUE, quote=F)
+fwrite(all.IntAct.tab[large_scale.index,],
+       file = scale_of_study_files[2], 
+       sep = "\t", col.names = TRUE, quote=F)
+R.utils::gzip(scale_of_study_files[1], paste0(scale_of_study_files[1],".gz"))
+R.utils::gzip(scale_of_study_files[2], paste0(scale_of_study_files[2],".gz"))
+gitignore = c(substr(scale_of_study_files, 2, nchar(scale_of_study_files)),substr(paste0(scale_of_study_files,".gz"), 2, nchar(paste0(scale_of_study_files,".gz"))), readLines(".gitignore"))
+write(gitignore, ".gitignore")
+}
+}
 ```
 
 ```{r interactions_to_interactors}
@@ -1210,7 +1246,7 @@ all.IntAct.proteins.with.geneID2 = unique(rbind(temp1,temp2))
 rm(list = c("temp1", "temp2"))
 
 ggplot(all.IntAct.proteins.with.geneID2, aes(interactor_total_PMID, unique_interactions_per_interactor)) +  scale_x_log10() + scale_y_log10() +
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interacting partners of proteins encoded by that gene", subtitle = "blue line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
     ylab("the number of interacting partners (per protein)") + xlab("the number of publications (per gene)") + geom_smooth(method = "rlm", se = T) +
   facet_grid(SPECIES_NAME~scale_of_study, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1) +
     theme(strip.text.y = element_text(angle = 0)) + geom_smooth(method = "lm", se = T, aes(color = "red"))
@@ -1223,7 +1259,7 @@ ggplot(all.IntAct.proteins.with.geneID2, aes(interactor_total_PMID, unique_inter
 # plotting unique_interactions_per_interactor as a function of the number of publications 
 {
 ggplot(all.IntAct.proteins.with.geneID, aes(interactor_total_PMID, unique_interactions_per_interactor)) +  scale_x_log10() + scale_y_log10() +
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interacting partners of proteins encoded by that gene", subtitle = "blue line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
     ylab("the number of interacting partners (per protein)") + xlab("the number of publications (per gene)") + geom_smooth(method = "rlm", se = T) +
   facet_grid(SPECIES_NAME~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1) +
     theme(strip.text.y = element_text(angle = 0)) + geom_smooth(method = "lm", se = T, aes(color = "red"))
@@ -1314,7 +1350,7 @@ all.IntAct.proteins_500= unique(all.IntAct.proteins_500)
 # plotting unique_interactions_per_interactor as a function of the number of publications 
 {
 ggplot(all.IntAct.proteins.with.geneID_500, aes(interactor_total_PMID, unique_interactions_per_interactor)) +  scale_x_log10() + scale_y_log10() +
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interacting partners of proteins encoded by that gene", subtitle = "blue line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n large and small scale experiments")+
     ylab("the number of interacting partners (per protein)") + xlab("the number of publications (per gene)") + geom_smooth(method = "rlm", se = T) +
   facet_grid(SPECIES_NAME~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1) +
     theme(strip.text.y = element_text(angle = 0)) + geom_smooth(method = "lm", se = T, aes(color = "red"))
@@ -1335,7 +1371,7 @@ library(ggplot2)
 ggplot(all.IntAct.proteins.with.geneID, aes(interactor_total_PMID, Median_MI_score))+ scale_x_log10() +
    #geom_density_2d(bins = 15,aes(colour=..level..)) + 
      #scale_color_gradient(low = "grey", high = "black")+
-    ggtitle("The relationship between the number of publications per gene and the sum of MI scores", subtitle = "line was fitted using robust linear regression, large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and the median MI score of interactions", subtitle = "blueline was fitted using robust linear regression, large and small scale experiments")+
     ylab("Median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications (per gene)") +     geom_smooth(method = "rlm", se = T) +
   facet_grid(SPECIES_NAME~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1)+
     theme(strip.text.y = element_text(angle = 0))+     geom_smooth(method = "lm", se = T, aes(color = "red"))
@@ -1345,6 +1381,154 @@ ggplot(all.IntAct.proteins.with.geneID, aes(interactor_total_PMID, Median_MI_sco
 
 
   You can clearly see that the more studied overall the gene is (the more publications per gene there is) the more interactions proteins encoded by that gene tend to have and the more evidence there is for those interactions. Which is not surprising because journals tend to publish novel interactions, and the more studies there is overall - the more studies look into protein interactions. What is quite surprising is that large scale experiments also exhibit this trend. The exception is human and mouse large scale studies, where recent datasets specifically attempted to find interactions for understudied proteins[].
+  In this analysis, MI score for each interaction incorporates the evidence from any interaction detetection experiment and we are not able to separate the score for proteins studied in both large and small scale studies (which we do in the next chapter). 
+  
+  
+### MI score based on either large- or small- scale experiments
+  
+  By taking recalculating MI score based on either large- or small- scale experiments (by separating the effects) we can get a better estimate the publication bias in those types of studies. We used the threshold of 100 to define large-scale study.
+
+```{r MI_score_recalculated}
+{
+SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+SPECIES_IDs = character()
+source("SPECIES_NAME_TO_ID.R")
+count = 1
+for(species in SPECIES_NAME) {
+  x = SPECIES_NAME_TO_ID(species)
+  SPECIES_IDs[count] = x$SPECIES_ID
+  count = count+1
+  rm(list = "x")
+}
+}
+
+{
+  
+if(file.exists(".gitignore")){
+  gitignore = c("/Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt",                 "/Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt",
+                readLines(".gitignore"))
+  write(gitignore, ".gitignore")}
+  
+large_scale_MI_score = fread("./Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt", header = F, stringsAsFactors = F)
+large_scale_MI_score[,scale_of_the_study_100 := "large_scale"]
+large_scale_MI_score = large_scale_MI_score[,.(V14,V15,scale_of_the_study_100)]
+small_scale_MI_score = fread("./Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt", header = F, stringsAsFactors = F)
+small_scale_MI_score[,scale_of_the_study_100 := "small_scale"]
+small_scale_MI_score = small_scale_MI_score[,.(V14,V15,scale_of_the_study_100)]
+scale_of_the_study_MIscore = rbind(large_scale_MI_score,small_scale_MI_score)
+
+scale_of_the_study_MIscore[, Confidence_values_new := gsub("^intact-miscore:[[:digit:]]\\.[[:digit:]].*\\|miscore:","", V15)]
+scale_of_the_study_MIscore[, V15 := NULL]
+scale_of_the_study_MIscore[, Confidence_values_new := gsub("-","NA",Confidence_values_new)]
+scale_of_the_study_MIscore[, Confidence_values_new := as.numeric(Confidence_values_new)]
+inter_id = function(Interaction_identifiers,Confidence_values_new, scale_of_the_study_100) {
+  ids = gsubfn::strapplyc(Interaction_identifiers,"EBI-[[:digit:]]+",simplify = T)
+  data.table(Interaction_identifiers = ids, 
+             Confidence_values_new = Confidence_values_new,
+             scale_of_the_study_100 = scale_of_the_study_100)
+}
+inter_id = compiler::cmpfun(inter_id) # byte-compiling the function which is applied multiple times speeds up the computation (505.981 sec to 478.425 sec)
+scale_of_the_study_MIscore = scale_of_the_study_MIscore[, inter_id(V14,Confidence_values_new, scale_of_the_study_100), by = V14]
+scale_of_the_study_MIscore[, V14 := NULL]
+setnames(scale_of_the_study_MIscore, colnames(scale_of_the_study_MIscore)[1], "Interaction_identifiers")
+}
+# checking no interactions have been lost
+# sum(!unique(all.IntAct.modif$Interaction_identifiers) %in% unique(scale_of_the_study_MIscore$Interaction_identifiers))
+# sum(!unique(scale_of_the_study_MIscore$Interaction_identifiers) %in% unique(all.IntAct.modif$Interaction_identifiers))
+# sum(!unique(all.IntAct$Interaction_identifiers) %in% unique(scale_of_the_study_MIscore$Interaction_identifiers))
+# sum(!unique(all.IntAct.modif$Interaction_identifiers) %in% unique(all.IntAct$Interaction_identifiers))
+
+## combining recalculated MI scores with other interaction information 
+all.IntAct.modif = merge(x = unique(all.IntAct.modif), y = unique(scale_of_the_study_MIscore),
+                         by.x = "Interaction_identifiers", by.y = "Interaction_identifiers")
+
+## Recalculating per protein information
+
+#interactions_to_interactors
+# interactions to proteins and genes
+
+# Calculating aggregated MI score per GeneID (includes interactions between proteins encoded by that gene) and tagging interactors by the scale of the study (no need to get overlap group)
+{
+  all.IntAct.proteins.score = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   Confidence_values_new = as.numeric(c(Confidence_values_new,Confidence_values_new)),
+                   interactor_GeneID = c(IDs_interactor_A_GeneID, IDs_interactor_B_GeneID),
+                   scale_of_the_study_100 = c(scale_of_the_study_100, scale_of_the_study_100))]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+  all.IntAct.proteins.score[,Median_MI_score := median(Confidence_values_new, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Mean_MI_score := mean(Confidence_values_new, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,sum_MI_score := sum(Confidence_values_new, na.rm = T), by = interactor_GeneID]
+  all.IntAct.proteins.score[,Confidence_values_new := NULL]
+  all.IntAct.proteins.score = unique(all.IntAct.proteins.score)
+}
+# calculating the number of interactions and merging to the MIscore table
+{
+all.IntAct.proteins_500 = all.IntAct.modif[,data.table(
+                   IDs_interactor = c(IDs_interactor_A,IDs_interactor_B),
+                   interactor_total_PMID = c(interactor_A_total_PMID,interactor_B_total_PMID),
+                   Taxid_interactor = c(Taxid_interactor_A,Taxid_interactor_B),
+                   interactor_IDs_databases = c(interactor_IDs_databases_A, interactor_IDs_databases_B),
+                   unique_interactions_per_interactor = c(unique_interactions_per_interactor_A, unique_interactions_per_interactor_B),
+                   N_interaction_IDs_per_interactor = c(N_interaction_IDs_per_interactor_A, N_interaction_IDs_per_interactor_B)
+                   )]
+all.IntAct.proteins_500 = unique(all.IntAct.proteins_500)
+all.IntAct.proteins_500[,unique_interactions_per_interactor := sum(unique_interactions_per_interactor), by = IDs_interactor]
+all.IntAct.proteins_500[,N_interaction_IDs_per_interactor := sum(N_interaction_IDs_per_interactor), by = IDs_interactor]
+all.IntAct.proteins_500 = unique(all.IntAct.proteins_500)
+
+all.IntAct.proteins_500 = merge(all.IntAct.proteins_500,all.IntAct.proteins.score, by.x = "IDs_interactor", by.y = "IDs_interactor",all = T)
+all.IntAct.proteins_500= unique(all.IntAct.proteins_500)
+}
+# select_species_and_uniprot}
+{
+# Select only relevant species, only uniprotkb identifiers,
+  all.IntAct.proteins_500 = all.IntAct.proteins_500[Taxid_interactor %in% SPECIES_IDs & interactor_IDs_databases == "uniprotkb",]
+  
+  # filter out proteins not mapped to geneID
+  all.IntAct.proteins_500[,n_geneid := as.numeric(length(unique(interactor_GeneID))),by = IDs_interactor]
+  # filter out interactors without gene ids mapped to them
+  all.IntAct.proteins.with.geneID_500 = copy(all.IntAct.proteins_500[,n_protid := as.numeric(length(unique(IDs_interactor))),by = interactor_GeneID][n_protid < max(n_protid),])
+  # tag proteins by the number of mappings - one_to_one or one_to_many
+  all.IntAct.proteins.with.geneID_500[n_geneid > 1 | n_protid > 1, gene_id_prot_id := "one_to_many"]
+  # filter out genes without proteins mapped to them - NA
+  all.IntAct.proteins.with.geneID_500[n_geneid == 1 & n_protid == 1, gene_id_prot_id := "one_to_one"]
+
+  SPECIES_NAME_ID = data.table(SPECIES_ID = SPECIES_IDs, SPECIES_NAME = SPECIES_NAME)
+  all.IntAct.proteins.with.geneID_500 = merge(all.IntAct.proteins.with.geneID_500, SPECIES_NAME_ID, by.x = "Taxid_interactor", by.y = "SPECIES_ID", all=FALSE)
+  # filter out proteins without publications and proteins without MI score
+  all.IntAct.proteins.with.geneID_500 = all.IntAct.proteins.with.geneID_500[complete.cases(all.IntAct.proteins.with.geneID_500),]
+  # filter out "one_to_many" and delete unnecessary columns
+  all.IntAct.proteins.with.geneID_500 = all.IntAct.proteins.with.geneID_500[gene_id_prot_id == "one_to_one",]
+  all.IntAct.proteins.with.geneID_500[,c("Taxid_interactor","interactor_IDs_databases","interactor_GeneID","Mean_MI_score","n_geneid",'n_protid',"gene_id_prot_id") := NULL]
+  all.IntAct.proteins.with.geneID_500 = unique(all.IntAct.proteins.with.geneID_500)
+}
+``` 
+
+```{r N_publications_vs_recalculated_MI_score_median, fig.height=9, fig.width=9, fig.cap= "Figure 8"}
+{
+ggplot(all.IntAct.proteins.with.geneID_500, aes(interactor_total_PMID, Median_MI_score))+ scale_x_log10() +
+   #geom_density_2d(bins = 15,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black")+
+    ggtitle("The relationship between the number of publications per gene and the median MI score of interactions", subtitle = "blueline was fitted using robust linear regression, large and small scale experiments")+
+    ylab("Median MI score for the interactions \n including the proteins encoded by that gene") + xlab("the number of publications (per gene)") +     geom_smooth(method = "rlm", se = T) +
+  facet_grid(SPECIES_NAME~scale_of_the_study_100, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1)+
+    theme(strip.text.y = element_text(angle = 0))+     geom_smooth(method = "lm", se = T, aes(color = "red"))
+}
+```
+
+```{r N_publications_vs_recalculated_MI_score_sum, fig.height=9, fig.width=9, fig.cap= "Figure 8"}
+{
+ggplot(all.IntAct.proteins.with.geneID_500, aes(interactor_total_PMID, sum_MI_score))+ scale_x_log10() +
+   #geom_density_2d(bins = 15,aes(colour=..level..)) + 
+     #scale_color_gradient(low = "grey", high = "black")+
+    ggtitle("The relationship between the number of publications per gene and the sum of MI score of the interactions", subtitle = "blueline was fitted using robust linear regression, large and small scale experiments")+
+    ylab("Sum MI score of the interactions \n including the proteins encoded by that gene") + xlab("the number of publications (per gene)") +     geom_smooth(method = "rlm", se = T) +
+  facet_grid(SPECIES_NAME~scale_of_the_study_100, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1)+
+    theme(strip.text.y = element_text(angle = 0))+     geom_smooth(method = "lm", se = T, aes(color = "red"))
+}
+```
+
+### The number of interactions and publication separated by interaction detection method
   
 
 ```{r interaction_properties_vs_pubN, fig.height=9, fig.width=10, fig.cap= "Figure 10"}
@@ -1377,7 +1561,7 @@ all.IntAct.protein_interaction_details_all = unique(all.IntAct.protein_interacti
 {
 ggplot(all.IntAct.protein_interaction_details_all, aes(interactor_total_PMID, unique_interactions_per_interactor, color = two_hybrid_vs_AP_MS))+
     scale_x_log10()+ scale_y_log10()  + 
-    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments")+
+    ggtitle("The relationship between the number of publications per gene and \n the number of interactions in which proteins encoded by that gene participate", subtitle = "line was fitted using robust linear regression, \n all UniprotAC were coerced to generic UniprotAC, \n grouped by interaction detection method (colour), \n large and small scale experiments")+
     ylab("the number of interactions(per protein) in which proteins encoded by that gene participate") + xlab("the number of publications per gene") +
      geom_smooth(method = "rlm", se = T)+
   facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free_y") + geom_point(size = 0.5, alpha = 0.1)+
@@ -1398,14 +1582,14 @@ The plot below shows how the distribution of the number of interacting partners 
 library(ggplot2)
 library(scales)
 ggplot(all.IntAct.protein_interaction_details_all, aes(y=unique_interactions_per_interactor, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS))+ 
-    ggtitle("the number of interacting partners associated with the protein detection method and the scale of the study", subtitle = "all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments")+
+    ggtitle("the number of interacting partners associated with the protein detection method and the scale of the study", subtitle = "all UniprotAC were coerced to generic UniprotAC, \n grouped by interaction detection method (colour), \n large and small scale experiments")+
     ylab("the number of interacting partners") + xlab("interaction detection method") +
   facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_boxplot(alpha =0.7)+scale_y_log10()+
      theme(strip.text.y = element_text(angle = 0), axis.text.x = element_text(angle = -35,vjust = 0.65))
 ```
 
 
-  The number of interaction ID per protein relates to the number of times interaction was detected.
+  The number of interaction IDs per protein relates to the number of experiments (not publications or interacting partners) in which interaction between given protein and it's interacting partners was detected.
 
 ```{r interaction_properties_vs_unique_interaction_IDs, fig.height=8, fig.width=10}
        # read the saved table with human_not_in_IMEx_protein_properties_processing chunk
@@ -1414,11 +1598,26 @@ ggplot(all.IntAct.protein_interaction_details_all, aes(y=unique_interactions_per
 library(ggplot2)
 library(scales)
 ggplot(all.IntAct.protein_interaction_details_all, aes(y=N_interaction_IDs_per_interactor, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS))+ 
-    ggtitle("the number of interactions (interaction IDs) associated with the protein detection method and the scale of the study", subtitle = "all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments")+
-    ylab("the number of interacting partners") + xlab("interaction detection method") +
+    ggtitle("the number of interactions (interaction IDs) associated with the protein detection method and the scale of the study", subtitle = "all UniprotAC were coerced to generic UniprotAC, \n grouped by interaction detection method (colour), \n large and small scale experiments")+
+    ylab("the number of interaction IDs, interaction detection experiments") + xlab("interaction detection method") +
   facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_boxplot(alpha =0.7)+scale_y_log10()+
      theme(strip.text.y = element_text(angle = 0), axis.text.x = element_text(angle = -35,vjust = 0.65))
 ```
+
+   The number of interacting partners should be linearly dependent on the number of experiments they were detected in
+
+```{r interaction_properties_vs_unique_interaction_IDs_vs_unique_interactors, fig.height=8, fig.width=10}
+library(ggplot2)
+library(scales)
+ggplot(all.IntAct.protein_interaction_details_all, aes(y=unique_interactions_per_interactor , x =N_interaction_IDs_per_interactor, color = two_hybrid_vs_AP_MS))+ 
+    ggtitle("the number of interactions (interaction IDs) associated with the number of times interaction was reported, the protein detection method and the scale of the study", subtitle = "all UniprotAC were coerced to generic UniprotAC, \n divided by interaction detection method (colour), \n large and small scale experiments")+
+    ylab("the number of interacting partners") + xlab("interaction detection method") +
+  facet_grid(SPECIES_NAME.x~large_small_scale, scales = "free") + geom_point(alpha =0.7)+scale_y_log10()+scale_x_log10()+geom_smooth(method = "rlm")+
+     theme(strip.text.y = element_text(angle = 0), axis.text.x = element_text(angle = -35,vjust = 0.65))
+```
+
+
+Comparison of figures which relate the number of interacting partners to the interaction detection method and how well those proteins are studied suggests that proteins have the more interacting partners the more experimental attempts were done to identify them and if the proteins were studied using different interaction detection methods. This supports the idea that different interaction detection methods identify different interactions based on each method bias (as discussed in the chapter 5). 
 
 ## 7. Proteins with no interacting partners are less studied overall
 
@@ -1521,9 +1720,10 @@ proteome_vs_imex_interaction_details_f_Percent_disorder = unique(proteome_vs_ime
 
 
 ```{r presence_in_IMEx_vs_publications, fig.height=8, fig.width=8}
-#proteome_vs_imex_interaction_details_f_Percent_disorder[, whole_proteome_Uniprot_IMEx_x_SPECIES_NAME := paste0(whole_proteome_Uniprot_IMEx,SPECIES_NAME)]
-#proteome_vs_imex_interaction_details_f_Percent_disorder[, median_studies_per_group := mean((whole_proteome_IDs_PMID)), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = whole_proteome_IDs_PMID, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of studies , log10 scale")+ ggtitle("the distribution of the number of studies for proteins with \n and without interacting partners annotated in IMEx") #+geom_vline(aes(xintercept = median_studies_per_group, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+proteome_vs_imex_interaction_details_f_Percent_disorder[, whole_proteome_Uniprot_IMEx_x_SPECIES_NAME := paste0(whole_proteome_Uniprot_IMEx,SPECIES_NAME)]
+proteome_vs_imex_interaction_details_f_Percent_disorder[, median_studies_per_group := median(log10(whole_proteome_IDs_PMID), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
+
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = whole_proteome_IDs_PMID, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of studies , log10 scale")+ ggtitle("the distribution of the number of studies for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
 ```
 
 
@@ -1542,9 +1742,12 @@ z[i] =wilcox.test(Hydropathy_m~whole_proteome_Uniprot_IMEx, data = sp)$p.value
 }
 Percent_disorder_types_for_plot = melt(data = proteome_vs_imex_interaction_details_f_Percent_disorder,variable.name ="disorder_pred_algorithm",value.name ="percent_disorder",measure.vars =c("IUPRED_PD","COILS_PD","HOTLOOPS_PD","REM465_PD","ICHR_consensus_PD"))
 
-ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10()
+Percent_disorder_types_for_plot[, whole_proteome_Uniprot_IMEx_x_disorder_pred_algorithm_SPECIES_NAME := paste0(whole_proteome_Uniprot_IMEx,disorder_pred_algorithm,SPECIES_NAME)]
+Percent_disorder_types_for_plot[, median_percent_disorder:= median(log10(percent_disorder), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_disorder_pred_algorithm_SPECIES_NAME]
 
-ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10()
+ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10() +geom_vline(aes(xintercept = 10^median_percent_disorder, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+
+ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10() +geom_vline(aes(xintercept = 10^median_percent_disorder, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
 ```
 
 
@@ -1561,9 +1764,11 @@ sp = proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == SPE
 z[i] =wilcox.test(Hydropathy_m~whole_proteome_Uniprot_IMEx, data = sp)$p.value
 }
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution of the fraction of charged residues for proteins with \n and without interacting partners annotated in IMEx")
+proteome_vs_imex_interaction_details_f_Percent_disorder[, median_FCR := median(log10(FCR), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution density of the fraction of charged residues for proteins with \n and without interacting partners annotated in IMEx")
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution of the fraction of charged residues for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution density of the fraction of charged residues for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
 
 ```
 
@@ -1575,9 +1780,12 @@ for(i in 1:length(SPECIES_NAME)){
 sp = proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == SPECIES_NAME[i],]
 z[i] =wilcox.test(Hydropathy_m~whole_proteome_Uniprot_IMEx, data = sp)$p.value
 }
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners annotated in IMEx")
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners annotated in IMEx")
+proteome_vs_imex_interaction_details_f_Percent_disorder[, median_Hydropathy_m := median(log10(Hydropathy_m), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
+
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
 
 ```
 
@@ -1625,7 +1833,7 @@ cor(Percent_disorder_types_for_plot$percent_disorder,Percent_disorder_types_for_
    As you can see from the loess-fitted curve (red, loess stands for local polynomial regression), the proteins with a low fraction of disordered domains tend to have fewer interactions while further increasing the fraction of disordered regions doesn't change the trend. The more general trend is shown in blue - robust linear regression. 
    Whether these trends are the result of chance or study bias is yet to be tested.
 
-### The longer yeast protein is the more interactions it has (doesn't hold true for human)
+### The longer yeast protein is the more interactions it has (doesn't hold true for mouse)
 
    In theory, the length of the protein can influence the number of interaction partners of the protein: the longer the protein the more functional and structural domains it has and the more molecular interactions that function will require.
    

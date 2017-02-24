@@ -1,0 +1,69 @@
+---
+title: "Clusterprofiler GO enrichment simulation (enricher() function)"
+author: "Vitalii Kleshchevnikov"
+date: "23 February 2017"
+output: html_document
+---
+
+## You can test if any sets of things are enriched in a specific set (1) compared to the other big set (which includes set 1)
+## Using enricher() function
+```{r setup}
+### ### clusterprofiler GO enrichment
+suppressPackageStartupMessages({
+library(clusterProfiler)
+library(data.table)})
+```
+
+Generating artificial protein universe:
+
+```{r universe}
+# generating protein universe
+set.seed(1)
+protein_universe = paste0("P",1:10000)
+```
+
+Generating artificial GO terms to protein ID mapping lists
+
+```{r GO2protein}
+terms = paste0("GO", 1:100)
+term2protein_sets = sapply(terms, function(term) {sample(protein_universe, sample(80:500, 1))})
+term2protein_sets = data.table(terms = names(term2protein_sets), sets = term2protein_sets)
+term2protein_sets = term2protein_sets[,data.table(terms = rep(terms, times = sapply(sets,length)), proteins = unlist(sets))]
+```
+
+Generating my "experimental" protein set in which proteins assiciated with "GO50", "GO51" ... "GO60" are enriched
+
+```{r experimental_list}
+my_protein_set = unique(c(sample(protein_universe, 1000), term2protein_sets[terms %in% paste0("GO", 50:60), proteins[1:30], by = terms]$V1))
+my_protein_set = my_protein_set[!is.na(my_protein_set)]
+summary(my_protein_set)
+```
+
+Testing if protein sets are enriched. Using Benjamini and Hochberg multiple hypothesis testing correction
+
+```{r enrichment}
+term2protein_sets = as.data.frame(term2protein_sets) # enricher can take only data.frame as TERM2GENE argument
+enriched_terms = enricher(gene = my_protein_set, pvalueCutoff = 0.05, pAdjustMethod = "BH", universe = protein_universe,
+         minGSSize = 10, maxGSSize = 500, qvalueCutoff = 0.05, TERM2GENE = term2protein_sets,
+         TERM2NAME = NA)
+(enriched_terms)
+```
+
+Generating my "experimental" protein list in which no proteins are enriched
+
+```{r experimental_list_rand}
+my_protein_set_rand = unique(sample(protein_universe, 1000))
+my_protein_set_rand = my_protein_set_rand[!is.na(my_protein_set_rand)]
+summary(my_protein_set_rand)
+```
+
+Testing if protein sets are enriched in my random protein list
+
+```{r no_enrichment}
+term2protein_sets = as.data.frame(term2protein_sets) # enricher can take only data.frame as TERM2GENE argument
+enriched_terms = enricher(gene = my_protein_set_rand, pvalueCutoff = 0.05, pAdjustMethod = "BH", universe = protein_universe,
+         minGSSize = 10, maxGSSize = 500, qvalueCutoff = 0.05, TERM2GENE = term2protein_sets,
+         TERM2NAME = NA)
+(enriched_terms)
+# as.data.frame(enriched_terms) # this is how you can extract info
+```

@@ -1,7 +1,6 @@
 all.interactors	interacting.partners.with.the.UniprotKB.identifier	interacting.partners.with.the.other.identifier	SPECIES_ID	SPECIES_NAME	interacting.partners.from.given.species	interacting.partners.from.other.species
 18829	18829	0	9606	Homo sapiens	15372	3457
 10750	10750	0	10090	Mus musculus	5559	5191
-6100	6100	0	559292	strain ATCC 204508	5723	377
 2140	2140	0	7227	Drosophila melanogaster	2060	80
 916	916	0	6239	Caenorhabditis elegans	878	38
 6725	6725	0	3702	Arabidopsis thaliana	6634	91

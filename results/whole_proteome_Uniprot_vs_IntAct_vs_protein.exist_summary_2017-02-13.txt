@@ -5,25 +5,25 @@ strain ATCC 204508	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence
 strain K12	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	TRUE	4493	3158	1646	604	3149	2243	9	1646	740	0	906	0	906
 Drosophila melanogaster	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	TRUE	43865	10323	34400	4951	10315	4514	8	34400	28599	0	5801	0	5801
 Caenorhabditis elegans	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	TRUE	28795	4808	15517	10286	4806	2992	2	15517	13703	0	1814	0	1814
-Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	TRUE	79145	5234	69819	6511	5208	2815	26	69819	67426	0	2393	0	2393
+Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	TRUE	79145	4690	69819	6851	4670	2475	20	69819	67624	0	2195	0	2195
 Homo sapiens	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	156710	16926	103910	38881	16831	13919	95	103910	100998	0	2912	0	2912
 Mus musculus	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	80930	5073	46920	29564	5065	4446	8	46920	46301	0	619	0	619
 strain ATCC 204508	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	6732	5525	1505	379	5480	4848	45	1505	873	0	632	0	632
 strain K12	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	4482	3156	1646	595	3147	2241	9	1646	740	0	906	0	906
 Drosophila melanogaster	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	42553	10111	34400	3863	10103	4290	8	34400	28587	0	5813	0	5813
 Caenorhabditis elegans	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	27503	4763	15517	9039	4761	2947	2	15517	13703	0	1814	0	1814
-Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	77060	5222	69819	4438	5196	2803	26	69819	67426	0	2393	0	2393
+Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	1	FALSE	77060	4686	69819	4770	4666	2471	20	69819	67624	0	2195	0	2195
 Homo sapiens	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	42211	19363	5254	21685	16981	15272	2382	5254	3545	0	1709	0	1709
 Mus musculus	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	24988	5154	4671	16062	4548	4255	606	4671	4378	0	293	0	293
 strain ATCC 204508	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	6751	5525	1494	409	5480	4848	45	1494	862	0	632	0	632
 strain K12	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	4445	3158	1599	603	3149	2243	9	1599	693	0	906	0	906
 Drosophila melanogaster	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	4726	10323	1667	1288	2910	1771	7413	1667	528	0	1139	0	1139
 Caenorhabditis elegans	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	5132	4808	2532	1826	1572	774	3236	2532	1734	0	798	0	798
-Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	17198	5234	9155	5429	3771	2614	1463	9155	7998	0	1157	0	1157
+Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	TRUE	17198	4690	9155	5760	3318	2283	1372	9155	8120	0	1035	0	1035
 Homo sapiens	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	20171	16926	5254	2130	14559	12787	2367	5254	3482	0	1772	0	1772
 Mus musculus	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	16844	5073	4671	7999	4470	4174	603	4671	4375	0	296	0	296
 strain ATCC 204508	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	6721	5525	1494	379	5480	4848	45	1494	862	0	632	0	632
 strain K12	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	4434	3156	1599	594	3147	2241	9	1599	693	0	906	0	906
 Drosophila melanogaster	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	3414	10111	1667	200	2698	1547	7413	1667	516	0	1151	0	1151
 Caenorhabditis elegans	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	3840	4763	2532	579	1527	729	3236	2532	1734	0	798	0	798
-Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	15113	5222	9155	3356	3759	2602	1463	9155	7998	0	1157	0	1157
+Arabidopsis thaliana	whole_proteome_Uniprot	X0469.IntAct.	missing_protein_evidence	2	FALSE	15113	4686	9155	3679	3314	2279	1372	9155	8120	0	1035	0	1035
