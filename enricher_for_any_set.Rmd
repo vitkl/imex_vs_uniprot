@@ -5,6 +5,9 @@ date: "23 February 2017"
 output: html_document
 ---
 
+   Here, I take a synthetic set of proteins (P1 to P10000) as a reference(universe) set, then I generate 100 of fake GO terms and associated lists of proteins taken from the reference set.   
+   Next, I generate an “experimental" list of proteins enriched for 10 specific fake GO terms by taking proteins associated with those terms and mixing them with random proteins. Then I do enrichment and discover my 10 sets. Then I try the same procedure with the “experimental” set consisting just of random proteins.
+
 ## You can test if any sets of things are enriched in a specific set (1) compared to the other big set (which includes set 1)
 ## Using enricher() function
 ```{r setup}

@@ -125,6 +125,7 @@ $(document).ready(function () {
 
 
 <p>clusterProfiler vignette - <a href="https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html" class="uri">https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html</a></p>
+<p>Here, I take swissprot as a reference(universe) set, then I generate an “experimental” list of proteins enriched for 3 specific GO terms (leucocyte stuff) by taking proteins associated with those terms and mixing them with random proteins. Then I do enrichment and discover my leucocyte sets. Then I try the same procedure with the “experimental” set consisting just of random proteins.</p>
 <div id="you-can-test-if-your-specific-set-of-proteins-1-is-enriched-in-any-of-the-protein-sets-associated-with-go-terms-compared-to-the-other-big-set-which-includes-set-1" class="section level3">
 <h3>You can test if your specific set of proteins (1) is enriched in any of the protein sets associated with GO terms compared to the other big set (which includes set 1)</h3>
 </div>
@@ -237,8 +238,8 @@ ego</code></pre>
 ##   gene clusters. OMICS: A Journal of Integrative Biology
 ##   2012, 16(5):284-287</code></pre>
 <pre class="r"><code>ego_sorted = as.data.frame(ego)[order(as.data.frame(ego)$p.adjust),]</code></pre>
-<p>GO terms which “experimental” protein list should be enriched for: <strong>“<a href="GO:0001909" class="uri">GO:0001909</a>” - leukocyte mediated cytotoxicity, “<a href="GO:0045321" class="uri">GO:0045321</a>” - leukocyte activation, “<a href="GO:0002757" class="uri">GO:0002757</a>” - immune response-activating signal transduction</strong><br />
-<strong>top 10 terms</strong><br />
+<p>GO terms which “experimental” protein list should be enriched for: <strong>“<a href="GO:0001909" class="uri">GO:0001909</a>” - leukocyte mediated cytotoxicity, “<a href="GO:0045321" class="uri">GO:0045321</a>” - leukocyte activation, “<a href="GO:0002757" class="uri">GO:0002757</a>” - immune response-activating signal transduction</strong></p>
+<p><strong>top 10 terms as discovered by enrichment analysis</strong><br />
 leukocyte mediated cytotoxicity , cell killing , immune response-regulating signaling pathway , leukocyte mediated immunity , immune response-activating signal transduction , activation of immune response , innate immune response-activating signal transduction , activation of innate immune response , lymphocyte mediated immunity , natural killer cell mediated cytotoxicity</p>
 <p><strong>Generating my “experimental” protein list in which no proteins are enriched</strong></p>
 <pre class="r"><code>my_protein_set_rand = unique(sample(swiss_prot$Entry, 1000))
