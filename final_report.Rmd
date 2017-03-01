@@ -475,8 +475,6 @@ url_intact = "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.t
 filename_intact = paste0("./Data/IntAct_MITAB27_release_", format(Sys.Date(), "%m-%Y.txt"))
 if(!file.exists(filename_intact)) {
   downloader::download(url_intact, filename_intact)
-  gitignore = c(substr(filename_intact, 2, nchar(filename_intact)), readLines(".gitignore"))
-  write(gitignore, ".gitignore")
   }
 # Read all IntAct
 library(data.table)
@@ -600,7 +598,7 @@ for (r in reviewed) {
 
    coming soon
 
-```{r human_not_in_IMEx_protein_properties_GOenrichment}
+```{r human_not_in_IMEx_protein_properties_GOenrichment, fig.width=10, fig.height=8}
 ##====================================================================
 suppressPackageStartupMessages({
       library(data.table)
@@ -627,12 +625,29 @@ uniprot2enrichedGOterms = function(my_protein_set, reference_set){
 ego <-  enrichGO(gene = my_protein_set, org.Hs.eg.db, keytype = "UNIPROT", ont = "BP",
   pvalueCutoff = 1, pAdjustMethod = "BH", universe = reference_set, qvalueCutoff = 1,
   minGSSize = 10, maxGSSize = Inf, readable = FALSE)
-ego_sorted = as.data.table(as.data.frame(ego)[order(as.data.frame(ego)$p.adjust),])
+# ego_sorted = as.data.table(as.data.frame(ego)[order(as.data.frame(ego)$p.adjust),])
 }
 enrichedGOterms = uniprot2enrichedGOterms(
   my_protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,whole_proteome_IDs],
   reference_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]
   )
+
+dotplot(enrichedGOterms,showCategory = 20)
+enrichedGOterms_tab = as.data.table(as.data.frame(enrichedGOterms))
+upsetplot(enrichedGOterms)
+```
+
+```{r human_not_in_IMEx_protein_properties_GOdepleted, fig.width=10, fig.height=8}
+depletedGOterms = uniprot2enrichedGOterms(
+  my_protein_set = proteome_vs_imex_details_f[IMEx == 1 & whole_proteome_Uniprot == 1,whole_proteome_IDs],
+  reference_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]
+  )
+dotplot(depletedGOterms,showCategory = 20)
+```
+
+```{r GO_enrichment_map, fig.height=20, fig.width=20}
+set.seed(7)
+enrichMap(enrichedGOterms, n = 40)
 ```
 
 ### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
@@ -743,6 +758,98 @@ ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status_label)) +geom_de
 
 ```{r not_in_imex_missing_protein_evidence}
 
+```
+
+
+## 5. Proteins missing interaction evidence are not associated with specific disease
+
+```{r open_targets}
+# install.packages("devtools", dependencies = TRUE)  
+# library(devtools)  
+# install_github("cttv/ropentargets")  
+# fread("http://www.targetvalidation.org/api/latest/public/search?q=O00198&size=1&filter=target&format=tab")
+# {"disease"="EFO_0000270", "target"=["ENSG00000073756","ENSG00000172057","ENSG00000205189"], "fields"=["association_score.overall","target.id","disease.id"],"format"="tab"}
+# write(toJSON(list(target = "ENSG00000135116", fields = c("association_score.overall","target.id","disease.id"), format="tab")), "targetvalidation.txt")
+# system(paste0("curl -X POST -d @targetvalidation.txt --header \"Content-Type:application/json\" http://www.targetvalidation.org/api/latest/public/association/filter"))
+# library(ropentargets)
+# geneName <- c('O00198', 'O00203')
+# geneObj <- Gene$new(geneName)
+# geneObj$getGeneIDNameMap() 
+
+# manually checking for updated file is needed
+# suppressPackageStartupMessages(library(jsonlite))
+# open_targets_associations_filename = "./Data/16.12_association_data_fixed.json"
+# if(!file.exists(open_targets_associations_filename)){
+# open_targets_associations_url = "https://s3-eu-west-1.amazonaws.com/targetvalidation-dumps/16.12_association_data_fixed.json.gz"
+# downloader::download(open_targets_associations_url,
+#                      paste0(open_targets_associations_filename, ".gz"))
+# R.utils::gunzip(open_targets_associations_filename)
+# }
+# open_targets_mapping = stream_in(file(open_targets_associations_filename))
+      
+```
+
+```{r disease_enrichment}
+# ===================================================
+# read the saved table
+SPECIES_NAME = "Homo sapiens"
+n = SPECIES_NAME
+## only reviewed = 2 is relevant for this analysis
+reviewed = 2
+r = reviewed
+isoforms = FALSE
+i = isoforms
+      filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
+      proteome_vs_imex_details_f = as.data.table(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+      proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
+
+
+### DisGnet
+      # mapping UniprotID to entrezgene id for DisGnet enrichment using enrichDGN() from DOSE
+      #loading biomaRt functionality
+library(biomaRt)
+ensembl=useMart("ensembl")
+ensembl = useDataset("hsapiens_gene_ensembl",mart=ensembl)
+# getting names of the things one can get from ENSEMBL
+attributes = listAttributes(ensembl)
+# mapping IDs
+# ensembl_gene_id = getBM(attributes = c('ensembl_gene_id', 'uniprot_swissprot'), 
+#              values = proteome_vs_imex_details_f$whole_proteome_IDs, 
+#              mart = ensembl)
+# ensembl_gene_id = ensembl_gene_id[ensembl_gene_id$uniprot_swissprot != "",]
+# ensembl_gene_id_comp = ensembl_gene_id[complete.cases(ensembl_gene_id),]
+
+entrezgene = getBM(attributes = c('entrezgene', 'uniprot_swissprot'), 
+              values = proteome_vs_imex_details_f$whole_proteome_IDs, 
+              mart = ensembl)
+entrezgene = entrezgene[entrezgene$uniprot_swissprot != "",]
+entrezgene_comp = entrezgene[complete.cases(entrezgene),]
+# Mapping ID to the other info in the table
+proteome_vs_imex_details_f = merge(x = proteome_vs_imex_details_f, y = entrezgene_comp, 
+                                   by.x = "whole_proteome_IDs",
+                                   by.y = "uniprot_swissprot",
+                                   all.x = T, all.y = F)
+# define function which does enrichment
+uniprot2enrichedDiseases = function(my_protein_set_entrez, reference_set_entrez){
+  suppressPackageStartupMessages({
+      library(DOSE)})
+ego <-  enrichDGN(gene = as.character(my_protein_set_entrez), 
+                                               pvalueCutoff = 1, pAdjustMethod = "BH", 
+                                               universe = as.character(reference_set_entrez), 
+                                               minGSSize = 10, maxGSSize = 500, qvalueCutoff = 1, readable = FALSE)
+# ego_sorted = as.data.table(as.data.frame(ego)[order(as.data.frame(ego)$p.adjust),])
+}
+enrichedDiseases = uniprot2enrichedDiseases(
+  my_protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,entrezgene],
+  reference_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,entrezgene]
+  )
+
+
+```
+
+
+```{r disease_enrichment_map, fig.height=20, fig.width=20}
+enrichMap(enrichedDiseases)
 ```
 
 ## 5. Do major protein interaction detection methods (two-hybrid and AP-MS) exhibit a bias towards biochemical properties of the proteins involved?
@@ -1049,10 +1156,6 @@ for(i in 1:length(uniprotAC2geneID_filename.dat)){
   if(!file.exists(uniprotAC2geneID_filename.dat[i])) {
     downloader::download(paste0(uniprotAC2geneID_url,filenames[i]), uniprotAC2geneID_filename[i])
   R.utils::gunzip(uniprotAC2geneID_filename[i])
-  # make git ignore big files 
-  gitignore = c(substr(uniprotAC2geneID_filename.dat[i], 2, nchar(uniprotAC2geneID_filename.dat[i])),
-                readLines(".gitignore"))
-  write(gitignore, ".gitignore")
 }
 }
 # reading files for uniprotAC to geneID mapping
@@ -1088,8 +1191,6 @@ geneID2pubmed_filename_txt = substr(geneID2pubmed_filename, 1, nchar(geneID2pubm
 if(!file.exists(geneID2pubmed_filename_txt)) {
   downloader::download(geneID2pubmed_url, geneID2pubmed_filename)
   R.utils::gunzip(geneID2pubmed_filename)
-  gitignore = c(substr(geneID2pubmed_filename, 2, nchar(geneID2pubmed_filename)-3), readLines(".gitignore"))
-  write(gitignore, ".gitignore")
 }
 }
 
@@ -1161,8 +1262,6 @@ url_intact = "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.t
 filename_intact = paste0("./Data/IntAct_MITAB27_release_", format(Sys.Date(), "%m-%Y.txt"))
 if(!file.exists(filename_intact)) {
   downloader::download(url_intact, filename_intact)
-  gitignore = c(substr(filename_intact, 2, nchar(filename_intact)), readLines(".gitignore"))
-  write(gitignore, ".gitignore")
   }
 # Read all IntAct
 library(data.table)
@@ -1176,8 +1275,6 @@ fwrite(all.IntAct.tab[large_scale.index,],
        sep = "\t", col.names = TRUE, quote=F)
 R.utils::gzip(scale_of_study_files[1], paste0(scale_of_study_files[1],".gz"))
 R.utils::gzip(scale_of_study_files[2], paste0(scale_of_study_files[2],".gz"))
-gitignore = c(substr(scale_of_study_files, 2, nchar(scale_of_study_files)),substr(paste0(scale_of_study_files,".gz"), 2, nchar(paste0(scale_of_study_files,".gz"))), readLines(".gitignore"))
-write(gitignore, ".gitignore")
 }
 }
 ```
@@ -1434,11 +1531,6 @@ for(species in SPECIES_NAME) {
 }
 
 {
-  
-if(file.exists(".gitignore")){
-  gitignore = c("/Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt",                 "/Data/clustered_scored/small_scale_100_02_17_all_IntAct_cluster_local.txt",
-                readLines(".gitignore"))
-  write(gitignore, ".gitignore")}
   
 large_scale_MI_score = fread("./Data/clustered_scored/large_scale_100_02_17_all_IntAct_cluster_local.txt", header = F, stringsAsFactors = F)
 large_scale_MI_score[,scale_of_the_study_100 := "large_scale"]
@@ -1909,13 +2001,6 @@ if(!(length(list.files(filename_interpro2)) > 0)) {
   system(paste0("split -l 5000000 ", 
                 filename_interpro1," ",
                 filename_interpro2,"/"))
-  # writing .gitignore for this files
-  filename_interpro3 = list.files(filename_interpro2)
-  if(file.exists(".gitignore")){
-  gitignore = c(substr(filename_interpro1, 2, nchar(filename_interpro1)),
-                paste0(substr(filename_interpro2, 2, nchar(filename_interpro2)), "/",filename_interpro3),
-                readLines(".gitignore"))
-  write(gitignore, ".gitignore")}
 }
 filename_interpro3 = list.files(filename_interpro2)
 # returns the vector of paths to interpro files

@@ -1,0 +1,5 @@
+{"disease"="EFO_0000270",
+"target"=["ENSG00000073756","ENSG00000172057","ENSG00000205189"],
+"fields"=["association_score.overall","target.id","disease.id"],
+"format"="tab"
+}

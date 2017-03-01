@@ -6,7 +6,7 @@
 ### detmethod - optional
 ### pmethod - optional
 
-query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, databases = NA, date = Sys.Date(), detmethod = NA, pmethod = NA) {
+query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, databases = NA, date = Sys.Date(), detmethod = NA, pmethod = NA, database.name = NA, return_data = T, show_summary = T, MITAB = "tab27") {
   
   ## checks if databases argument was provided, if not - sets default - all IMEX databases
   if(is.na(databases)[1]){ 
@@ -29,31 +29,52 @@ query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, d
   ##============================================================================##
   ## Constructs database filename and PSICQUIC_query depending on 
   ## whether detmethod and pmethod were provided as arguments
-  if(!is.na(detmethod)){
-    if(!is.na(pmethod)){
-      database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_detmethod_",detmethod, "_pmethod_", pmethod, "_", date, sep = "")
-      PSICQUIC_query = paste("species:",SPECIES_ID," AND ","detmethod:",detmethod," AND ","pmethod:",pmethod, sep = "")
+  # if database.name is NA - generate database filename
+  if(is.na(database.name)){
+    if(!is.na(detmethod)){
+      if(!is.na(pmethod)){
+        database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_detmethod_",detmethod, "_pmethod_", pmethod, "_", date, sep = "")
+        PSICQUIC_query = paste("species:",SPECIES_ID," AND ","detmethod:",detmethod," AND ","pmethod:",pmethod, sep = "")
+      }
+      if(is.na(pmethod)){
+        database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_detmethod_",detmethod, "_", date, sep = "")
+        PSICQUIC_query = paste("species:",SPECIES_ID," AND ","detmethod:",detmethod, sep = "")
+      }
     }
-    if(is.na(pmethod)){
-      database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_detmethod_",detmethod, "_", date, sep = "")
-      PSICQUIC_query = paste("species:",SPECIES_ID," AND ","detmethod:",detmethod, sep = "")
+    if(is.na(detmethod)){
+      database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_",date, sep = "")
+      PSICQUIC_query = paste("species:",SPECIES_ID, sep = "")
     }
   }
-  if(is.na(detmethod)){
-    database.name <- paste("./Data/","databaseName_", databases[1], "...", databases[length(databases)],"_","speciesID_",SPECIES_ID,"_",SPECIES_NAME,"_",date, sep = "")
-    PSICQUIC_query = paste("species:",SPECIES_ID, sep = "")
+  
+  # if database.name is not NA - use user-specified database filename
+  if(!is.na(database.name)){
+    if(!is.na(detmethod)){
+      if(!is.na(pmethod)){
+        database.name <- database.name
+        PSICQUIC_query = paste("species:",SPECIES_ID," AND ","detmethod:",detmethod," AND ","pmethod:",pmethod, sep = "")
+      }
+      if(is.na(pmethod)){
+        database.name <- database.name
+        PSICQUIC_query = paste("species:",SPECIES_ID," AND ","detmethod:",detmethod, sep = "")
+      }
+    }
+    if(is.na(detmethod)){
+      database.name <- database.name
+      PSICQUIC_query = paste("species:",SPECIES_ID, sep = "")
+    }
   }
   
   ## Checks if databases have been queried today, if not - sends query to the database
   if(!file.exists(database.name)) {
     print("dowloaded using PSICQUIC")
     ## Load PSICQUIC functionality
-    require(PSICQUIC)
+    suppressPackageStartupMessages(require(PSICQUIC))
     psicquic <- PSICQUIC()
     providers <- providers(psicquic)
     
     # query databases for all known SPECIES_ID protein interactions
-    require(data.table)
+    suppressPackageStartupMessages(require(data.table))
     SPECIES_ID_interactome = data.table()
     NO_SPECIES_ID_interactome = character(length = length(databases))
     for(indices in 1:length(databases)) {
@@ -66,7 +87,7 @@ query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, d
           N_start = 1
           N_nrows = 2500
           for(n_starts in seq(from = N_start, to = N_interactions, by = N_nrows)){
-            PSICQUIC_query2 = paste0(PSICQUIC_query, "?format=tab27&firstResult=", n_starts,"&maxResults=", N_nrows) 
+            PSICQUIC_query2 = paste0(PSICQUIC_query, "?format=",MITAB,"&firstResult=", n_starts,"&maxResults=", N_nrows) 
             SPECIES_ID_interactome_d <- as.data.table(rawQuery(psicquic, databases[indices], PSICQUIC_query2))
             SPECIES_ID_interactome <- rbind(SPECIES_ID_interactome, SPECIES_ID_interactome_d)
           }
@@ -83,47 +104,55 @@ query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, d
     }
     ##============================================================================##
     ## Save dowloaded query result into file 
-    save(SPECIES_ID_interactome, file = database.name)
-    
-    if(file.exists(".gitignore")){
-      gitignore = c(substr(database.name, 2, nchar(database.name)),
-                    readLines(".gitignore"))
-      write(gitignore, ".gitignore")}
+    fwrite(x = SPECIES_ID_interactome, file = database.name, sep = "\t")
     ##============================================================================##
-    ## Show what's found
-    print(paste("interactions for ",SPECIES_NAME,", detmethod(",detmethod,"), pmethod(",pmethod,"): ", sep = ""), quote = F)
-    print(paste0("total number: ", nrow(SPECIES_ID_interactome)), quote = F)
-    print(paste("there is no interactions in the databases: ", sep = ""), quote = F)
-    print(NO_SPECIES_ID_interactome, quote = F)
-    print(paste("the number of interactions per database ", sep = ""), quote = F)
-    dbs = as.data.frame(table(SPECIES_ID_interactome$V13, useNA = "ifany"))
-    colnames(dbs) = c("database", "N of interactions")
-    print(dbs, quote = F)
-    ##============================================================================##
-    query_log_filename = paste("./Data/logs/","there is no interactions for ",SPECIES_NAME," in the databases ",date, sep = "", ".txt")
-    write.table(NO_SPECIES_ID_interactome, query_log_filename, col.names=T,row.names=F,sep="\t",quote=F)
-    ##============================================================================##
-    return(SPECIES_ID_interactome)
+    if(show_summary == T){
+      ## Show what's found
+      print(paste0("total number of interactions for",SPECIES_NAME,", detmethod(",detmethod,"), pmethod(",pmethod,"): ", nrow(SPECIES_ID_interactome)), quote = F)
+      print(paste("there is no interactions in the databases: ", sep = ""), quote = F)
+      print(NO_SPECIES_ID_interactome, quote = F)
+      print(paste("the number of interactions per database ", sep = ""), quote = F)
+      dbs = as.data.frame(table(SPECIES_ID_interactome$V13, useNA = "ifany"))
+      colnames(dbs) = c("database", "N of interactions")
+      print(dbs, quote = F)
+      ##============================================================================##
+      query_log_filename = paste("./Data/logs/","there is no interactions for ",SPECIES_NAME," in the databases ",date, sep = "", ".txt")
+      write.table(NO_SPECIES_ID_interactome, query_log_filename, col.names=T,row.names=F,sep="\t",quote=F)
+      ##============================================================================##
+    }
+    if(return_data == T){
+      return(SPECIES_ID_interactome)
+    }
+    if(return_data == F){
+      return("done")
+    }
   }
   ##============================================================================##
   ## If file exists  - load, show what's found and return
   if(file.exists(database.name)) {
     print("loaded from file")
-    load(database.name)
+    SPECIES_ID_interactome = fread(database.name)
     ##============================================================================##  
-    query_log_filename = paste("./Data/logs/","there is no interactions for ",SPECIES_NAME," in the databases ",date, sep = "", ".txt")
-    NO_SPECIES_ID_interactome = read.table(file = query_log_filename, header =T,sep="\t", stringsAsFactors = F)
-    
-    ## Show what's found
-    print(paste("interactions for ",SPECIES_NAME,", detmethod(",detmethod,"), pmethod(",pmethod,"): ", sep = ""), quote = F)
-    print(paste0("total number: ", nrow(SPECIES_ID_interactome)), quote = F)
-    print(paste("there is no interactions in the databases: ", sep = ""), quote = F)
-    print(NO_SPECIES_ID_interactome, quote = F)
-    print(paste("the number of interactions per database ", sep = ""), quote = F)
-    dbs = as.data.frame(table(SPECIES_ID_interactome$V13, useNA = "ifany"))
-    colnames(dbs) = c("database", "N of interactions")
-    print(dbs, quote = F)
+    if(show_summary == T){
+      query_log_filename = paste("./Data/logs/","there is no interactions for ",SPECIES_NAME," in the databases ",date, sep = "", ".txt")
+      NO_SPECIES_ID_interactome = read.table(file = query_log_filename, header =T,sep="\t", stringsAsFactors = F)
+      
+      ## Show what's found
+      print(paste("interactions for ",SPECIES_NAME,", detmethod(",detmethod,"), pmethod(",pmethod,"): ", sep = ""), quote = F)
+      print(paste0("total number: ", nrow(SPECIES_ID_interactome)), quote = F)
+      print(paste("there is no interactions in the databases: ", sep = ""), quote = F)
+      print(NO_SPECIES_ID_interactome, quote = F)
+      print(paste("the number of interactions per database ", sep = ""), quote = F)
+      dbs = as.data.frame(table(SPECIES_ID_interactome$V13, useNA = "ifany"))
+      colnames(dbs) = c("database", "N of interactions")
+      print(dbs, quote = F)
+    }
     ##============================================================================##
-    return(SPECIES_ID_interactome)
+    if(return_data == T){
+      return(SPECIES_ID_interactome)
+    }
+    if(return_data == F){
+      return("done")
+    }
   }
 }
