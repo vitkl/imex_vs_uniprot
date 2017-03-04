@@ -777,15 +777,17 @@ ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status_label)) +geom_de
 # geneObj$getGeneIDNameMap() 
 
 # manually checking for updated file is needed
-# suppressPackageStartupMessages(library(jsonlite))
-# open_targets_associations_filename = "./Data/16.12_association_data_fixed.json"
-# if(!file.exists(open_targets_associations_filename)){
-# open_targets_associations_url = "https://s3-eu-west-1.amazonaws.com/targetvalidation-dumps/16.12_association_data_fixed.json.gz"
-# downloader::download(open_targets_associations_url,
-#                      paste0(open_targets_associations_filename, ".gz"))
-# R.utils::gunzip(open_targets_associations_filename)
-# }
-# open_targets_mapping = stream_in(file(open_targets_associations_filename))
+ suppressPackageStartupMessages(library(jsonlite))
+ open_targets_associations_filename = "./Data/16.12_association_data_fixed.json"
+ if(!file.exists(open_targets_associations_filename)){
+ open_targets_associations_url = "https://s3-eu-west-1.amazonaws.com/targetvalidation-dumps/16.12_association_data_fixed.json.gz"
+ downloader::download(open_targets_associations_url,
+                      paste0(open_targets_associations_filename, ".gz"))
+ R.utils::gunzip(open_targets_associations_filename)
+ }
+ fromJSON(open_targets_associations_filename)
+ open_targets_mapping = stream_in(file(open_targets_associations_filename), pagesize = 5000)
+ js = readLines(open_targets_associations_filename)
       
 ```
 
@@ -1486,6 +1488,8 @@ ggplot(all.IntAct.proteins.with.geneID_500, aes(interactor_total_PMID, unique_in
 ```
 
    Figure above suggests that studies which have identified more than 1000 interations (not covered by any of the small-scale studies) are less biased towards better researched proteins. Studies in yeast and *C.elegans* are notable exceptions: they still discover more interacting partners for better researched proteins. In contrast, human large-scale experiments tend identify more interacting partners for less researched proteins. This is not surprising since many of those studies aim to identify interacting partners for proteins with no known interacting partners.
+   
+   The fact that the study of any scale identifies more interactions for proteins which are well studied (even large-scale studies, 100 interaction/study threshold) may arise from the fact that if two studies search for interacting partners of the same protein they are going to find some interacting partners specific to a study. Therefore, as soon as we analyse overlapping studies (including large scale) we will have more interacting partners for better studied proteins. Therefore, any study which relies on combining multiple interaction datasets should use algorithms [] to account for study bias.
    
    
    Median MI score reflects how well studied are on average interactions between given protein and it's interacting partners.
