@@ -7,7 +7,7 @@
 ### pmethod - optional
 
 query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, databases = NA, date = Sys.Date(), detmethod = NA, pmethod = NA, database.name = NA, return_data = T, show_summary = T, MITAB = "tab27") {
-  
+  suppressPackageStartupMessages(library(data.table))
   ## checks if databases argument was provided, if not - sets default - all IMEX databases
   if(is.na(databases)[1]){ 
     databases <- c("IntAct", "MINT", "bhf-ucl", "MPIDB", "MatrixDB", 
@@ -101,10 +101,12 @@ query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, d
       else {
         NO_SPECIES_ID_interactome[indices] = databases[indices]
       }
+      ## if the database is not active and that's the only database
+      if(!databases[indices] %in% providers & length(databases) == 1) stop("database ",databases[indices], " is offline in PSICQUIC")
     }
     ##============================================================================##
     ## Save dowloaded query result into file 
-    fwrite(x = SPECIES_ID_interactome, file = database.name, sep = "\t")
+    save(SPECIES_ID_interactome, file = database.name)
     ##============================================================================##
     if(show_summary == T){
       ## Show what's found
@@ -131,7 +133,7 @@ query_PSICQUIC_for_interactions = function(SPECIES_ID = NA, SPECIES_NAME = NA, d
   ## If file exists  - load, show what's found and return
   if(file.exists(database.name)) {
     print("loaded from file")
-    SPECIES_ID_interactome = fread(database.name)
+    load(database.name)
     ##============================================================================##  
     if(show_summary == T){
       query_log_filename = paste("./Data/logs/","there is no interactions for ",SPECIES_NAME," in the databases ",date, sep = "", ".txt")

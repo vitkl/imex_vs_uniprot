@@ -20,28 +20,30 @@ intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins 
   ## Query Uniprot for the reference proteome for SPECIES_ID
   source("download_reference_proteome_q.R")
   reference_proteome_query = download_reference_proteome_q(SPECIES_ID, Proteome_ID, date)
+  colnames(reference_proteome_query)[2] = "Status"
   
   ## Use only Swissprot data if reviewed == 2 
   if(reviewed == 2) {
-    reference_proteome_query = dplyr::filter(reference_proteome_query, Status == "reviewed")
+    reference_proteome_query = reference_proteome_query[reference_proteome_query$Status == "reviewed",]
   }
   ## Use only TrEMBL data if reviewed == 3 
   if(reviewed == 3) {
-    reference_proteome_query = dplyr::filter(reference_proteome_query, Status == "unreviewed")
+    reference_proteome_query = reference_proteome_query[reference_proteome_query$Status == "unreviewed",]
   }
   if(nrow(reference_proteome_query) > 0){  
   
   ## Query Uniprot for the whole proteome for SPECIES_ID
   source("download_whole_proteome.R")
   whole_proteome_query = download_whole_proteome(SPECIES_ID, date)
+  colnames(whole_proteome_query)[2] = "Status"
   
   ## Use only Swissprot data if reviewed == 2
   if(reviewed == 2) {
-    whole_proteome_query = dplyr::filter(whole_proteome_query, Status == "reviewed")
+    whole_proteome_query = whole_proteome_query[whole_proteome_query$Status == "reviewed",]
   }
   ## Use only TrEMBL data if reviewed == 3
   if(reviewed == 3) {
-    whole_proteome_query = dplyr::filter(whole_proteome_query, Status == "unreviewed")
+    whole_proteome_query = whole_proteome_query[whole_proteome_query$Status == "unreviewed",]
   }
   
   if(nrow(whole_proteome_query) > 0){
