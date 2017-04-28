@@ -1,4 +1,5 @@
 ## function clears interactors IDs from interaction databases
+## takes MITAB2.5 data.table/data.frame with unnamed columns (V1,V2 ...)
 ## returns a data frame which contains:
 ## interactor_IDs
 ## interactor_IDs_databases - the database where ID come from (like, uniprotkb)
@@ -6,10 +7,11 @@
 ## interactor_databases - the IMEX database where interaction information is stored
 
 interactions_to_interactors = function(all_interactions){
+library(data.table)
 temp1 = c(all_interactions$V1,all_interactions$V2)
 temp1_1 = c(all_interactions$V10, all_interactions$V11)
 temp2 = c(all_interactions$V13,all_interactions$V13)
-all_interactors = data.frame(interactor_IDs = temp1, interactor_IDs_databases = temp1, interactor_databases = temp2, interactor_SPECIES_ID = temp1_1, stringsAsFactors = F)
+all_interactors = data.table(interactor_IDs = temp1, interactor_IDs_databases = temp1, interactor_databases = temp2, interactor_SPECIES_ID = temp1_1, stringsAsFactors = F)
 all_interactors$interactor_IDs = gsub("^.*:","",all_interactors$interactor_IDs)
 all_interactors$interactor_IDs_databases = gsub(":.*$","",all_interactors$interactor_IDs_databases)
 all_interactors$interactor_SPECIES_ID = gsub("^.*:","",all_interactors$interactor_SPECIES_ID)

@@ -264,29 +264,29 @@ if(reviewed_venn == 1){plotname = paste0("Proteome (all UniprotKB) coverage by i
 databasename = "UniprotKB"}
 
 pushViewport(viewport(layout=grid.layout(nrow = length(SPECIES_NAME)+2, ncol=4, widths = unit(c(2/7,2/7,2/7,1/7), "npc"), 
-                                         heights = unit(c(1/((length(SPECIES_NAME)+1)*4),rep(1/(length(SPECIES_NAME)+1/2),length(SPECIES_NAME)),1/((length(SPECIES_NAME)+1)*4)), "npc"))))
+                                         heights = unit(c(1/((length(SPECIES_NAME)+1)*4),1/((length(SPECIES_NAME)+1)*4),rep(1/(length(SPECIES_NAME)+1/2),length(SPECIES_NAME))), "npc"))))
 
 pushViewport(viewport(layout.pos.col=2, layout.pos.row = 1))
 x =grid.text(plotname, x = unit(0.7, "npc"),y= unit(0.5, "npc"))
 popViewport()
-pushViewport(viewport(layout.pos.col=2, layout.pos.row = length(SPECIES_NAME)+2))
+pushViewport(viewport(layout.pos.col=2, layout.pos.row = 2))
 x =grid.text("isoforms included", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
 popViewport()
-pushViewport(viewport(layout.pos.col=3, layout.pos.row = length(SPECIES_NAME)+2))
+pushViewport(viewport(layout.pos.col=3, layout.pos.row = 2))
 x =grid.text("isoforms excluded", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
 popViewport()
 
 for (i in 1:length(SPECIES_NAME)) {
   
-  pushViewport(viewport(layout.pos.col=1, layout.pos.row = i+1))
+  pushViewport(viewport(layout.pos.col=1, layout.pos.row = i+2))
   x =grid.text(SPECIES_NAME[i], x = unit(0.5, "npc"),y= unit(0.5, "npc"))
   popViewport()
   
-  pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+1))
+  pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+2))
   venn = double.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
   popViewport()
   
-  pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+1))
+  pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+2))
   venn = double.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
   popViewport()
 }
@@ -406,30 +406,30 @@ grid.newpage()
 plotname = paste0("Proteome coverage by interaction databases, overlap between ", IMExdatabase," and BioGRID")
 
 pushViewport(viewport(layout=grid.layout(nrow = length(SPECIES_NAME)+2, ncol=4, widths = unit(c(2/7,2/7,2/7,1/7), "npc"), 
-                                         heights = unit(c(1/((length(SPECIES_NAME)+1)*4),rep(1/(length(SPECIES_NAME)+1/2),length(SPECIES_NAME)),1/((length(SPECIES_NAME)+1)*4)), "npc"))))
+                                         heights = unit(c(1/((length(SPECIES_NAME)+1)*4),1/((length(SPECIES_NAME)+1)*4),rep(1/(length(SPECIES_NAME)+1/2),length(SPECIES_NAME))), "npc"))))
 
 pushViewport(viewport(layout.pos.col=2, layout.pos.row = 1))
 x =grid.text(plotname, x = unit(0.7, "npc"),y= unit(0.5, "npc"))
 popViewport()
-pushViewport(viewport(layout.pos.col=2, layout.pos.row = length(SPECIES_NAME)+2))
+pushViewport(viewport(layout.pos.col=2, layout.pos.row = 2))
 x =grid.text("UniprotKB, isoforms excluded", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
 popViewport()
-pushViewport(viewport(layout.pos.col=3, layout.pos.row = length(SPECIES_NAME)+2))
+pushViewport(viewport(layout.pos.col=3, layout.pos.row = 2))
 x =grid.text("SwissProt, isoforms excluded", x = unit(0.5, "npc"),y= unit(0.5, "npc"))
 popViewport()
 
 for (i in 1:length(SPECIES_NAME)) {
   
-  pushViewport(viewport(layout.pos.col=1, layout.pos.row = i+1))
+  pushViewport(viewport(layout.pos.col=1, layout.pos.row = i+2))
   x =grid.text(SPECIES_NAME[i], x = unit(0.5, "npc"),y= unit(0.5, "npc"))
   popViewport()
   
-  pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+1))
+  pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+2))
   source("triple.venn.prot.R")
   venn = triple.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = TRUE)
   popViewport()
   
-  pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+1))
+  pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+2))
   source("triple.venn.prot.R")
   venn = triple.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = TRUE)
   popViewport()
@@ -627,7 +627,7 @@ for (r in reviewed) {
 
 ### Olfactory receptors are a major group of human proteins not represented in IntAct
 
-   coming soon
+
 
 ```{r human_not_in_IMEx_protein_properties_GOenrichment, fig.width=10, fig.height=8}
 ##====================================================================
@@ -646,7 +646,7 @@ r = reviewed
 isoforms = FALSE
 i = isoforms
       filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
-      proteome_vs_imex_details_f = as.data.table(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+      proteome_vs_imex_details_f = fread(filename_vs_2, header = T, stringsAsFactors = F,quote="")
       proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
 ##====================================================================
 uniprot2enrichedGOterms = function(my_protein_set, reference_set){
@@ -664,8 +664,6 @@ enrichedGOterms = uniprot2enrichedGOterms(
   )
 
 dotplot(enrichedGOterms,showCategory = 20)
-enrichedGOterms_tab = as.data.table(as.data.frame(enrichedGOterms))
-upsetplot(enrichedGOterms)
 ```
 
 ```{r human_not_in_IMEx_protein_properties_GOdepleted, fig.width=10, fig.height=8}
@@ -682,6 +680,25 @@ library(igraph)
 x =enrichMap(enrichedGOterms, n = 40,layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
 #plot(setting.graph.attributes(x, node.size = 5))
 ```
+
+```{r new_go, fig.height=10, fig.width=10}
+source("GO_enrich_simplify_plot_bioc.R")
+set.seed(1546)
+new_depleted = GO_enrich_simplify_plot_bioc(protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,unique(whole_proteome_IDs)],
+                                            reference_protein_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,unique(whole_proteome_IDs)],
+                                            identifier_type = "UNIPROT",
+                                            ontology = "BP",
+                                            pAdjustMethod_ = "fdr",
+                                            minSetSize = 50,
+                                            maxSetSize = 1000,
+                                            simplify_by = "GeneRatio",
+                                            simplify_fun = "function(x) eval(parse(text = x))",
+                                            similarity_calc_method = "Wang",
+                                            similarity_cutoff = 0.65,
+                                            visualize_result = "enrichMap",
+                                            above_corrected_pval = 0.05)
+```
+
 
 ### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
 
@@ -796,33 +813,6 @@ ggplot(bait_vs_non_bait, aes(x = Mass, color = bait_prey_status_label)) +geom_de
 
 ## 5. Proteins missing interaction evidence are not associated with specific disease
 
-```{r open_targets}
-# install.packages("devtools", dependencies = TRUE)  
-# library(devtools)  
-# install_github("cttv/ropentargets")  
-# fread("http://www.targetvalidation.org/api/latest/public/search?q=O00198&size=1&filter=target&format=tab")
-# {"disease"="EFO_0000270", "target"=["ENSG00000073756","ENSG00000172057","ENSG00000205189"], "fields"=["association_score.overall","target.id","disease.id"],"format"="tab"}
-# write(toJSON(list(target = "ENSG00000135116", fields = c("association_score.overall","target.id","disease.id"), format="tab")), "targetvalidation.txt")
-# system(paste0("curl -X POST -d @targetvalidation.txt --header \"Content-Type:application/json\" http://www.targetvalidation.org/api/latest/public/association/filter"))
-# library(ropentargets)
-# geneName <- c('O00198', 'O00203')
-# geneObj <- Gene$new(geneName)
-# geneObj$getGeneIDNameMap() 
-
-# manually checking for updated file is needed
-# suppressPackageStartupMessages(library(jsonlite))
-# open_targets_associations_filename = "./Data/16.12_association_data_fixed.json"
-# if(!file.exists(open_targets_associations_filename)){
-# open_targets_associations_url = "https://s3-eu-west-1.amazonaws.com/targetvalidation-dumps/16.12_association_data_fixed.json.gz"
-# downloader::download(open_targets_associations_url,
-#                      paste0(open_targets_associations_filename, ".gz"))
-# R.utils::gunzip(open_targets_associations_filename)
-# }
-# fromJSON(open_targets_associations_filename)
-# open_targets_mapping = stream_in(file(open_targets_associations_filename), pagesize = 5000)
-# js = readLines(open_targets_associations_filename)
-      
-```
 
 ```{r disease_enrichment}
 # ===================================================
@@ -847,7 +837,7 @@ uniprot = UniProt.ws(taxId = 9606)
 # getting names of the things one can get from UniProt.ws
 # keytypes(uniprot)
 uniprot2entrezgene = as.data.table(select(uniprot, 
-               keys = proteome_vs_imex_details_f$whole_proteome_IDs, 
+               keys = unique(proteome_vs_imex_details_f$whole_proteome_IDs), 
                columns = c("ENTREZ_GENE", "UNIPROTKB"),
                keytype = "UNIPROTKB"))
 uniprot2entrezgene = copy(uniprot2entrezgene[complete.cases(uniprot2entrezgene),])
@@ -880,10 +870,11 @@ enrichedDiseases = uniprot2enrichedDiseases(
 enrichMap(enrichedDiseases)
 ```
 
-## 5. Do major protein interaction detection methods (two-hybrid and AP-MS) exhibit a bias towards biochemical properties of the proteins involved?
+## 5. Do major protein interaction detection methods (two-hybrid and AP-MS) exhibit a bias towards biochemical properties of the proteins?
 
-   The problem of bias in interactomics is often discussed in research papes and in the community. Now we will focus on the bias in the experimental detection method. We choose to compare two major families of methods: two-hybrid and affinity-purification-mass-spectrometry (AP-MS). We define two-hybrid using PSI-MI ontology: detection method = "transcriptional complementation assay" (MI:0018) - all methods which belong to this type (which are children terms in the ontology). We define AP-MS using two PSI-MI ontology terms: detection method = "affinity chromatography technology" (MI:0004) and participant identification method = "partial identification of protein sequence" (MI:0433). 
-   We get interactions detected using these methods by querying PSICQUIC. We use word formulations rather than ontology term identifiers because PSICQUIC package in R is not equipped to handle quotes in the query text ("MI:0004" AND "MI:0102").
+   The problem of bias in interactomics is often discussed in research papes and in the community. Now we will focus on the bias of the experimental detection methods. We choose to compare two major families of methods: two-hybrid and affinity-purification-mass-spectrometry (AP-MS). 
+   We identify two-hybrid method using PSI-MI ontology: detection method = "transcriptional complementation assay" (MI:0018) - all methods which belong to this type (which are children terms in the ontology). We identify AP-MS method using two PSI-MI ontology terms: detection method = "affinity chromatography technology" (MI:0004) and participant identification method = "partial identification of protein sequence" (MI:0433). The use of ontology terms for searching interaction allows to only specify a single term as opposed to listing every indivudual detection method included in those groups. One can browse ontology lookup service to identify which exact approaches are included under the umbrella of two-hybrid or affinity-purification-mass-spectrometry.  
+   We fetch interactions detected using these methods by querying molecular interaction databases using PSICQUIC service.
 
 ### AP-MS is biased towards longer proteins
 
@@ -915,7 +906,7 @@ source("query_PSICQUIC_for_interactions.R")
 twohybrids_all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, 
                                                    SPECIES_NAME = n, 
                                                    databases = databases, date,
-                                                   detmethod = "%22MI:0018%22")
+                                                   detmethod = "%22MI:0018%22") # %22 is a code for quote
 complementation_all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, 
                                                               SPECIES_NAME = n, 
                                                               databases = databases, date,
@@ -1014,7 +1005,7 @@ for (r in reviewed) {
       SPECIES_ID = SPECIES_IDs$SPECIES_ID
 
 filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
-proteome_vs_imex_interaction_details_f = as.data.table(read.delim(filename, header = T, stringsAsFactors = F,quote=""))
+proteome_vs_imex_interaction_details_f = as.data.table(fread(filename, header = T, stringsAsFactors = F,quote="", data.table = F))
 n = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", n)
 n = gsub("strain K12", "Escherichia coli, strain K12", n)
 proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms", "SPECIES_ID") := list(n,r,i,SPECIES_ID)]
