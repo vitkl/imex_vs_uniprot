@@ -1,8 +1,8 @@
 GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, identifier_type, ontology, pAdjustMethod_ = "BH", minSetSize, maxSetSize, simplify_by = "p.adjust", simplify_fun = "min", similarity_calc_method = "Wang", similarity_cutoff = 0.7, visualize_result = "enrichMap", above_corrected_pval = 1){
   suppressPackageStartupMessages({
     library(igraph)
-    library(clusterProfiler)
     library(Homo.sapiens)
+    library(clusterProfiler)
     })
   
   ego <- enrichGO(gene = protein_set,
@@ -17,7 +17,7 @@ GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, iden
                    qvalueCutoff = above_corrected_pval)
   
   # simplify output from enrichGO by removing redundancy of enriched GO terms
-  ego2 = simplify(ego, cutoff = similarity_cutoff,
+  ego2 = clusterProfiler::simplify(ego, cutoff = similarity_cutoff,
                   by = simplify_by, 
                   select_fun = eval(parse(text = simplify_fun)), 
                   measure = similarity_calc_method)

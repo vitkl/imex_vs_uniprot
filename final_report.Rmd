@@ -517,6 +517,7 @@ colnames(all.IntAct) = gsub("\\(|\\)","",colnames(all.IntAct))
 colnames(all.IntAct) = gsub("#","",colnames(all.IntAct))
 }
 # cleaning Taxid "taxid:9606(human)|taxid:9606(Homo sapiens)" to 9606
+all.IntAct[,.(IDs_interactor_A, IDs_interactor_B, Experimental_roles_interactor_A, Experimental_roles_interactor_B,  Taxid_interactor_A, Taxid_interactor_B, Host_organisms, Publication_Identifiers, Confidence_values, Interaction_identifiers)]
 {
 all.IntAct[, Taxid_interactor_A := gsub("taxid:|\\(.*$","",Taxid_interactor_A)]
 all.IntAct[, Taxid_interactor_B := gsub("taxid:|\\(.*$","",Taxid_interactor_B)]
