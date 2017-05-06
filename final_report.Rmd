@@ -24,12 +24,13 @@ suppressPackageStartupMessages({
   library(PSICQUIC)
   library(ggplot2)
   library(clusterProfiler)
+})
   source("multiplot.R")
   source("GO_analyse_simplify_plot.R")
   source("kappa_score.R")
   source("dotplot_modified.R")
   source("clusterProfiler_simplify_methods_modified.R")
-})
+
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
 date = as.Date("2017-04-24")
@@ -455,6 +456,7 @@ popViewport()
 
 ```{r IMEx_vs_Uniprot_N_Uniprot_Species, cache=F, fig.width=8, fig.height=8, fig.cap="Figure 3" }
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
+isoforms = FALSE
 ### combine the summaries for multiple species of how many interactors have non-uniprot and non-given-species identifiers
 interactome_identifiers_summary.all = data.frame()
   for (i in isoforms) {
@@ -636,7 +638,7 @@ for (r in reviewed) {
 
 
 
-```{r human_not_in_IMEx_protein_properties_GOenrichment, fig.width=10, fig.height=8}
+```{r human_not_in_IMEx_protein_properties_GO_BP, fig.width=10, fig.height=8}
 ##====================================================================
 suppressPackageStartupMessages({
       library(data.table)
@@ -654,31 +656,26 @@ isoforms = FALSE
 i = isoforms
       filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
       proteome_vs_imex_details_f = fread(filename_vs_2, header = T, stringsAsFactors = F,quote="")
-      proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
 ##====================================================================
-uniprot2enrichedGOterms = function(my_protein_set, reference_set){
-  suppressPackageStartupMessages({
-      library(clusterProfiler)
-      library(org.Hs.eg.db)})
-ego <-  enrichGO(gene = my_protein_set, org.Hs.eg.db, keytype = "UNIPROT", ont = "BP",
-  pvalueCutoff = 1, pAdjustMethod = "BH", universe = reference_set, qvalueCutoff = 1,
-  minGSSize = 10, maxGSSize = Inf, readable = FALSE)
-# ego_sorted = as.data.table(as.data.frame(ego)[order(as.data.frame(ego)$p.adjust),])
-}
-enrichedGOterms = uniprot2enrichedGOterms(
-  my_protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,whole_proteome_IDs],
-  reference_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]
-  )
 
-dotplot(enrichedGOterms,showCategory = 20)
+      not_in_IMEx_BP = GO_enrich_simplify_plot_bioc(protein_set = unique(proteome_vs_imex_details_f[whole_proteome_Uniprot == 1 & IMEx == 0,whole_proteome_IDs]),
+                                   reference_protein_set = unique(proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]),
+                                   identifier_type = "UNIPROT", ontology = "BP", 
+                                   pAdjustMethod_ = "BH", 
+                                   minSetSize = 40, maxSetSize = 1000, 
+                                   simplify_by = "p.adjust", 
+                                   simplify_fun = "min", 
+                                   similarity_calc_method = "kappa", 
+                                   similarity_cutoff = 0.6, 
+                                   visualize_result = "enrichMap", 
+                                   above_corrected_pval = 1, 
+                                   use_bioc_annotationdbi = T, 
+                                   plot_title = "biological function of proteins with no available interactions in IMEx")
+      
 ```
 
-```{r human_not_in_IMEx_protein_properties_GOdepleted, fig.width=10, fig.height=8}
-depletedGOterms = uniprot2enrichedGOterms(
-  my_protein_set = proteome_vs_imex_details_f[IMEx == 1 & whole_proteome_Uniprot == 1,whole_proteome_IDs],
-  reference_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]
-  )
-dotplot(depletedGOterms,showCategory = 20)
+```{r human_not_in_IMEx_protein_properties_GO, fig.width=10, fig.height=8}
+
 ```
 
 ```{r GO_enrichment_map, fig.height=10, fig.width=10}

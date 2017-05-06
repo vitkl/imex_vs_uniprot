@@ -4,7 +4,6 @@
 ##' @author Vitalii Kleshchevnikov
 GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, identifier_type, ontology, pAdjustMethod_ = "BH", minSetSize, maxSetSize, simplify_by = "p.adjust", simplify_fun = "min", similarity_calc_method = "kappa", similarity_cutoff = 0.7, visualize_result = "enrichMap", above_corrected_pval = 1, use_bioc_annotationdbi = T, plot_title = ""){
   suppressPackageStartupMessages({
-    library(igraph)
     library(clusterProfiler)
     library(Homo.sapiens)
   })
@@ -20,6 +19,9 @@ GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, iden
                   pvalueCutoff = above_corrected_pval,
                   qvalueCutoff = 1)
   
+  source("kappa_score.R")
+  source("dotplot_modified.R")
+  source("clusterProfiler_simplify_methods_modified.R")
   # simplify output from enrichGO by removing redundancy of enriched GO terms
   ego2 = simplify(x = ego, cutoff = similarity_cutoff,
                   by = simplify_by, 
@@ -31,7 +33,7 @@ GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, iden
   # "x[which.max(eval(parse(text = paste0("c(",paste0(x, collapse = ","),")"))))]"
   
   # visualize results
-  if(visualize_result == "enrichMap") enrichMap(ego2, layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
+  if(visualize_result == "enrichMap") enrichMap(ego2, layout = igraph:::layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
   if(visualize_result == "dotplot") dotplot_res = dotplot(ego2, title = plot_title)
   return(list(ego, ego2, dotplot_res))
 }
