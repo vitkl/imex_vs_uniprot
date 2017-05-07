@@ -27,9 +27,9 @@ suppressPackageStartupMessages({
 })
   source("multiplot.R")
   source("GO_analyse_simplify_plot.R")
-  source("kappa_score.R")
-  source("dotplot_modified.R")
-  source("clusterProfiler_simplify_methods_modified.R")
+# library(devtools)
+# install_github("vitkl/clusterProfiler")
+# install_github("vitkl/DOSE")
 
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
@@ -662,13 +662,13 @@ i = isoforms
                                    reference_protein_set = unique(proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]),
                                    identifier_type = "UNIPROT", ontology = "BP", 
                                    pAdjustMethod_ = "BH", 
-                                   minSetSize = 40, maxSetSize = 1000, 
+                                   minSetSize = 40, maxSetSize = 100, 
                                    simplify_by = "p.adjust", 
                                    simplify_fun = "min", 
                                    similarity_calc_method = "kappa", 
                                    similarity_cutoff = 0.6, 
                                    visualize_result = "enrichMap", 
-                                   above_corrected_pval = 1, 
+                                   above_corrected_pval = 0.05, 
                                    use_bioc_annotationdbi = T, 
                                    plot_title = "biological function of proteins with no available interactions in IMEx")
       

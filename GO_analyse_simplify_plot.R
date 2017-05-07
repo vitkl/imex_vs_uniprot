@@ -18,24 +18,24 @@ GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, iden
                   maxGSSize = maxSetSize,
                   pvalueCutoff = above_corrected_pval,
                   qvalueCutoff = 1)
-  
-  source("kappa_score.R")
-  source("dotplot_modified.R")
-  source("clusterProfiler_simplify_methods_modified.R")
+
+  if(similarity_calc_method != "none"){
   # simplify output from enrichGO by removing redundancy of enriched GO terms
   ego2 = simplify(x = ego, cutoff = similarity_cutoff,
                   by = simplify_by, 
                   select_fun = eval(parse(text = simplify_fun)), 
                   measure = similarity_calc_method,
                   semData = NULL, 
-                  use_data.table = T, 
+                  use_data_table = T, 
                   use_bioc_annotationdbi = use_bioc_annotationdbi)
   # "x[which.max(eval(parse(text = paste0("c(",paste0(x, collapse = ","),")"))))]"
+  }
+  if(similarity_calc_method == "none") ego2 = ego
   
   # visualize results
-  if(visualize_result == "enrichMap") enrichMap(ego2, layout = igraph:::layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
-  if(visualize_result == "dotplot") dotplot_res = dotplot(ego2, title = plot_title)
-  return(list(ego, ego2, dotplot_res))
+  if(visualize_result == "enrichMap") plot_res = enrichMap(ego2, layout = igraph:::layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
+  if(visualize_result == "dotplot") plot_res = dotplot(ego2, title = plot_title)
+  return(list(ego, ego2, plot_res))
 }
 #####################################
 ##' @author Vitalii Kleshchevnikov
@@ -50,20 +50,23 @@ GSEA_simplify_plot_bioc = function(ranked_protein_list, identifier_type, ontolog
               nPerm = nPerm, minSetSize = minSetSize, maxGSSize = maxSetSize, pvalueCutoff = above_corrected_pval,
               pAdjustMethod = pAdjustMethod_, verbose = F, seed = FALSE, by = "fgsea")
   
+  if(similarity_calc_method != "none"){
   # simplify output from enrichGO by removing redundancy of enriched GO terms
   ego2 = simplify(x = ego, cutoff = similarity_cutoff,
                   by = simplify_by, 
                   select_fun = eval(parse(text = simplify_fun)), 
                   measure = similarity_calc_method,
                   semData = NULL, 
-                  use_data.table = T, 
+                  use_data_table = T, 
                   use_bioc_annotationdbi = use_bioc_annotationdbi)
   # "x[which.max(eval(parse(text = paste0("c(",paste0(x, collapse = ","),")"))))]"
+  }
+  if(similarity_calc_method == "none") ego2 = ego
   
   # visualize results
-  if(visualize_result == "enrichMap") enrichMap(ego2, layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
-  if(visualize_result == "dotplot") dotplot_res = dotplot(ego2, title = plot_title, colorBy = "enrichmentScore", orderBy = "p.adjust")
-  return(list(ego, ego2, dotplot_res))
+  if(visualize_result == "enrichMap") plot_res = enrichMap(ego2, layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
+  if(visualize_result == "dotplot") plot_res = dotplot(ego2, title = plot_title, colorBy = "enrichmentScore", orderBy = "p.adjust")
+  return(list(ego, ego2, plot_res))
 }
 #####################################
 ##' @author Vitalii Kleshchevnikov
@@ -84,20 +87,22 @@ cluster_GO_enrich_simplify_plot_bioc = function(formula, protein_groups.dt, refe
                        maxGSSize = maxSetSize,
                        pvalueCutoff = above_corrected_pval,
                        qvalueCutoff = 1)
-  
+  if(similarity_calc_method != "none"){
   # simplify output from enrichGO by removing redundancy of enriched GO terms
   ego2 = simplify(x = ego, cutoff = similarity_cutoff,
                   by = simplify_by, 
                   select_fun = eval(parse(text = simplify_fun)), 
                   measure = similarity_calc_method,
                   semData = NULL, 
-                  use_data.table = T, 
+                  use_data_table = T, 
                   use_bioc_annotationdbi = use_bioc_annotationdbi)
   # "x[which.max(eval(parse(text = paste0("c(",paste0(x, collapse = ","),")"))))]"
+  }
+  if(similarity_calc_method == "none") ego2 = ego
   
   # visualize results
-  if(visualize_result == "enrichMap") enrichMap(ego2, layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
-  if(visualize_result == "dotplot") dotplot_res = dotplot(ego2, title = plot_title)
-  return(list(ego, ego2, dotplot_res))
+  if(visualize_result == "enrichMap") plot_res = enrichMap(ego2, layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
+  if(visualize_result == "dotplot") plot_res = dotplot(ego2, title = plot_title)
+  return(list(ego, ego2, plot_res))
 }
 #####################################
