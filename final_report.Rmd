@@ -662,20 +662,29 @@ i = isoforms
                                    reference_protein_set = unique(proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]),
                                    identifier_type = "UNIPROT", ontology = "BP", 
                                    pAdjustMethod_ = "BH", 
-                                   minSetSize = 40, maxSetSize = 100, 
-                                   simplify_by = "p.adjust", 
-                                   simplify_fun = "min", 
-                                   similarity_calc_method = "kappa", 
-                                   similarity_cutoff = 0.6, 
-                                   visualize_result = "enrichMap", 
+                                   minSetSize = 80, maxSetSize = 100, 
+                                   simplify_by = "GeneRatio", 
+                                   simplify_fun = "function (x) x[which.max(eval(parse(text = paste0(\"c(\",paste0(x, collapse = \",\"),\")\"))))]", 
+                                   similarity_calc_method = "Wang", 
+                                   similarity_cutoff = 0.7, 
+                                   visualize_result = "dotplot", 
                                    above_corrected_pval = 0.05, 
                                    use_bioc_annotationdbi = T, 
-                                   plot_title = "biological function of proteins with no available interactions in IMEx")
+                                   plot_title = "biological function of proteins with no available interactions in IMEx",
+                                   xlabel = "the fraction of proteins with biological function among proteins without interactions")
+      print(not_in_IMEx_BP$plot + theme(plot.title = element_text(hjust = 0.8)))
       
 ```
 
 ```{r human_not_in_IMEx_protein_properties_GO, fig.width=10, fig.height=8}
-
+semData <- clusterProfiler:::get_GO_data(OrgDb = 'org.Hs.eg.db', ont = "BP", keytype = "UNIPROT")
+    # measure distance between selected terms (important to get all GO to protein mappings)
+    semData = data.table(names(unlist(semData$EXTID2PATHID)),unlist(semData$EXTID2PATHID))
+    colnames(semData) = c("UNIPROT","GO")
+    semData = unique(semData)
+    set.seed(1)
+    semData = unique(semData[GO %in% semData[, unique(GO)][sample(1:40000,500)],])
+    sim = categ_dist(mapping_table = semData)$similarity_matrix
 ```
 
 ```{r GO_enrichment_map, fig.height=10, fig.width=10}
