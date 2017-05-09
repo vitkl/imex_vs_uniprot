@@ -5,12 +5,14 @@ title: Characterisation of model species interactome available from primary mole
 author: "Vitalii Kleshchevnikov"
 date: "21 December 2016"
 output:
+  html_document:
+    font-family: Helvetica
+    keep_md: yes
+    toc: yes
   pdf_document:
+    font-family: Helvetica
     keep_tex: yes
     latex_engine: lualatex
-    toc: yes
-  html_document:
-    keep_md: yes
     toc: yes
   word_document: default
 --- 
@@ -525,7 +527,7 @@ colnames(all.IntAct) = gsub("\\(|\\)","",colnames(all.IntAct))
 colnames(all.IntAct) = gsub("#","",colnames(all.IntAct))
 }
 # cleaning Taxid "taxid:9606(human)|taxid:9606(Homo sapiens)" to 9606
-all.IntAct[,.(IDs_interactor_A, IDs_interactor_B, Experimental_roles_interactor_A, Experimental_roles_interactor_B,  Taxid_interactor_A, Taxid_interactor_B, Host_organisms, Publication_Identifiers, Confidence_values, Interaction_identifiers)]
+all.IntAct = all.IntAct[,.(IDs_interactor_A, IDs_interactor_B, Experimental_roles_interactor_A, Experimental_roles_interactor_B,  Taxid_interactor_A, Taxid_interactor_B, Host_organisms, Publication_Identifiers, Confidence_values, Interaction_identifiers, Expansion_methods)]
 {
 all.IntAct[, Taxid_interactor_A := gsub("taxid:|\\(.*$","",Taxid_interactor_A)]
 all.IntAct[, Taxid_interactor_B := gsub("taxid:|\\(.*$","",Taxid_interactor_B)]
@@ -676,7 +678,7 @@ i = isoforms
       
 ```
 
-```{r human_not_in_IMEx_protein_properties_GO, fig.width=10, fig.height=8}
+```{r human_not_in_IMEx_protein_properties_GO, fig.width=10, fig.height=8, eval=F}
 semData <- clusterProfiler:::get_GO_data(OrgDb = 'org.Hs.eg.db', ont = "BP", keytype = "UNIPROT")
     # measure distance between selected terms (important to get all GO to protein mappings)
     semData = data.table(names(unlist(semData$EXTID2PATHID)),unlist(semData$EXTID2PATHID))
@@ -687,14 +689,14 @@ semData <- clusterProfiler:::get_GO_data(OrgDb = 'org.Hs.eg.db', ont = "BP", key
     sim = categ_dist(mapping_table = semData)$similarity_matrix
 ```
 
-```{r GO_enrichment_map, fig.height=10, fig.width=10}
+```{r GO_enrichment_map, fig.height=10, fig.width=10, eval=F}
 set.seed(6)
 library(igraph)
 x =enrichMap(enrichedGOterms, n = 40,layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
 #plot(setting.graph.attributes(x, node.size = 5))
 ```
 
-```{r new_go, fig.height=10, fig.width=10}
+```{r new_go, fig.height=10, fig.width=10, eval=F}
 source("GO_enrich_simplify_plot_bioc.R")
 set.seed(1546)
 new_depleted = GO_enrich_simplify_plot_bioc(protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,unique(whole_proteome_IDs)],
@@ -718,7 +720,7 @@ new_depleted = GO_enrich_simplify_plot_bioc(protein_set = proteome_vs_imex_detai
    Protein length or mass are physical properties of a protein which can, in theory, influence it's usage as a bait in experiments and it's detection in case methods depend on protein length. Proteins length is also important biologically. Longer proteins can have multiple functional domains and, therefore, more interactions.
 The distribution of protein mass has a very long right tail - there are much more big proteins than a normal distribution would predict (Supplementary figure 3), which only allows using non-parametric statistical tests (Wilcox test). Log10 transformation of protein mass, though, makes extreme values less extreme and is approximately normally distributed.
 
-```{r human_not_in_IMEx_proteins_are_shorter_density, fig.width=8, fig.height=5, fig.cap="Figure 5" }
+```{r human_not_in_IMEx_proteins_are_shorter_density, fig.width=7, fig.height=5, fig.cap="Figure 5" }
       ## Analysis
       # read the saved table
 SPECIES_NAME = "Homo sapiens"
@@ -752,8 +754,25 @@ n_odor_receptors = length(unique(grep("Odor", proteome_vs_imex_details_f$Protein
 proteome_vs_imex_details_f_minus_odor_olf.c = as.data.table(proteome_vs_imex_details_f_minus_odor_olf.c)
 proteome_vs_imex_details_f_minus_odor_olf.c[, whole_proteome_Uniprot_IMEx_x_olfac := paste0(whole_proteome_Uniprot_IMEx,olfac)]
 proteome_vs_imex_details_f_minus_odor_olf.c[, median_Mass_per_group := median(log10(Mass)), by = whole_proteome_Uniprot_IMEx_x_olfac]
+proteome_vs_imex_details_f_minus_odor_olf.c[, in_IMEx := ifelse(whole_proteome_Uniprot_IMEx == "SwissProt_and_IMEX", "yes", "no")]
           ## histogram with and without olfactory receptors:
-      ggplot(proteome_vs_imex_details_f_minus_odor_olf.c, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, label = olfac)) +geom_freqpoly(bins = 100)+ scale_x_log10() + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("the distribution of protein mass for proteins with and \n without interacting partners annotated in IMEx")+geom_vline(aes(xintercept = 10^median_Mass_per_group, color = whole_proteome_Uniprot_IMEx),alpha =0.7)  + facet_grid(olfac~.)
+      ggplot(proteome_vs_imex_details_f_minus_odor_olf.c, aes(x = Mass, color = in_IMEx, label = olfac)) +geom_freqpoly(bins = 100)+ scale_x_log10() + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("The distribution of protein mass for proteins with and \n without interacting partners curated in IMEx")+geom_vline(aes(xintercept = 10^median_Mass_per_group, color = in_IMEx),alpha =0.7)  + facet_grid(olfac~.)+
+ theme(panel.background = element_rect(fill = '#FFFFFF', colour = 'grey'))
+      
+      # for poster
+      proteome_vs_imex_details_f_minus_odor_olf.c_post = proteome_vs_imex_details_f_minus_odor_olf.c[olfac == "all SwissProt",]
+      proteome_vs_imex_details_f_minus_odor_olf.c_post[,Organism := gsub(" \\(Human\\)","",Organism)]
+      protein_mass = ggplot(proteome_vs_imex_details_f_minus_odor_olf.c_post, aes(x = Mass, color = in_IMEx, label = Organism)) +
+        geom_freqpoly(bins = 100)+ scale_x_log10() + 
+        theme(strip.text.y = element_text(angle = 0)) +
+        xlab("protein mass, Da, log10 scale") + 
+        ggtitle("Mass of proteins with and without \n interacting partners curated in IMEx")+
+        facet_grid(Organism~.) + 
+        geom_vline(aes(xintercept = 10^median_Mass_per_group, color = in_IMEx),alpha =0.7,size =1.5) +
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 ```
 
 ```{r human_not_in_IMEx_proteins_are_shorter_Wilcox}
@@ -1025,20 +1044,23 @@ proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms"
 proteome_vs_imex_interaction_details_all = rbind(proteome_vs_imex_interaction_details_all,proteome_vs_imex_interaction_details_f, fill =T)
     }}}
 
+proteome_vs_imex_interaction_details_all$two_hybrid_vs_AP_MS = factor(proteome_vs_imex_interaction_details_all$two_hybrid_vs_AP_MS, levels = c("not in IMEx", "not two-hybrid, and not AP-MS", "two-hybrid, not AP-MS", "not two-hybrid, AP-MS", "two-hybrid and AP-MS"))
+
 proteome_vs_imex_interaction_details_all[, Median_mass := median((Mass)), by = .(SPECIES_NAME,two_hybrid_vs_AP_MS)]
 
 proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(gsub("_"," ",two_hybrid_vs_AP_MS),", (median mass: ", signif(Median_mass/1000,3)," kDa)"))]
 proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(signif(Median_mass/1000,3)," kDa)"))]
 
-library(scales) 
-ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+library(scales)
+proteome_vs_imex_interaction_details_human = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",]
+ggplot(proteome_vs_imex_interaction_details_human, aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
   geom_violin(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) + geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass)) +
   ylab("Mass, Da, log10 scale")+
-  xlab("presence in IMEx, detection method")+
-  ggtitle("How does protein interaction detection method depend on the protein length?",
-          subtitle = "all violins have the same area")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))
+  xlab("in IMEx, interaction detection method")+
+  ggtitle("How does protein interaction detection method depend on the protein length?")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))+
+   theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),panel.background = element_rect(fill = '#FFFFFF', colour = 'grey'))
 ```
 
    The statistical significance of the difference in protein mass across protein detection methods was tested using linear model approach. Linear model offers way to perform multiple statistical tests (ANOVA and posthoc ttests) in R. Linear model takes a group assignment for a protein (only two-hybrid, only AP-MS, both two-hybrid and AP-MS, other methods - a vector 0s and 1s where 1 show which group a protein belongs to) and the mass of that protein. Using these parameters for each of the proteins linear model can learn the mean of each group as well as provide a way to calculate errors for each of the between-group comparisons. The robust linear model used for this test is less sensitive to the extreme values.
@@ -1880,7 +1902,15 @@ proteome_vs_imex_interaction_details_f_Percent_disorder = unique(proteome_vs_ime
 proteome_vs_imex_interaction_details_f_Percent_disorder[, whole_proteome_Uniprot_IMEx_x_SPECIES_NAME := paste0(whole_proteome_Uniprot_IMEx,SPECIES_NAME)]
 proteome_vs_imex_interaction_details_f_Percent_disorder[, median_studies_per_group := median(log10(whole_proteome_IDs_PMID), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = whole_proteome_IDs_PMID, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of studies , log10 scale")+ ggtitle("the distribution of the number of studies for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = whole_proteome_IDs_PMID, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of studies , log10 scale")+ ggtitle("the distribution of the number of studies for proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+
+# for poster
+proteome_vs_imex_interaction_details_f_Percent_disorder[, in_IMEx := ifelse(whole_proteome_Uniprot_IMEx == "SwissProt_and_IMEX", "yes", "no")]
+protein_publ = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = whole_proteome_IDs_PMID, color = in_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of publications (PMIDs), log10 scale")+ ggtitle("Number of publications for proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = in_IMEx),alpha =0.7, size = 1.5)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 ```
 
 
@@ -1904,7 +1934,11 @@ Percent_disorder_types_for_plot[, median_percent_disorder:= median(log10(percent
 
 ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10() +geom_vline(aes(xintercept = 10^median_percent_disorder, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
 
-ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10() +geom_vline(aes(xintercept = 10^median_percent_disorder, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+ggplot(Percent_disorder_types_for_plot, aes(x = percent_disorder, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+  facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of disordered regions, 0...100, log10 scale") + ggtitle("the distribution density of the fraction of disordered regions for proteins with \n and without interacting partners annotated in IMEx")+scale_x_log10() +geom_vline(aes(xintercept = 10^median_percent_disorder, color = whole_proteome_Uniprot_IMEx),alpha =0.7)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 ```
 
 
@@ -1923,10 +1957,24 @@ z[i] =wilcox.test(Hydropathy_m~whole_proteome_Uniprot_IMEx, data = sp)$p.value
 
 proteome_vs_imex_interaction_details_f_Percent_disorder[, median_FCR := median(log10(FCR), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution of the fraction of charged residues for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution of the fraction of charged residues for proteins with \n and without interacting curated annotated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = whole_proteome_Uniprot_IMEx),alpha =0.7)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution density of the fraction of charged residues for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("the distribution density of the fraction of charged residues for proteins with \n and without interacting curated annotated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = whole_proteome_Uniprot_IMEx),alpha =0.7)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 
+# for poster
+protein_charge = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = FCR, color = in_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("Fraction of charged residues in proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = in_IMEx),alpha =0.7, size =1.5)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 ```
 
 P-values for the differences: `r z[1]`, `r z[2]`, `r z[3]`.
@@ -1940,10 +1988,24 @@ z[i] =wilcox.test(Hydropathy_m~whole_proteome_Uniprot_IMEx, data = sp)$p.value
 
 proteome_vs_imex_interaction_details_f_Percent_disorder[, median_Hydropathy_m := median(log10(Hydropathy_m), na.rm = T), by = whole_proteome_Uniprot_IMEx_x_SPECIES_NAME]
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = whole_proteome_Uniprot_IMEx),alpha =0.7)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 
-ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners annotated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
+ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropathy_m, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_density()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("the distribution of the mean hydropathy for proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = whole_proteome_Uniprot_IMEx),alpha =0.7)+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 
+#for poster
+protein_hydropathy = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = Hydropathy_m, color = in_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("Mean hydropathy in proteins with and without \n interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = in_IMEx),alpha =0.7,size =1.5) +
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 ```
 
 P-values for the differences: `r z[1]`, `r z[2]`, `r z[3]`.
@@ -1964,7 +2026,11 @@ Proteins which don't have interaction evidence in IntAct tend to have a lower fr
 
   
 ```{r disord_domain_vs_publications, fig.height=5, fig.width=12}
-ggplot(Percent_disorder_types_for_plot, aes(x = whole_proteome_IDs_PMID, y = percent_disorder, label = SPECIES_NAME)) +geom_point(size = 0.05)+ scale_x_log10() + facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +ylab("fraction of disordered regions, 0...100")+xlab("the number of studies, log10 scale")  + ggtitle("the number of studies vs the fraction of disordered regions") +geom_smooth(method = "rlm", color = "blue")+geom_smooth(method = "loess", color = "red")
+ggplot(Percent_disorder_types_for_plot, aes(x = whole_proteome_IDs_PMID, y = percent_disorder, label = SPECIES_NAME)) +geom_point(size = 0.05)+ scale_x_log10() + facet_grid(SPECIES_NAME~disorder_pred_algorithm) + theme(strip.text.y = element_text(angle = 0)) +ylab("fraction of disordered regions, 0...100")+xlab("the number of studies, log10 scale")  + ggtitle("the number of studies vs the fraction of disordered regions") +geom_smooth(method = "rlm", color = "blue")+geom_smooth(method = "loess", color = "red")+
+        theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
+              panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
+        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                labels = trans_format("log10", math_format(10^.x)))
 ```
   
   The second plot is a quantile-quantile plot which shows that the distribution of the fraction of disordered domains is far from normal. Square root or logarithmic transformations do not change that.
@@ -2098,6 +2164,10 @@ coming soon
 Supplementary figure 1 
 
 ```{r Supplementary1_IMEx_vs_Uniprot_venndiagram_all_Uniprot, cache=F, fig.width=8, fig.height=8, fig.cap="Supplementary figure 1. The overlap between proteins with known interactions (interactome) and all proteins included in UniprotKB (proteome)"}
+filename.summary.all = paste("./results/","proteome_vs_interactome_summary_",date,".txt", sep = "")
+{
+  if(file.exists(filename.summary.all)) proteome_vs_interactome_summary.all = fread(filename.summary.all, sep = "\t", stringsAsFactors = F, data.table = F)
+}
 ## Plotting with venn.diagram - Uniprot vs IMEx (or IntAct)
 # code to be modified for different graphs
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
@@ -2314,4 +2384,12 @@ abline(v = wilcox.test.r$statistic, col = "red")
 hist(ttest.r10000, xlim = c(min(ttest.r10000),ttest_r$statistic+ttest_r$statistic/2))
 abline(v = ttest_r$statistic, col = "red")
 }
+```
+
+
+```{r poster_figures, fig.height=8, fig.width=12}
+multiplot(plotlist=list(protein_mass + theme(plot.margin = unit(c(0,0,1,0), "cm")), 
+                        protein_publ + theme(legend.position = "none") + theme(plot.margin = unit(c(0,1,0,1), "cm")), 
+                        protein_charge + theme(legend.position = "none") + theme(plot.margin = unit(c(0,1,1,1), "cm")), 
+                        protein_hydropathy + theme(legend.position = "none") + theme(plot.margin = unit(c(0,1,0,1), "cm"))), cols = 2)
 ```

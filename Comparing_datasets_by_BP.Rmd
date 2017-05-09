@@ -1,0 +1,288 @@
+---
+title: "Comparing datasets by BP"
+author: "Vitalii Kleshchevnikov"
+date: "9 May 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = FALSE, message = FALSE, fig.keep = "all") 
+suppressPackageStartupMessages({
+  library(data.table)
+  library(dplyr)
+  library(UniProt.ws)
+  library(PSICQUIC)
+  library(ggplot2)
+  library(clusterProfiler)
+})
+  source("multiplot.R")
+  source("GO_analyse_simplify_plot.R")
+  source("isoform_id_all_remover.R")
+```
+
+
+```{r swissprot}
+swissprot_proteins = fread("http://www.uniprot.org/uniprot/?query=reviewed:yes+AND+organism:9606&columns=id&format=tab", stringsAsFactors = F, colClasses = "character")$Entry
+```
+
+```{r IntAct}
+# IntAct
+all.IntAct = fread("./Data/IntAct_MITAB27_release_05-2017.txt", stringsAsFactors = F, colClasses = "character")
+# changing column names to data.table-compatible format
+{
+(colnames_IntAct = colnames(all.IntAct))
+colnames(all.IntAct) = gsub(" ","_",colnames(all.IntAct))
+colnames(all.IntAct) = gsub("\\(|\\)","",colnames(all.IntAct))
+colnames(all.IntAct) = gsub("#","",colnames(all.IntAct))
+}
+# cleaning Taxid "taxid:9606(human)|taxid:9606(Homo sapiens)" to 9606
+all.IntAct = unique(all.IntAct[,.(IDs_interactor_A, IDs_interactor_B,  Taxid_interactor_A, Taxid_interactor_B, Host_organisms, Publication_Identifiers)])
+{
+all.IntAct[, Taxid_interactor_A := gsub("taxid:|\\(.*$","",Taxid_interactor_A)]
+all.IntAct[, Taxid_interactor_B := gsub("taxid:|\\(.*$","",Taxid_interactor_B)]
+all.IntAct[, Host_organisms := gsub("taxid:|\\(.*$","",Host_organisms)]
+# saving identifier types and cleaning interactor ids
+all.IntAct[, interactor_IDs_databases_A := gsub(":.*$","",IDs_interactor_A)]
+all.IntAct[, interactor_IDs_databases_B := gsub(":.*$","",IDs_interactor_B)]
+all.IntAct[, IDs_interactor_A := gsub("^.*:","",IDs_interactor_A)]
+all.IntAct[, IDs_interactor_B := gsub("^.*:","",IDs_interactor_B)]
+# cleaning other information
+all.IntAct[, Publication_Identifiers := gsub("^.*pubmed:|\\|.*$","",Publication_Identifiers)]
+all.IntAct[interactor_IDs_databases_A == "uniprotkb", IDs_interactor_A := isoform_id_all_remover(IDs_interactor_A)]
+all.IntAct[interactor_IDs_databases_B == "uniprotkb", IDs_interactor_B := isoform_id_all_remover(IDs_interactor_B)]
+}
+
+all.IntAct_proteins = all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == "9606" &
+                                   interactor_IDs_databases_A == "uniprotkb" & interactor_IDs_databases_B == "uniprotkb" &
+                                   IDs_interactor_A %in% swissprot_proteins & IDs_interactor_B %in% swissprot_proteins,
+                                 unique(c(IDs_interactor_A, IDs_interactor_B))]
+not_all.IntAct_proteins = swissprot_proteins[!swissprot_proteins %in% all.IntAct_proteins]
+```
+
+```{r BioGrid}
+BioGrid = fread("https://raw.githubusercontent.com/vitkl/darkspaceproject/master/BioGRID/results/pairs_pmids_biogrid.txt", stringsAsFactors = F, colClasses = "character")
+BioGrid[, c("ida", "idb") := tstrsplit(pair_id_clean, "_")]
+BioGrid_proteins = BioGrid[ida %in% swissprot_proteins & idb %in% swissprot_proteins,
+                                 unique(c(ida, idb))]
+not_BioGrid_proteins = swissprot_proteins[!swissprot_proteins %in% BioGrid_proteins]
+```
+
+```{r String}
+String = fread("https://raw.githubusercontent.com/vitkl/darkspaceproject/master/STRING/results/pairs_STRING_all.txt", stringsAsFactors = F, colClasses = "character")
+String_proteins = String[ida_clean %in% swissprot_proteins & idb_clean %in% swissprot_proteins,
+                                 unique(c(ida_clean, idb_clean))]
+not_String_proteins = swissprot_proteins[!swissprot_proteins %in% String_proteins]
+```
+
+```{r Mentha}
+if(!file.exists("./Data/2017-05-08_MITAB-2.5.zip")){
+        mentha_url = "http://mentha.uniroma2.it/dumps/2017-05-08_MITAB-2.5.zip"
+        # httr::GET(http://mentha.uniroma2.it/doDownload.php?file=2017-05-08_MITAB-2.5.zip) - this is how I got the direct link
+        downloader::download(mentha_url, destfile = "./Data/2017-05-08_MITAB-2.5.zip")
+}
+unzip("./Data/2017-05-08_MITAB-2.5.zip", exdir = "./Data/")
+Mentha = fread("./Data/2017-05-08_MITAB-2.5", stringsAsFactors = F, colClasses = "character", header = F)
+{
+Mentha[, Taxid_interactor_A := gsub("taxid:|\\(.*$","",V10)]
+Mentha[, Taxid_interactor_B := gsub("taxid:|\\(.*$","",V11)]
+# saving identifier types and cleaning interactor ids
+Mentha[, interactor_IDs_databases_A := gsub(":.*$","",V1)]
+Mentha[, interactor_IDs_databases_B := gsub(":.*$","",V2)]
+Mentha[, IDs_interactor_A := gsub("^.*:","",V1)]
+Mentha[, IDs_interactor_B := gsub("^.*:","",V2)]
+# cleaning other information
+Mentha[, Publication_Identifiers := gsub("^.*pubmed:|\\|.*$","",V9)]
+Mentha[interactor_IDs_databases_A == "uniprotkb", IDs_interactor_A := isoform_id_all_remover(IDs_interactor_A)]
+Mentha[interactor_IDs_databases_B == "uniprotkb", IDs_interactor_B := isoform_id_all_remover(IDs_interactor_B)]
+}
+
+Mentha_proteins = Mentha[IDs_interactor_A %in% swissprot_proteins & IDs_interactor_B %in% swissprot_proteins,
+                                 unique(c(IDs_interactor_A, IDs_interactor_B))]
+not_Mentha_proteins = swissprot_proteins[!swissprot_proteins %in% Mentha_proteins]
+```
+
+```{r Vidal}
+Vidal_proteins = all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == "9606" &
+                             interactor_IDs_databases_A == "uniprotkb" & interactor_IDs_databases_B == "uniprotkb" &
+                             Publication_Identifiers == "25416956" &
+                             IDs_interactor_A %in% swissprot_proteins & IDs_interactor_B %in% swissprot_proteins,
+                           unique(c(IDs_interactor_A, IDs_interactor_B))]
+not_Vidal_proteins = swissprot_proteins[!swissprot_proteins %in% Vidal_proteins]
+```
+
+```{r Mann}
+Mann_proteins = all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == "9606" &
+                             interactor_IDs_databases_A == "uniprotkb" & interactor_IDs_databases_B == "uniprotkb" &
+                             Publication_Identifiers == "26496610" &
+                             IDs_interactor_A %in% swissprot_proteins & IDs_interactor_B %in% swissprot_proteins,
+                           unique(c(IDs_interactor_A, IDs_interactor_B))]
+not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]
+```
+
+## FDR correction
+
+`r length(not_all.IntAct_proteins)` length(not_all.IntAct_proteins))  
+`r length(not_BioGrid_proteins)` length(not_BioGrid_proteins))  
+`r length(not_String_proteins)` length(not_String_proteins))  
+`r length(not_Mentha_proteins)` length(not_Mentha_proteins))  
+`r length(not_Mann_proteins)` length(not_Mann_proteins))  
+`r length(not_Vidal_proteins)` length(not_Vidal_proteins))  
+
+```{r cluster_enrichment_negative, fig.height=5, fig.width=12}
+not_combined = data.table(proteins = c(not_all.IntAct_proteins, not_BioGrid_proteins, not_String_proteins, not_Mentha_proteins, not_Mann_proteins, not_Vidal_proteins),
+                      resources = c(rep("IntAct", length(not_all.IntAct_proteins)),
+                        rep("BioGRID", length(not_BioGrid_proteins)),
+                        rep("STRING", length(not_String_proteins)),
+                        rep("Mentha", length(not_Mentha_proteins)),
+                        rep("Mann_dataset", length(not_Mann_proteins)),
+                        rep("Vidal_dataset", length(not_Vidal_proteins))))
+
+if(!file.exists("not_result")){
+not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = not_combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = 1000,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "")
+save(not_result, file = "not_result")
+}
+load("not_result")
+print(not_result$plot)
+```
+
+`r length(all.IntAct_proteins)` length(all.IntAct_proteins))  
+`r length(BioGrid_proteins)` length(BioGrid_proteins))  
+`r length(String_proteins)` length(String_proteins))  
+`r length(Mentha_proteins)` length(Mentha_proteins))  
+`r length(Mann_proteins)` length(Mann_proteins))  
+`r length(Vidal_proteins)` length(Vidal_proteins))  
+
+```{r cluster_enrichment_positive, fig.height=5, fig.width=12}
+combined = data.table(proteins = c(all.IntAct_proteins, BioGrid_proteins, String_proteins, Mentha_proteins, Mann_proteins, Vidal_proteins),
+                      resources = c(rep("IntAct", length(all.IntAct_proteins)),
+                        rep("BioGRID", length(BioGrid_proteins)),
+                        rep("STRING", length(String_proteins)),
+                        rep("Mentha", length(Mentha_proteins)),
+                        rep("Mann_dataset", length(Mann_proteins)),
+                        rep("Vidal_dataset", length(Vidal_proteins))))
+
+if(!file.exists("result")){
+result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = 1000,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "")
+save(result, file = "result")
+}
+load("result")
+print(result$plot)
+```
+
+## Bonferroni correction
+
+```{r Bonferronicluster_enrichment_negative, fig.height=5, fig.width=12}
+if(!file.exists("Bonferroninot_result")){
+Bonferroninot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = not_combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "bonferroni",
+                                              minSetSize = 40, maxSetSize = 1000,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "")
+save(Bonferroninot_result, file = "Bonferroninot_result")
+}
+load("Bonferroninot_result")
+print(Bonferroninot_result$plot)
+```
+
+```{r Bonferronicluster_enrichment_positive, fig.height=5, fig.width=12}
+if(!file.exists("bonferroniresult")){
+bonferroniresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "bonferroni",
+                                              minSetSize = 40, maxSetSize = 1000,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "")
+save(bonferroniresult, file = "bonferroniresult")
+}
+load("bonferroniresult")
+print(bonferroniresult$plot)
+```
+
+## Wang clustering to simplify results
+
+```{r Wangcluster_enrichment_negative, fig.height=8, fig.width=16, eval=FALSE}
+if(!file.exists("Wangnot_result")){
+Wangnot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = not_combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = 1000,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "Wang",
+                                              similarity_cutoff = 0.8,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "")
+save(Wangnot_result, file = "Wangnot_result")
+}
+load("Wangnot_result")
+print(Wangnot_result$plot)
+```
+
+```{r Wangcluster_enrichment_positive, fig.height=5, fig.width=10, eval=FALSE}
+if(!file.exists("Wangresult")){
+Wangresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = 1000,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "Wang",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "")
+save(Wangresult, file = "Wangresult")
+}
+load("Wangresult")
+print(Wangresult$plot)
+```
