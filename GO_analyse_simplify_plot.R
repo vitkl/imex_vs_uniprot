@@ -2,7 +2,7 @@
 ##' @author Vitalii Kleshchevnikov 
 #####################################
 ##' @author Vitalii Kleshchevnikov
-GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, identifier_type, ontology, pAdjustMethod_ = "BH", minSetSize, maxSetSize, simplify_by = "p.adjust", simplify_fun = "min", similarity_calc_method = "kappa", similarity_cutoff = 0.7, visualize_result = "enrichMap", above_corrected_pval = 1, use_bioc_annotationdbi = T, plot_title = "", xlabel = ""){
+GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, identifier_type, ontology, pAdjustMethod_ = "BH", minSetSize, maxSetSize, simplify_by = "p.adjust", simplify_fun = "min", similarity_calc_method = "kappa", similarity_cutoff = 0.7, visualize_result = "enrichMap", above_corrected_pval = 1, use_bioc_annotationdbi = T, plot_title = "", xlabel = "", drop_GO_levels = NULL){
   suppressPackageStartupMessages({
     library(clusterProfiler)
     library(Homo.sapiens)
@@ -18,7 +18,11 @@ GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, iden
                   maxGSSize = maxSetSize,
                   pvalueCutoff = above_corrected_pval,
                   qvalueCutoff = 1)
-
+  if(is.null(drop_GO_levels)){
+    for(i in length(drop_GO_levels)){
+      ego = dropGO(ego, level = drop_GO_levels[i])
+    }
+  }
   if(similarity_calc_method != "none"){
   # simplify output from enrichGO by removing redundancy of enriched GO terms
   ego2 = simplify(x = ego, cutoff = similarity_cutoff,
@@ -68,7 +72,7 @@ GSEA_simplify_plot_bioc = function(ranked_protein_list, identifier_type, ontolog
 }
 #####################################
 ##' @author Vitalii Kleshchevnikov
-cluster_GO_enrich_simplify_plot_bioc = function(formula, protein_groups.dt, reference_protein_set, identifier_type, ontology, pAdjustMethod_ = "BH", minSetSize, maxSetSize, simplify_by = "p.adjust", simplify_fun = "min", similarity_calc_method = "kappa", similarity_cutoff = 0.7, visualize_result = "dotplot", above_corrected_pval = 1, plot_title = ""){
+cluster_GO_enrich_simplify_plot_bioc = function(formula, protein_groups.dt, reference_protein_set, identifier_type, ontology, pAdjustMethod_ = "BH", minSetSize, maxSetSize, simplify_by = "p.adjust", simplify_fun = "min", similarity_calc_method = "kappa", similarity_cutoff = 0.7, visualize_result = "dotplot", above_corrected_pval = 1, plot_title = "", drop_GO_levels = NULL){
   suppressPackageStartupMessages({
     library(clusterProfiler)
     library(Homo.sapiens)
@@ -84,6 +88,11 @@ cluster_GO_enrich_simplify_plot_bioc = function(formula, protein_groups.dt, refe
                        maxGSSize = maxSetSize,
                        pvalueCutoff = above_corrected_pval,
                        qvalueCutoff = 1)
+  if(is.null(drop_GO_levels)){
+    for(i in length(drop_GO_levels)){
+      ego = dropGO(ego, level = drop_GO_levels[i])
+    }
+  }
   if(similarity_calc_method != "none"){
   # simplify output from enrichGO by removing redundancy of enriched GO terms
   ego2 = simplify(x = ego, cutoff = similarity_cutoff,

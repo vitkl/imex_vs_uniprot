@@ -119,6 +119,11 @@ Mann_proteins = all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == 
 not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]
 ```
 
+```{r dropGOlevels}
+drop_GO_levels_ = 4:20
+maxSetSize_ = Inf
+```
+
 ## FDR correction
 
 ```{r cluster_enrichment_negative, fig.height=3, fig.width=12}
@@ -137,14 +142,15 @@ not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources
                                               identifier_type = "UNIPROT",
                                               ontology = "MF",
                                               pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
                                               similarity_cutoff = 0.7,
                                               visualize_result = "dotplot",
                                               above_corrected_pval = 0.05,
-                                              plot_title = "")
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
 save(not_result, file = "MFnot_result")
 }
 load("MFnot_result")
@@ -167,14 +173,15 @@ result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               identifier_type = "UNIPROT",
                                               ontology = "MF",
                                               pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
                                               similarity_cutoff = 0.7,
                                               visualize_result = "dotplot",
                                               above_corrected_pval = 0.05,
-                                              plot_title = "")
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
 save(result, file = "MFresult")
 }
 load("MFresult")
@@ -191,14 +198,15 @@ Bonferroninot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~
                                               identifier_type = "UNIPROT",
                                               ontology = "MF",
                                               pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
                                               similarity_cutoff = 0.7,
                                               visualize_result = "dotplot",
                                               above_corrected_pval = 0.05,
-                                              plot_title = "")
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
 save(Bonferroninot_result, file = "MFBonferroninot_result")
 }
 load("MFBonferroninot_result")
@@ -213,14 +221,15 @@ bonferroniresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ res
                                               identifier_type = "UNIPROT",
                                               ontology = "MF",
                                               pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
                                               similarity_cutoff = 0.7,
                                               visualize_result = "dotplot",
                                               above_corrected_pval = 0.05,
-                                              plot_title = "")
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
 save(bonferroniresult, file = "MFbonferroniresult")
 }
 load("MFbonferroniresult")

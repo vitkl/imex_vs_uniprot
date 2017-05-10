@@ -119,6 +119,11 @@ Mann_proteins = all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == 
 not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]
 ```
 
+```{r dropGOlevels}
+drop_GO_levels_ = 4:20
+maxSetSize_ = Inf
+```
+
 ## FDR correction
 
 `r length(not_all.IntAct_proteins)` length(not_all.IntAct_proteins))  
@@ -144,7 +149,7 @@ not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 600,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
@@ -181,7 +186,7 @@ result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 600,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
@@ -205,7 +210,7 @@ Bonferroninot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = 600,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
@@ -227,7 +232,7 @@ bonferroniresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ res
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = 600,
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
