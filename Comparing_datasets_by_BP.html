@@ -133,12 +133,12 @@ Read 19.4% of 720711 rows
 Read 27.8% of 720711 rows
 Read 40.2% of 720711 rows
 Read 41.6% of 720711 rows
-Read 54.1% of 720711 rows
-Read 65.2% of 720711 rows
+Read 52.7% of 720711 rows
+Read 63.8% of 720711 rows
 Read 66.6% of 720711 rows
 Read 79.1% of 720711 rows
 Read 91.6% of 720711 rows
-Read 720711 rows and 42 (of 42) columns from 2.541 GB file in 00:00:19</code></pre>
+Read 720711 rows and 42 (of 42) columns from 2.541 GB file in 00:00:20</code></pre>
 <pre class="r"><code># changing column names to data.table-compatible format
 {
 (colnames_IntAct = colnames(all.IntAct))
@@ -185,8 +185,8 @@ not_String_proteins = swissprot_proteins[!swissprot_proteins %in% String_protein
 unzip(&quot;./Data/2017-05-08_MITAB-2.5.zip&quot;, exdir = &quot;./Data/&quot;)
 Mentha = fread(&quot;./Data/2017-05-08_MITAB-2.5&quot;, stringsAsFactors = F, colClasses = &quot;character&quot;, header = F)</code></pre>
 <pre><code>## 
-Read 70.0% of 1114788 rows
-Read 1114788 rows and 15 (of 15) columns from 0.328 GB file in 00:00:04</code></pre>
+Read 75.4% of 1114788 rows
+Read 1114788 rows and 15 (of 15) columns from 0.328 GB file in 00:00:03</code></pre>
 <pre class="r"><code>{
 Mentha[, Taxid_interactor_A := gsub(&quot;taxid:|\\(.*$&quot;,&quot;&quot;,V10)]
 Mentha[, Taxid_interactor_B := gsub(&quot;taxid:|\\(.*$&quot;,&quot;&quot;,V11)]
@@ -216,7 +216,7 @@ not_Vidal_proteins = swissprot_proteins[!swissprot_proteins %in% Vidal_proteins]
                              IDs_interactor_A %in% swissprot_proteins &amp; IDs_interactor_B %in% swissprot_proteins,
                            unique(c(IDs_interactor_A, IDs_interactor_B))]
 not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]</code></pre>
-<pre class="r"><code>drop_GO_levels_ = 4:20
+<pre class="r"><code>drop_GO_levels_ = c(1:2,6:20)
 maxSetSize_ = Inf</code></pre>
 <div id="fdr-correction" class="section level2">
 <h2>FDR correction</h2>

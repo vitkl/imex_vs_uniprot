@@ -120,7 +120,7 @@ not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]
 ```
 
 ```{r dropGOlevels}
-drop_GO_levels_ = 4:20
+drop_GO_levels_ = c(1:2,6:20)
 maxSetSize_ = Inf
 ```
 
