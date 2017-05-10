@@ -121,7 +121,7 @@ not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]
 
 ## FDR correction
 
-```{r cluster_enrichment_negative, fig.height=5, fig.width=12}
+```{r cluster_enrichment_negative, fig.height=3, fig.width=12}
 not_combined = data.table(proteins = c(not_all.IntAct_proteins, not_BioGrid_proteins, not_String_proteins, not_Mentha_proteins, not_Mann_proteins, not_Vidal_proteins),
                       resources = c(rep("IntAct", length(not_all.IntAct_proteins)),
                         rep("BioGRID", length(not_BioGrid_proteins)),

@@ -144,7 +144,7 @@ not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = 600,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
@@ -165,7 +165,7 @@ print(not_result$plot)
 `r length(Mann_proteins)` length(Mann_proteins))  
 `r length(Vidal_proteins)` length(Vidal_proteins))  
 
-```{r cluster_enrichment_positive, fig.height=5, fig.width=12}
+```{r cluster_enrichment_positive, fig.height=5, fig.width=14}
 combined = data.table(proteins = c(all.IntAct_proteins, BioGrid_proteins, String_proteins, Mentha_proteins, Mann_proteins, Vidal_proteins),
                       resources = c(rep("IntAct", length(all.IntAct_proteins)),
                         rep("BioGRID", length(BioGrid_proteins)),
@@ -181,7 +181,7 @@ result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = 600,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
@@ -205,7 +205,7 @@ Bonferroninot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = 600,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
@@ -219,7 +219,7 @@ load("Bonferroninot_result")
 print(Bonferroninot_result$plot)
 ```
 
-```{r Bonferronicluster_enrichment_positive, fig.height=5, fig.width=12}
+```{r Bonferronicluster_enrichment_positive, fig.height=5, fig.width=14}
 if(!file.exists("bonferroniresult")){
 bonferroniresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               protein_groups.dt = combined,
@@ -227,7 +227,7 @@ bonferroniresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ res
                                               identifier_type = "UNIPROT",
                                               ontology = "BP",
                                               pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = 1000,
+                                              minSetSize = 40, maxSetSize = 600,
                                               simplify_by = "p.adjust",
                                               simplify_fun = "min",
                                               similarity_calc_method = "none",
