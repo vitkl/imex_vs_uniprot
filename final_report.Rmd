@@ -5,20 +5,17 @@ title: Characterisation of model species interactome available from primary mole
 author: "Vitalii Kleshchevnikov"
 date: "21 December 2016"
 output:
-  html_document:
-    font-family: Helvetica
-    keep_md: yes
-    toc: yes
   pdf_document:
-    font-family: Helvetica
-    keep_tex: yes
-    latex_engine: lualatex
-    toc: yes
-  word_document: default
+    df_print: kable
+documentclass: report
+mainfont: Helvetica
+latex_engine: lualatex
+toc: yes
+
 --- 
  
 ```{r setup, include=FALSE} 
-knitr::opts_chunk$set(echo = FALSE, results = "hide", warning = FALSE, message = FALSE, fig.keep = "all") 
+knitr::opts_chunk$set(echo = FALSE, results = "hide", warning = FALSE, message = FALSE, fig.keep = "all",eval=T) 
 suppressPackageStartupMessages({
   library(data.table)
   library(dplyr)
@@ -38,6 +35,15 @@ date = Sys.Date()
 date = as.Date("2017-04-24")
 # git update-index --assume-unchanged .RData 
 # http://stackoverflow.com/questions/21043132/gitignore-just-doesnt-work-i-cant-get-it-to-ignore-ds-store-gitignore-fil
+
+#http://rmarkdown.rstudio.com/pdf_document_format.html
+#http://pandoc.org/MANUAL.html#templates
+#http://anorien.csc.warwick.ac.uk/mirrors/CTAN/macros/latex/contrib/geometry/geometry.pdf
+#  html_document:
+#    font-family: Helvetica
+#    keep_md: yes
+#    toc: yes
+#  word_document: default
 ``` 
 
 The report was published on `r Sys.Date()`. All data used in the report as available on `r date`.
@@ -251,7 +257,8 @@ write.table(whole_proteome_Uniprot_vs_IntAct_vs_protein.exist.all, filename.summ
 # code to be modified for different graphs
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
 reviewed_venn = 2                 # 1 or 2
-IMExdatabase = "IMEx"    # "X0469.IntAct." or "IMEx"
+IMExdatabase_sel = "IMEx"    # subset the results "X0469.IntAct." or "IMEx"
+IMExdatabase_label = "IntAct" # show on the plot
 ### ======================================================================== ###
 # non-modifyable code
 proteome_vs_interactome_summary.all$species.name = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", proteome_vs_interactome_summary.all$species.name)
@@ -259,17 +266,17 @@ proteome_vs_interactome_summary.all$species.name = gsub("strain K12", "Escherich
 SPECIES_NAME = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", SPECIES_NAME)
 SPECIES_NAME = gsub("strain K12", "Escherichia coli, strain K12", SPECIES_NAME)
 library(dplyr)
-proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == TRUE & database == IMExdatabase)
-proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == FALSE & database == IMExdatabase)
+proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == TRUE & database == IMExdatabase_sel)
+proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == FALSE & database == IMExdatabase_sel)
 
 library(VennDiagram)
 {
 source("double.venn.prot.R")
 grid.newpage()
 
-if(reviewed_venn == 2){plotname = paste0("Proteome (SwissProt) coverage by interaction databases(",IMExdatabase,")")
+if(reviewed_venn == 2){plotname = paste0("Proteome (SwissProt) coverage by interaction databases(",IMExdatabase_label,")")
 databasename = "SwissProt"}
-if(reviewed_venn == 1){plotname = paste0("Proteome (all UniprotKB) coverage by interaction databases(",IMExdatabase,")")
+if(reviewed_venn == 1){plotname = paste0("Proteome (all UniprotKB) coverage by interaction databases(",IMExdatabase_label,")")
 databasename = "UniprotKB"}
 
 pushViewport(viewport(layout=grid.layout(nrow = length(SPECIES_NAME)+2, ncol=4, widths = unit(c(2/7,2/7,2/7,1/7), "npc"), 
@@ -292,11 +299,11 @@ for (i in 1:length(SPECIES_NAME)) {
   popViewport()
   
   pushViewport(viewport(layout.pos.col=2, layout.pos.row = i+2))
-  venn = double.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
+  venn = double.venn.prot(proteome_vs_interactome_summary.all_isof[i,], scaled = FALSE, IMExdatabase = IMExdatabase_label)
   popViewport()
   
   pushViewport(viewport(layout.pos.col=3, layout.pos.row = i+2))
-  venn = double.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = FALSE, IMExdatabase = IMExdatabase)
+  venn = double.venn.prot(proteome_vs_interactome_summary.all_noisof[i,], scaled = FALSE, IMExdatabase = IMExdatabase_label)
   popViewport()
 }
 popViewport()
@@ -754,21 +761,23 @@ n_odor_receptors = length(unique(grep("Odor", proteome_vs_imex_details_f$Protein
 proteome_vs_imex_details_f_minus_odor_olf.c = as.data.table(proteome_vs_imex_details_f_minus_odor_olf.c)
 proteome_vs_imex_details_f_minus_odor_olf.c[, whole_proteome_Uniprot_IMEx_x_olfac := paste0(whole_proteome_Uniprot_IMEx,olfac)]
 proteome_vs_imex_details_f_minus_odor_olf.c[, median_Mass_per_group := median(log10(Mass)), by = whole_proteome_Uniprot_IMEx_x_olfac]
-proteome_vs_imex_details_f_minus_odor_olf.c[, in_IMEx := ifelse(whole_proteome_Uniprot_IMEx == "SwissProt_and_IMEX", "yes", "no")]
+
+proteome_vs_imex_details_f_minus_odor_olf.c[, in_IntAct := ifelse(whole_proteome_Uniprot_IMEx == "SwissProt_and_IMEX", "yes", "no")]
+
           ## histogram with and without olfactory receptors:
-      ggplot(proteome_vs_imex_details_f_minus_odor_olf.c, aes(x = Mass, color = in_IMEx, label = olfac)) +geom_freqpoly(bins = 100)+ scale_x_log10() + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("The distribution of protein mass for proteins with and \n without interacting partners curated in IMEx")+geom_vline(aes(xintercept = 10^median_Mass_per_group, color = in_IMEx),alpha =0.7)  + facet_grid(olfac~.)+
+      ggplot(proteome_vs_imex_details_f_minus_odor_olf.c, aes(x = Mass, color = in_IntAct, label = olfac)) +geom_freqpoly(bins = 100)+ scale_x_log10() + theme(strip.text.y = element_text(angle = 0)) +xlab("protein mass, Da, log10 scale") + ggtitle("The distribution of protein mass for proteins with and \n without interacting partners curated in IMEx")+geom_vline(aes(xintercept = 10^median_Mass_per_group, color = in_IntAct),alpha =0.7)  + facet_grid(olfac~.)+
  theme(panel.background = element_rect(fill = '#FFFFFF', colour = 'grey'))
       
       # for poster
       proteome_vs_imex_details_f_minus_odor_olf.c_post = proteome_vs_imex_details_f_minus_odor_olf.c[olfac == "all SwissProt",]
       proteome_vs_imex_details_f_minus_odor_olf.c_post[,Organism := gsub(" \\(Human\\)","",Organism)]
-      protein_mass = ggplot(proteome_vs_imex_details_f_minus_odor_olf.c_post, aes(x = Mass, color = in_IMEx, label = Organism)) +
+      protein_mass = ggplot(proteome_vs_imex_details_f_minus_odor_olf.c_post, aes(x = Mass, color = in_IntAct, label = Organism)) +
         geom_freqpoly(bins = 100)+ scale_x_log10() + 
         theme(strip.text.y = element_text(angle = 0)) +
         xlab("protein mass, Da, log10 scale") + 
-        ggtitle("Mass of proteins with and without \n interacting partners curated in IMEx")+
+        ggtitle("Mass")+
         facet_grid(Organism~.) + 
-        geom_vline(aes(xintercept = 10^median_Mass_per_group, color = in_IMEx),alpha =0.7,size =1.5) +
+        geom_vline(aes(xintercept = 10^median_Mass_per_group, color = in_IntAct),alpha =0.7,size =1.5) +
         theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
               panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
         scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
@@ -1005,7 +1014,7 @@ proteome_vs_imex_interaction_details_f[,length(proteome_vs_imex_interaction_deta
 colnames(proteome_vs_imex_interaction_details_f)[length(proteome_vs_imex_interaction_details_f)] = paste0("two_hybrid", "_vs_","AP_MS")
 levels(proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS) = c("not two-hybrid, and not AP-MS", "two-hybrid, not AP-MS","not two-hybrid, AP-MS", "two-hybrid and AP-MS")
 proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS = as.character(proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS)
-proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS[proteome_vs_imex_interaction_details_f$IMEx!=1] = "not in IMEx"
+proteome_vs_imex_interaction_details_f$two_hybrid_vs_AP_MS[proteome_vs_imex_interaction_details_f$IMEx!=1] = "not in IntAct"
 
 # saving combined logic table with protein properties from Uniprot and interaction properties combined
 filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
@@ -1044,7 +1053,7 @@ proteome_vs_imex_interaction_details_f[ , c("SPECIES_NAME","reviewed","isoforms"
 proteome_vs_imex_interaction_details_all = rbind(proteome_vs_imex_interaction_details_all,proteome_vs_imex_interaction_details_f, fill =T)
     }}}
 
-proteome_vs_imex_interaction_details_all$two_hybrid_vs_AP_MS = factor(proteome_vs_imex_interaction_details_all$two_hybrid_vs_AP_MS, levels = c("not in IMEx", "not two-hybrid, and not AP-MS", "two-hybrid, not AP-MS", "not two-hybrid, AP-MS", "two-hybrid and AP-MS"))
+proteome_vs_imex_interaction_details_all$two_hybrid_vs_AP_MS = factor(proteome_vs_imex_interaction_details_all$two_hybrid_vs_AP_MS, levels = c("not in IntAct", "not two-hybrid, and not AP-MS", "two-hybrid, not AP-MS", "not two-hybrid, AP-MS", "two-hybrid and AP-MS"))
 
 proteome_vs_imex_interaction_details_all[, Median_mass := median((Mass)), by = .(SPECIES_NAME,two_hybrid_vs_AP_MS)]
 
@@ -1058,8 +1067,8 @@ ggplot(proteome_vs_imex_interaction_details_human, aes(y = Mass, x =two_hybrid_v
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) + geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass)) +
   ylab("Mass, Da, log10 scale")+
-  xlab("in IMEx, interaction detection method")+
-  ggtitle("How does protein interaction detection method depend on the protein length?")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))+
+  xlab("in IntAct, interaction detection method")+
+  ggtitle("protein mass by interaction detection method?")+facet_grid(.~SPECIES_NAME)+theme(axis.text.x = element_text(angle =-35))+
    theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),panel.background = element_rect(fill = '#FFFFFF', colour = 'grey'))
 ```
 
@@ -1905,8 +1914,8 @@ proteome_vs_imex_interaction_details_f_Percent_disorder[, median_studies_per_gro
 ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = whole_proteome_IDs_PMID, color = whole_proteome_Uniprot_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of studies , log10 scale")+ ggtitle("the distribution of the number of studies for proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = whole_proteome_Uniprot_IMEx),alpha =0.7)
 
 # for poster
-proteome_vs_imex_interaction_details_f_Percent_disorder[, in_IMEx := ifelse(whole_proteome_Uniprot_IMEx == "SwissProt_and_IMEX", "yes", "no")]
-protein_publ = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = whole_proteome_IDs_PMID, color = in_IMEx, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of publications (PMIDs), log10 scale")+ ggtitle("Number of publications for proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = in_IMEx),alpha =0.7, size = 1.5)+
+proteome_vs_imex_interaction_details_f_Percent_disorder[, in_IntAct := ifelse(whole_proteome_Uniprot_IMEx == "SwissProt_and_IMEX", "yes", "no")]
+protein_publ = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = whole_proteome_IDs_PMID, color = in_IntAct, label = SPECIES_NAME)) +geom_freqpoly()+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the number of publications (PMIDs), log10 scale")+ ggtitle("Number of publications") +geom_vline(aes(xintercept = 10^median_studies_per_group, color = in_IntAct),alpha =0.7, size = 1.5)+
         theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
               panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
         scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
@@ -1970,7 +1979,7 @@ ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = FCR, col
                 labels = trans_format("log10", math_format(10^.x)))
 
 # for poster
-protein_charge = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = FCR, color = in_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("Fraction of charged residues in proteins with \n and without interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_FCR, color = in_IMEx),alpha =0.7, size =1.5)+
+protein_charge = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = FCR, color = in_IntAct, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("fraction of charged residues, 0...1, log10 scale") + ggtitle("Fraction of charged residues") +geom_vline(aes(xintercept = 10^median_FCR, color = in_IntAct),alpha =0.7, size =1.5)+
         theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
               panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
         scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
@@ -2001,7 +2010,7 @@ ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder, aes(x = Hydropat
                 labels = trans_format("log10", math_format(10^.x)))
 
 #for poster
-protein_hydropathy = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = Hydropathy_m, color = in_IMEx, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("Mean hydropathy in proteins with and without \n interacting partners curated in IMEx") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = in_IMEx),alpha =0.7,size =1.5) +
+protein_hydropathy = ggplot(proteome_vs_imex_interaction_details_f_Percent_disorder[SPECIES_NAME == "Homo sapiens",], aes(x = Hydropathy_m, color = in_IntAct, label = SPECIES_NAME)) +geom_freqpoly(bins = 100)+ scale_x_log10() + facet_grid(SPECIES_NAME~.) + theme(strip.text.y = element_text(angle = 0)) +xlab("the mean hydropathy, log10 scale") + ggtitle("Mean hydropathy") +geom_vline(aes(xintercept = 10^median_Hydropathy_m, color = in_IntAct),alpha =0.7,size =1.5) +
         theme(panel.grid.major =  element_line(color = 'grey', size = 0.2, linetype = 'solid'),
               panel.background = element_rect(fill = '#FFFFFF', colour = 'grey')) + 
         scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
@@ -2388,8 +2397,8 @@ abline(v = ttest_r$statistic, col = "red")
 
 
 ```{r poster_figures, fig.height=8, fig.width=12}
-multiplot(plotlist=list(protein_mass + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0.5, 0.5), "cm")), 
-                        protein_publ + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0, 0.5), "cm")), 
-                        protein_charge + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0.5, 0.5), "cm")), 
-                        protein_hydropathy + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0, 0.5), "cm"))), cols = 2)
+multiplot(plotlist=list(protein_mass + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0.5, 0.5), "cm")) + theme(plot.title = element_text(size = 18)), 
+                        protein_publ + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0, 0.5), "cm")) + theme(plot.title = element_text(size = 18)), 
+                        protein_charge + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0.5, 0.5), "cm")) + theme(plot.title = element_text(size = 18)), 
+                        protein_hydropathy + theme(legend.position = "none") + theme(plot.margin = unit(c(0, 0.5, 0, 0.5), "cm")) + theme(plot.title = element_text(size = 18))), cols = 2)
 ```

@@ -88,8 +88,8 @@ cluster_GO_enrich_simplify_plot_bioc = function(formula, protein_groups.dt, refe
                        maxGSSize = maxSetSize,
                        pvalueCutoff = above_corrected_pval,
                        qvalueCutoff = 1)
-  if(is.null(drop_GO_levels)){
-    for(i in length(drop_GO_levels)){
+  if(!is.null(drop_GO_levels)){
+    for(i in 1:length(drop_GO_levels)){
       ego = dropGO(ego, level = drop_GO_levels[i])
     }
   }

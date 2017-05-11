@@ -1,7 +1,7 @@
 ---
-title: "Comparing datasets by MF"
+title: "Comparing_datasets_by_BP_MF_CC"
 author: "Vitalii Kleshchevnikov"
-date: "9 May 2017"
+date: "10 May 2017"
 output: html_document
 ---
 
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = T, warning = FALSE, message = FALSE, fig.keep = "al
 suppressPackageStartupMessages({
   library(data.table)
   library(dplyr)
+  library(downloader)
   library(UniProt.ws)
   library(PSICQUIC)
   library(ggplot2)
@@ -119,22 +120,115 @@ Mann_proteins = all.IntAct[Taxid_interactor_A == "9606" & Taxid_interactor_B == 
 not_Mann_proteins = swissprot_proteins[!swissprot_proteins %in% Mann_proteins]
 ```
 
-```{r dropGOlevels}
-drop_GO_levels_ = c(1:5,12:20)
+```{r Omnipath}
+interactions_url = "http://omnipathdb.org/interactions/?fields=sources&fields=references"
+interactions_file = "./Data/OmniPath_interactions.txt"
+if(!file.exists(interactions_file)) download(interactions_url,interactions_file)
+Omnipath = fread(interactions_file, stringsAsFactors = F, colClasses = "character", header = T)
+Omnipath_proteins = Omnipath[source %in% swissprot_proteins & target %in% swissprot_proteins, unique(c(source, target))]
+not_Omnipath_proteins = swissprot_proteins[!swissprot_proteins %in% Omnipath_proteins]
+```
+
+## Dataset size
+
+### proteins missing from the dataset  
+`r length(not_all.IntAct_proteins)` length(not_all.IntAct_proteins)  
+`r length(not_BioGrid_proteins)` length(not_BioGrid_proteins)  
+`r length(not_String_proteins)` length(not_String_proteins)  
+`r length(not_Mentha_proteins)` length(not_Mentha_proteins)  
+`r length(not_Mann_proteins)` length(not_Mann_proteins)  
+`r length(not_Vidal_proteins)` length(not_Vidal_proteins)  
+`r length(not_Omnipath_proteins)` length(not_Omnipath_proteins) 
+
+### proteins missing from the dataset  
+`r length(all.IntAct_proteins)` length(all.IntAct_proteins)  
+`r length(BioGrid_proteins)` length(BioGrid_proteins)  
+`r length(String_proteins)` length(String_proteins)  
+`r length(Mentha_proteins)` length(Mentha_proteins)  
+`r length(Mann_proteins)` length(Mann_proteins)  
+`r length(Vidal_proteins)` length(Vidal_proteins)  
+`r length(Omnipath_proteins)` length(Omnipath_proteins)  
+
+## Enrichment in biological process
+
+```{r BPdropGOlevels}
+drop_GO_levels_ = c(1:3,13:20)
 maxSetSize_ = Inf
 ```
 
-## FDR correction
-
-```{r cluster_enrichment_negative, fig.height=3.5, fig.width=12}
-not_combined = data.table(proteins = c(not_all.IntAct_proteins, not_BioGrid_proteins, not_String_proteins, not_Mentha_proteins, not_Mann_proteins, not_Vidal_proteins),
+```{r BPcluster_enrichment_negative, fig.height=5, fig.width=12}
+not_combined = data.table(proteins = c(not_all.IntAct_proteins, not_BioGrid_proteins, not_String_proteins, not_Mentha_proteins, not_Mann_proteins, not_Vidal_proteins, not_Omnipath_proteins),
                       resources = c(rep("IntAct", length(not_all.IntAct_proteins)),
                         rep("BioGRID", length(not_BioGrid_proteins)),
                         rep("STRING", length(not_String_proteins)),
                         rep("Mentha", length(not_Mentha_proteins)),
                         rep("Mann_dataset", length(not_Mann_proteins)),
-                        rep("Vidal_dataset", length(not_Vidal_proteins))))
+                        rep("Vidal_dataset", length(not_Vidal_proteins)),
+                        rep("Omnipath", length(not_Omnipath_proteins))))
 
+if(!file.exists("BPnot_result")){
+not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = not_combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
+save(not_result, file = "BPnot_result")
+}
+#zz = list()
+#for(i in 1:length(drop_GO_levels_)){
+#      zz = c(clusterProfiler:::getGOLevel(ont = "BP", level = drop_GO_levels_[i]), zz)
+#      print(drop_GO_levels_[i])
+#}
+```
+
+```{r BPcluster_enrichment_positive, fig.height=5, fig.width=14}
+combined = data.table(proteins = c(all.IntAct_proteins, BioGrid_proteins, String_proteins, Mentha_proteins, Mann_proteins, Vidal_proteins, Omnipath_proteins),
+                      resources = c(rep("IntAct", length(all.IntAct_proteins)),
+                        rep("BioGRID", length(BioGrid_proteins)),
+                        rep("STRING", length(String_proteins)),
+                        rep("Mentha", length(Mentha_proteins)),
+                        rep("Mann_dataset", length(Mann_proteins)),
+                        rep("Vidal_dataset", length(Vidal_proteins)),
+                        rep("Omnipath", length(Omnipath_proteins))))
+
+if(!file.exists("BPresult")){
+result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "BP",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
+save(result, file = "BPresult")
+}
+```
+
+## Enrichment in molecular function
+
+```{r MFdropGOlevels}
+drop_GO_levels_ = c(1:5,13:20)
+maxSetSize_ = Inf
+```
+
+```{r MFcluster_enrichment_negative, fig.height=5, fig.width=12}
 if(!file.exists("MFnot_result")){
 not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               protein_groups.dt = not_combined,
@@ -153,19 +247,9 @@ not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources
                                               drop_GO_levels = drop_GO_levels_)
 save(not_result, file = "MFnot_result")
 }
-load("MFnot_result")
-print(not_result$plot)
 ```
 
-```{r cluster_enrichment_positive, fig.height=5, fig.width=12}
-combined = data.table(proteins = c(all.IntAct_proteins, BioGrid_proteins, String_proteins, Mentha_proteins, Mann_proteins, Vidal_proteins),
-                      resources = c(rep("IntAct", length(all.IntAct_proteins)),
-                        rep("BioGRID", length(BioGrid_proteins)),
-                        rep("STRING", length(String_proteins)),
-                        rep("Mentha", length(Mentha_proteins)),
-                        rep("Mann_dataset", length(Mann_proteins)),
-                        rep("Vidal_dataset", length(Vidal_proteins))))
-
+```{r MFcluster_enrichment_positive, fig.height=5, fig.width=14}
 if(!file.exists("MFresult")){
 result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               protein_groups.dt = combined,
@@ -184,100 +268,69 @@ result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
                                               drop_GO_levels = drop_GO_levels_)
 save(result, file = "MFresult")
 }
+```
+
+## Enrichment in cellular component
+
+```{r CCdropGOlevels}
+drop_GO_levels_ = c(1:2,7:20)
+maxSetSize_ = Inf
+```
+
+```{r CCcluster_enrichment_negative, fig.height=5, fig.width=12}
+if(!file.exists("CCnot_result")){
+not_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = not_combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "CC",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
+save(not_result, file = "CCnot_result")
+}
+```
+
+```{r CCcluster_enrichment_positive, fig.height=5, fig.width=14}
+if(!file.exists("CCresult")){
+result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
+                                              protein_groups.dt = combined,
+                                              reference_protein_set = swissprot_proteins,
+                                              identifier_type = "UNIPROT",
+                                              ontology = "CC",
+                                              pAdjustMethod_ = "BH",
+                                              minSetSize = 40, maxSetSize = maxSetSize_,
+                                              simplify_by = "p.adjust",
+                                              simplify_fun = "min",
+                                              similarity_calc_method = "none",
+                                              similarity_cutoff = 0.7,
+                                              visualize_result = "dotplot",
+                                              above_corrected_pval = 0.05,
+                                              plot_title = "",
+                                              drop_GO_levels = drop_GO_levels_)
+save(result, file = "CCresult")
+}
+```
+
+```{r multiplot, fig.height=30, fig.width=14}
+load("MFnot_result")
 load("MFresult")
-print(result$plot)
-```
+load("BPnot_result")
+load("BPresult")
+load("CCnot_result")
+load("CCresult")
+multiplot(plotlist = list(MFnot_result + ggtitle("under-represented molecular functions"),
+                          MFresult + ggtitle("over-represented molecular functions"),
+                          BPnot_result + ggtitle("under-represented biological processes"),
+                          BPresult + ggtitle("over-represented biological processes"),
+                          CCnot_result + ggtitle("under-represented cellular components"),
+                          CCresult + ggtitle("over-represented cellular components")), cols=1)
 
-## Bonferroni correction
-
-```{r Bonferronicluster_enrichment_negative, fig.height=5, fig.width=12}
-if(!file.exists("MFBonferroninot_result")){
-Bonferroninot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
-                                              protein_groups.dt = not_combined,
-                                              reference_protein_set = swissprot_proteins,
-                                              identifier_type = "UNIPROT",
-                                              ontology = "MF",
-                                              pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = maxSetSize_,
-                                              simplify_by = "p.adjust",
-                                              simplify_fun = "min",
-                                              similarity_calc_method = "none",
-                                              similarity_cutoff = 0.7,
-                                              visualize_result = "dotplot",
-                                              above_corrected_pval = 0.05,
-                                              plot_title = "",
-                                              drop_GO_levels = drop_GO_levels_)
-save(Bonferroninot_result, file = "MFBonferroninot_result")
-}
-load("MFBonferroninot_result")
-print(Bonferroninot_result$plot)
-```
-
-```{r Bonferronicluster_enrichment_positive, fig.height=5, fig.width=12}
-if(!file.exists("MFbonferroniresult")){
-bonferroniresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
-                                              protein_groups.dt = combined,
-                                              reference_protein_set = swissprot_proteins,
-                                              identifier_type = "UNIPROT",
-                                              ontology = "MF",
-                                              pAdjustMethod_ = "bonferroni",
-                                              minSetSize = 40, maxSetSize = maxSetSize_,
-                                              simplify_by = "p.adjust",
-                                              simplify_fun = "min",
-                                              similarity_calc_method = "none",
-                                              similarity_cutoff = 0.7,
-                                              visualize_result = "dotplot",
-                                              above_corrected_pval = 0.05,
-                                              plot_title = "",
-                                              drop_GO_levels = drop_GO_levels_)
-save(bonferroniresult, file = "MFbonferroniresult")
-}
-load("MFbonferroniresult")
-print(bonferroniresult$plot)
-```
-
-## Wang clustering to simplify results
-
-```{r Wangcluster_enrichment_negative, fig.height=8, fig.width=16, eval=FALSE}
-if(!file.exists("MFWangnot_result")){
-Wangnot_result = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
-                                              protein_groups.dt = not_combined,
-                                              reference_protein_set = swissprot_proteins,
-                                              identifier_type = "UNIPROT",
-                                              ontology = "MF",
-                                              pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 1000,
-                                              simplify_by = "p.adjust",
-                                              simplify_fun = "min",
-                                              similarity_calc_method = "Wang",
-                                              similarity_cutoff = 0.8,
-                                              visualize_result = "dotplot",
-                                              above_corrected_pval = 0.05,
-                                              plot_title = "")
-save(Wangnot_result, file = "MFWangnot_result")
-}
-load("MFWangnot_result")
-print(Wangnot_result$plot)
-```
-
-```{r Wangcluster_enrichment_positive, fig.height=8, fig.width=16, eval=FALSE}
-if(!file.exists("MFWangresult")){
-Wangresult = cluster_GO_enrich_simplify_plot_bioc(formula = proteins ~ resources,
-                                              protein_groups.dt = combined,
-                                              reference_protein_set = swissprot_proteins,
-                                              identifier_type = "UNIPROT",
-                                              ontology = "MF",
-                                              pAdjustMethod_ = "BH",
-                                              minSetSize = 40, maxSetSize = 1000,
-                                              simplify_by = "p.adjust",
-                                              simplify_fun = "min",
-                                              similarity_calc_method = "Wang",
-                                              similarity_cutoff = 0.7,
-                                              visualize_result = "dotplot",
-                                              above_corrected_pval = 0.05,
-                                              plot_title = "")
-save(Wangresult, file = "MFWangresult")
-}
-load("MFWangresult")
-print(Wangresult$plot)
 ```
