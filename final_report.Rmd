@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   library(PSICQUIC)
   library(ggplot2)
   library(clusterProfiler)
+  library(scales)
 })
   source("multiplot.R")
   source("GO_analyse_simplify_plot.R")
@@ -46,7 +47,7 @@ date = as.Date("2017-04-24")
 #  word_document: default
 ``` 
 
-The report was published on `r Sys.Date()`. All data used in the report as available on `r date`.
+The report was published on `r Sys.Date()`. Data used in the report was available on `r date`.
 
 # Outline
 
@@ -55,11 +56,11 @@ The report was published on `r Sys.Date()`. All data used in the report as avail
 3. Methods
 4. Results and discussion
     - how available interactome covers the proteome
-    - IMEx(IntAct) vs Biogrid
+    - IntAct(IMEx) vs Biogrid
     - which proteins are missing
     - interaction detection biases
     - study bias: the more articles, the more interactions
-    - which proteins are IMEx(IntAct), Biogrid and high-throughput datasets enriched in?
+    - which protein function are interaction databases and high-throughput datasets enriched in?
 5. Conclusion  
 
 # Abstract
@@ -671,7 +672,7 @@ i = isoforms
                                    reference_protein_set = unique(proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]),
                                    identifier_type = "UNIPROT", ontology = "BP", 
                                    pAdjustMethod_ = "BH", 
-                                   minSetSize = 80, maxSetSize = 100, 
+                                   minSetSize = 40, maxSetSize = Inf, 
                                    simplify_by = "GeneRatio", 
                                    simplify_fun = "function (x) x[which.max(eval(parse(text = paste0(\"c(\",paste0(x, collapse = \",\"),\")\"))))]", 
                                    similarity_calc_method = "Wang", 
@@ -679,48 +680,12 @@ i = isoforms
                                    visualize_result = "dotplot", 
                                    above_corrected_pval = 0.05, 
                                    use_bioc_annotationdbi = T, 
-                                   plot_title = "biological function of proteins with no available interactions in IMEx",
-                                   xlabel = "the fraction of proteins with biological function among proteins without interactions")
+                                   plot_title = "biological function of proteins with no interactions in IntAct",
+                                   xlabel = "the fraction of proteins with biological function among proteins with no interactions",
+                                   drop_GO_levels = c(1:2,15:20))
       print(not_in_IMEx_BP$plot + theme(plot.title = element_text(hjust = 0.8)))
       
 ```
-
-```{r human_not_in_IMEx_protein_properties_GO, fig.width=10, fig.height=8, eval=F}
-semData <- clusterProfiler:::get_GO_data(OrgDb = 'org.Hs.eg.db', ont = "BP", keytype = "UNIPROT")
-    # measure distance between selected terms (important to get all GO to protein mappings)
-    semData = data.table(names(unlist(semData$EXTID2PATHID)),unlist(semData$EXTID2PATHID))
-    colnames(semData) = c("UNIPROT","GO")
-    semData = unique(semData)
-    set.seed(1)
-    semData = unique(semData[GO %in% semData[, unique(GO)][sample(1:40000,500)],])
-    sim = categ_dist(mapping_table = semData)$similarity_matrix
-```
-
-```{r GO_enrichment_map, fig.height=10, fig.width=10, eval=F}
-set.seed(6)
-library(igraph)
-x =enrichMap(enrichedGOterms, n = 40,layout = layout_with_kk, vertex.label.cex = 0.8,vertex.size = 5, rescale=T)
-#plot(setting.graph.attributes(x, node.size = 5))
-```
-
-```{r new_go, fig.height=10, fig.width=10, eval=F}
-source("GO_enrich_simplify_plot_bioc.R")
-set.seed(1546)
-new_depleted = GO_enrich_simplify_plot_bioc(protein_set = proteome_vs_imex_details_f[IMEx == 0 & whole_proteome_Uniprot == 1,unique(whole_proteome_IDs)],
-                                            reference_protein_set = proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,unique(whole_proteome_IDs)],
-                                            identifier_type = "UNIPROT",
-                                            ontology = "BP",
-                                            pAdjustMethod_ = "fdr",
-                                            minSetSize = 50,
-                                            maxSetSize = 1000,
-                                            simplify_by = "GeneRatio",
-                                            simplify_fun = "function(x) eval(parse(text = x))",
-                                            similarity_calc_method = "Wang",
-                                            similarity_cutoff = 0.65,
-                                            visualize_result = "enrichMap",
-                                            above_corrected_pval = 0.05)
-```
-
 
 ### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
 
@@ -877,7 +842,7 @@ library(UniProt.ws)
 uniprot = UniProt.ws(taxId = 9606)
 # getting names of the things one can get from UniProt.ws
 # keytypes(uniprot)
-uniprot2entrezgene = as.data.table(select(uniprot, 
+uniprot2entrezgene = as.data.table(UniProt.ws::select(uniprot, 
                keys = unique(proteome_vs_imex_details_f$whole_proteome_IDs), 
                columns = c("ENTREZ_GENE", "UNIPROTKB"),
                keytype = "UNIPROTKB"))
@@ -1061,8 +1026,7 @@ proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(gsub("_"," ",tw
 proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(signif(Median_mass/1000,3)," kDa)"))]
 
 library(scales)
-proteome_vs_imex_interaction_details_human = proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",]
-ggplot(proteome_vs_imex_interaction_details_human, aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
+ggplot(proteome_vs_imex_interaction_details_all[SPECIES_NAME == "Homo sapiens",], aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
   geom_violin(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area", alpha =0.7) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) + geom_vline(aes(colour = two_hybrid_vs_AP_MS,xintercept = Median_mass)) +
@@ -1085,7 +1049,9 @@ mypar(2,2)
 for(sp in SPECIES_NAME){
 sp = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", sp)
 sp = gsub("strain K12", "Escherichia coli, strain K12", sp)
-data = proteome_vs_imex_interaction_details_all[two_hybrid_vs_AP_MS != "not in IMEx" & SPECIES_NAME == sp,]
+data = proteome_vs_imex_interaction_details_all[two_hybrid_vs_AP_MS != "not in IntAct" & SPECIES_NAME == sp,]
+# two_hybrid_vs_AP_MS was previously set up as factor with 5 levels - now we need to relevel + keep alphabetic ordering for plotting 
+data[, two_hybrid_vs_AP_MS := as.character(two_hybrid_vs_AP_MS)]
 fit_rlm = rlm(log10(Mass)~two_hybrid_vs_AP_MS, data = data)
 coefs <- coef(fit_rlm)
 names(coefs) = data[,sort(unique(two_hybrid_vs_AP_MS))]
@@ -1096,7 +1062,7 @@ lgth <- .1
 cols <- brewer.pal(8,"Dark2")
 
 boxplot(log10(Mass)~two_hybrid_vs_AP_MS, data = data, 
-           vertical=TRUE, pch=1, method="jitter",las=1,cex.axis= 0.80, main = paste0(sp, ": protein length vs interaction detmethod, rlm"), cex.main=0.99)
+           vertical=TRUE, pch=1, method="jitter",las=1,cex.axis= 0.58, main = paste0(sp, ": protein length vs interaction detmethod, rlm"), cex.main=0.99)
 abline(h=0)
 arrows(1+a,0,1+a,coefs[1],lwd=3,col=cols[1],length=lgth)
 abline(h=coefs[1],col=cols[1])
