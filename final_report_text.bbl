@@ -1,14 +1,168 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{12}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
+\bibitem[Braun et~al.(2009)Braun, Tasan, Dreze, Barrios-Rodiles, Lemmens, Yu,
+  Sahalie, Murray, Roncari, de~Smet, Venkatesan, Rual, Vandenhaute, Cusick,
+  Pawson, Hill, Tavernier, Wrana, Roth, and Vidal]{Braun:2009aa}
+Pascal Braun, Murat Tasan, Matija Dreze, Miriam Barrios-Rodiles, Irma Lemmens,
+  Haiyuan Yu, Julie~M Sahalie, Ryan~R Murray, Luba Roncari, Anne-Sophie
+  de~Smet, Kavitha Venkatesan, Jean-Francois Rual, Jean Vandenhaute, Michael~E
+  Cusick, Tony Pawson, David~E Hill, Jan Tavernier, Jeffrey~L Wrana,
+  Frederick~P Roth, and Marc Vidal.
+\newblock An experimentally derived confidence score for binary protein-protein
+  interactions.
+\newblock \emph{Nat Methods}, 6\penalty0 (1):\penalty0 91--97, Jan 2009.
+\newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
+\newblock \doi{10.1038/nmeth.1281}.
+
+\bibitem[Hein et~al.(2015)Hein, Hubner, Poser, Cox, Nagaraj, Toyoda, Gak,
+  Weisswange, Mansfeld, Buchholz, Hyman, and Mann]{Hein:2015aa}
+Marco~Y Hein, Nina~C Hubner, Ina Poser, Jurgen Cox, Nagarjuna Nagaraj, Yusuke
+  Toyoda, Igor~A Gak, Ina Weisswange, Jorg Mansfeld, Frank Buchholz, Anthony~A
+  Hyman, and Matthias Mann.
+\newblock A human interactome in three quantitative dimensions organized by
+  stoichiometries and abundances.
+\newblock \emph{Cell}, 163\penalty0 (3):\penalty0 712--723, Oct 2015.
+\newblock ISSN 1097-4172 (Electronic); 0092-8674 (Linking).
+\newblock \doi{10.1016/j.cell.2015.09.053}.
+
+\bibitem[Hermjakob et~al.(2004)Hermjakob, Montecchi-Palazzi, Bader, Wojcik,
+  Salwinski, Ceol, Moore, Orchard, Sarkans, von Mering, Roechert, Poux, Jung,
+  Mersch, Kersey, Lappe, Li, Zeng, Rana, Nikolski, Husi, Brun, Shanker, Grant,
+  Sander, Bork, Zhu, Pandey, Brazma, Jacq, Vidal, Sherman, Legrain, Cesareni,
+  Xenarios, Eisenberg, Steipe, Hogue, and Apweiler]{Hermjakob:2004aa}
+Henning Hermjakob, Luisa Montecchi-Palazzi, Gary Bader, Jerome Wojcik, Lukasz
+  Salwinski, Arnaud Ceol, Susan Moore, Sandra Orchard, Ugis Sarkans, Christian
+  von Mering, Bernd Roechert, Sylvain Poux, Eva Jung, Henning Mersch, Paul
+  Kersey, Michael Lappe, Yixue Li, Rong Zeng, Debashis Rana, Macha Nikolski,
+  Holger Husi, Christine Brun, K~Shanker, Seth G~N Grant, Chris Sander, Peer
+  Bork, Weimin Zhu, Akhilesh Pandey, Alvis Brazma, Bernard Jacq, Marc Vidal,
+  David Sherman, Pierre Legrain, Gianni Cesareni, Ioannis Xenarios, David
+  Eisenberg, Boris Steipe, Chris Hogue, and Rolf Apweiler.
+\newblock The hupo psi's molecular interaction format--a community standard for
+  the representation of protein interaction data.
+\newblock \emph{Nat Biotechnol}, 22\penalty0 (2):\penalty0 177--183, Feb 2004.
+\newblock ISSN 1087-0156 (Print); 1087-0156 (Linking).
+\newblock \doi{10.1038/nbt926}.
+
+\bibitem[Lemmens et~al.(2015)Lemmens, Lievens, and Tavernier]{Lemmens:2015aa}
+Irma Lemmens, Sam Lievens, and Jan Tavernier.
+\newblock Mappit, a mammalian two-hybrid method for in-cell detection of
+  protein-protein interactions.
+\newblock \emph{Methods Mol Biol}, 1278:\penalty0 447--455, 2015.
+\newblock ISSN 1940-6029 (Electronic); 1064-3745 (Linking).
+\newblock \doi{10.1007/978-1-4939-2425-7{\_}29}.
+
+\bibitem[Mellacheruvu et~al.(2013)Mellacheruvu, Wright, Couzens, Lambert,
+  St-Denis, Li, Miteva, Hauri, Sardiu, Low, Halim, Bagshaw, Hubner, Al-Hakim,
+  Bouchard, Faubert, Fermin, Dunham, Goudreault, Lin, Badillo, Pawson,
+  Durocher, Coulombe, Aebersold, Superti-Furga, Colinge, Heck, Choi, Gstaiger,
+  Mohammed, Cristea, Bennett, Washburn, Raught, Ewing, Gingras, and
+  Nesvizhskii]{Mellacheruvu:2013aa}
+Dattatreya Mellacheruvu, Zachary Wright, Amber~L Couzens, Jean-Philippe
+  Lambert, Nicole~A St-Denis, Tuo Li, Yana~V Miteva, Simon Hauri, Mihaela~E
+  Sardiu, Teck~Yew Low, Vincentius~A Halim, Richard~D Bagshaw, Nina~C Hubner,
+  Abdallah Al-Hakim, Annie Bouchard, Denis Faubert, Damian Fermin, Wade~H
+  Dunham, Marilyn Goudreault, Zhen-Yuan Lin, Beatriz~Gonzalez Badillo, Tony
+  Pawson, Daniel Durocher, Benoit Coulombe, Ruedi Aebersold, Giulio
+  Superti-Furga, Jacques Colinge, Albert J~R Heck, Hyungwon Choi, Matthias
+  Gstaiger, Shabaz Mohammed, Ileana~M Cristea, Keiryn~L Bennett, Mike~P
+  Washburn, Brian Raught, Rob~M Ewing, Anne-Claude Gingras, and Alexey~I
+  Nesvizhskii.
+\newblock The crapome: a contaminant repository for affinity purification-mass
+  spectrometry data.
+\newblock \emph{Nat Methods}, 10\penalty0 (8):\penalty0 730--736, Aug 2013.
+\newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
+\newblock \doi{10.1038/nmeth.2557}.
+
+\bibitem[Orchard et~al.(2012)Orchard, Kerrien, Abbani, Aranda, Bhate, Bidwell,
+  Bridge, Briganti, Brinkman, Cesareni, Chatr-aryamontri, Chautard, Chen,
+  Dumousseau, Goll, Hancock, Hannick, Jurisica, Khadake, Lynn, Mahadevan,
+  Perfetto, Raghunath, Ricard-Blum, Roechert, Salwinski, Stumpflen, Tyers,
+  Uetz, Xenarios, and Hermjakob]{Orchard:2012aa}
+Sandra Orchard, Samuel Kerrien, Sara Abbani, Bruno Aranda, Jignesh Bhate,
+  Shelby Bidwell, Alan Bridge, Leonardo Briganti, Fiona S~L Brinkman, Gianni
+  Cesareni, Andrew Chatr-aryamontri, Emilie Chautard, Carol Chen, Marine
+  Dumousseau, Johannes Goll, Robert E~W Hancock, Linda~I Hannick, Igor
+  Jurisica, Jyoti Khadake, David~J Lynn, Usha Mahadevan, Livia Perfetto, Arathi
+  Raghunath, Sylvie Ricard-Blum, Bernd Roechert, Lukasz Salwinski, Volker
+  Stumpflen, Mike Tyers, Peter Uetz, Ioannis Xenarios, and Henning Hermjakob.
+\newblock Protein interaction data curation: the international molecular
+  exchange (imex) consortium.
+\newblock \emph{Nat Methods}, 9\penalty0 (4):\penalty0 345--350, Apr 2012.
+\newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
+\newblock \doi{10.1038/nmeth.1931}.
+
+\bibitem[Orchard et~al.(2014)Orchard, Ammari, Aranda, Breuza, Briganti,
+  Broackes-Carter, Campbell, Chavali, Chen, del Toro, Duesbury, Dumousseau,
+  Galeota, Hinz, Iannuccelli, Jagannathan, Jimenez, Khadake, Lagreid, Licata,
+  Lovering, Meldal, Melidoni, Milagros, Peluso, Perfetto, Porras, Raghunath,
+  Ricard-Blum, Roechert, Stutz, Tognolli, van Roey, Cesareni, and
+  Hermjakob]{Orchard:2014aa}
+Sandra Orchard, Mais Ammari, Bruno Aranda, Lionel Breuza, Leonardo Briganti,
+  Fiona Broackes-Carter, Nancy~H Campbell, Gayatri Chavali, Carol Chen, Noemi
+  del Toro, Margaret Duesbury, Marine Dumousseau, Eugenia Galeota, Ursula Hinz,
+  Marta Iannuccelli, Sruthi Jagannathan, Rafael Jimenez, Jyoti Khadake, Astrid
+  Lagreid, Luana Licata, Ruth~C Lovering, Birgit Meldal, Anna~N Melidoni, Mila
+  Milagros, Daniele Peluso, Livia Perfetto, Pablo Porras, Arathi Raghunath,
+  Sylvie Ricard-Blum, Bernd Roechert, Andre Stutz, Michael Tognolli, Kim van
+  Roey, Gianni Cesareni, and Henning Hermjakob.
+\newblock The mintact project--intact as a common curation platform for 11
+  molecular interaction databases.
+\newblock \emph{Nucleic Acids Res}, 42\penalty0 (Database issue):\penalty0
+  D358--63, Jan 2014.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gkt1115}.
+
+\bibitem[Saraon et~al.(2017)Saraon, Grozavu, Lim, Snider, Yao, and
+  Stagljar]{Saraon:2017aa}
+Punit Saraon, Ingrid Grozavu, Sang~Hyun Lim, Jamie Snider, Zhong Yao, and Igor
+  Stagljar.
+\newblock Detecting membrane protein-protein interactions using the mammalian
+  membrane two-hybrid (mamth) assay.
+\newblock \emph{Curr Protoc Chem Biol}, 9\penalty0 (1):\penalty0 38--54, Mar
+  2017.
+\newblock ISSN 2160-4762 (Electronic); 2160-4762 (Linking).
+\newblock \doi{10.1002/cpch.15}.
+
+\bibitem[Schaefer et~al.(2015)Schaefer, Serrano, and
+  Andrade-Navarro]{Schaefer:2015aa}
+Martin~H Schaefer, Luis Serrano, and Miguel~A Andrade-Navarro.
+\newblock Correcting for the study bias associated with protein-protein
+  interaction measurements reveals differences between protein degree
+  distributions from different cancer types.
+\newblock \emph{Front Genet}, 6:\penalty0 260, 2015.
+\newblock ISSN 1664-8021 (Linking).
+\newblock \doi{10.3389/fgene.2015.00260}.
+
 \bibitem[Shannon(2017)]{PSICQUIC}
 Paul Shannon.
 \newblock \emph{PSICQUIC: Proteomics Standard Initiative Common QUery
   InterfaCe}, 2017.
 \newblock R package version 1.14.0.
+
+\bibitem[Villaveces et~al.(2015)Villaveces, Jimenez, Porras, Del-Toro,
+  Duesbury, Dumousseau, Orchard, Choi, Ping, Zong, Askenazi, Habermann, and
+  Hermjakob]{Villaveces:2015aa}
+J~M Villaveces, R~C Jimenez, P~Porras, N~Del-Toro, M~Duesbury, M~Dumousseau,
+  S~Orchard, H~Choi, P~Ping, N~C Zong, M~Askenazi, B~H Habermann, and Henning
+  Hermjakob.
+\newblock Merging and scoring molecular interactions utilising existing
+  community standards: tools, use-cases and a case study.
+\newblock \emph{Database (Oxford)}, 2015, 2015.
+\newblock ISSN 1758-0463 (Electronic); 1758-0463 (Linking).
+\newblock \doi{10.1093/database/bau131}.
+
+\bibitem[Zhang et~al.(2011)Zhang, Sun, and Jiang]{Zhang:2011aa}
+Wangshu Zhang, Fengzhu Sun, and Rui Jiang.
+\newblock Integrating multiple protein-protein interaction networks to
+  prioritize disease genes: a bayesian regression approach.
+\newblock \emph{BMC Bioinformatics}, 12 Suppl 1:\penalty0 S11, Feb 2011.
+\newblock ISSN 1471-2105 (Electronic); 1471-2105 (Linking).
+\newblock \doi{10.1186/1471-2105-12-S1-S11}.
 
 \end{thebibliography}
