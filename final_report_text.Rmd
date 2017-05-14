@@ -104,11 +104,11 @@ The report was published on `r Sys.Date()`. Data used in the report was availabl
    The third big challenge is that our knowledge of interactome is incomplete which arises from the fact that experimental approaches have low statistical power and often miss out some real interactions. Many efforts to reproduce protein interactions find little overlap between the new and the original study [@Braun:2009aa]. Also, many proteins, especially in non-model species have no know interactions.
 
    The final challenge contributes to the "incomplete interactome" problem but is grounded in the fact that not all protein interaction discovered and published are included in protein interaction databases. In the other words, this is database curation problem. More than 100 public databases containing protein interactions are available now [http://pathguide.org/]. These databases differ:
-- by the types of data they include (e.g. computational prediction, manual curation from experimental articles - primary, aggregated data from many primary databases - secondary),  
-- the level of detail captured from articles to describe interactions,  
-- how often and if they are updated with new data.  
-   The level of detail ranges from only mentioning the pairs of interactors and heuristic score assigned to them (STRING, updated once in 2 years) to the ones containing experiment details (detection method, bait/prey status, if available - quantitative data, experiment setup, protein variants), such as IntAct [PMCID: PMC3703241]. 
-   The amount of interaction data generated per year is growing exponentially making manual curation of all this data into primary databases a daunting task. To prioritise curation efforts and reduce redundancy between databases (to curate different data using the same standards) IMEx consortium was formed in 2012 [PMCID: PMC3703241]. IMEx-compliant databases include all big primary databases excluding only BioGRID (which curates at the lower level of detail) and not active legacy databases.
+- by the types of data they include (e.g. computational prediction, manual curation experimental data from research papers (primary databases), aggregated data from many primary databases (secondary databases)),  
+- the level of detail captured from articles to describe interactions
+- how often and if databases are updated with new data, identifiers and annotation.  
+   The level of detail ranges from mentioning only the pairs of interacting partners and heuristic scores assigned to them (for instance, STRING) to the ones containing experiment details (detection method, bait/prey status, if available - quantitative data, experiment setup, protein variants), such as IntAct [@Orchard:2014aa]. 
+   The amount of interaction data generated per year is growing exponentially making manual curation of all this data into primary databases a daunting task. To prioritise curation efforts and reduce redundancy between databases (to curate different data using the same standards) IMEx consortium was formed in 2012 [@Orchard:2012aa]. IMEx-compliant databases include primary databases such as IntAct and MINT, but doesn't include BioGRID (which curates at the lower level of detail) and no longer active databases such as HPRD and BIND.
 
 ### Motivation for this study
 
@@ -117,21 +117,16 @@ The report was published on `r Sys.Date()`. Data used in the report was availabl
 
 # Aims of the study 
 
-1. Find out how available interactome covers the proteome of main model species. Considering either all UniProtKB or SwissProt entries only as the proteome (canonical identifiers as well as protein isoforms). Consider all interactions from IMEx-compliant databases as interactome.  
+1. Describe the coverage of the proteome of main model species. Considering either all UniProtKB or SwissProt entries only as the proteome (canonical identifiers as well as protein isoforms). Consider all interactions from IMEx-compliant databases as interactome.  
 
-2. Compare the coverage of proteome by interactome from IMEx to the interactome from BioGRID (the other major primary database).
+2. Compare the coverage of the proteome by interaction evidence from IMEx to the interaction evidence from BioGRID (the other major primary database).
 
-3. Find out if proteins with no available interactions stand out by specific functions (Gene Ontology, GO: biological process and molecular function), cellular localisation (GO), molecular mass, or protein evidence status from SwissProt
+3. Investigate if proteins with no available interactions stand out by specific functions (Gene Ontology, GO: biological process and molecular function), cellular localisation (GO), molecular mass, or protein evidence status from SwissProt
 
-4. Find out if major protein interaction detection methods (two-hybrid and AP-MS, AP-WB?) exhibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
+4. Find out if major protein interaction detection methods (two-hybrid and AP-MS) exhibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
 
-5. What is the relationship between the number of interactions or MI score and the number of publications or GO terms per protein?
+5. Investigate the relationship between the number of interactions or MI score and the number of publications or GO terms per protein.
 
-6. Are proteins with a higher fraction of intrinsically disordered domains more likely to have interactions available and do they have more interactions (if normalised for how well-studied proteins are)?
-
-7. Find out if there are any proteins which are in general well researched (many associated publications or manual GO annotations) but underrepresented in IntAct (low MI score)
-
-8. If that is possible to measure: do intermediate filaments (or other highly insoluble proteins) really have higher rates of false-discovered interactions?
 
 # Methods - data processing and analysis
 
@@ -143,13 +138,14 @@ The report was published on `r Sys.Date()`. Data used in the report was availabl
 
    Interactome from all IMEx databases was downloaded programmatically in R using PSIQUIC package from Bioconductor [@PSICQUIC]. IMEx databases include IntAct, MINT, bhf-ucl, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo. The list of interactions (pairs of interactors) was transformed into the list of interactors preserving interactor identifiers, the type of interactor identifier, species information and the database interaction originates from. Only unique proteins wereIMEx databases contain interactions between proteins, RNA, DNA and small molecules, moreover, these interaction may involve molecules originating from different species. Therefore, to perform by species interactome/proteome comparison there is a need to remove non-UniProtKB/AC molecule identifiers (which removes non-protein molecules, although, may also remove a small fraction of proteins which have no UniProtKB/AC) and there is a need to remove proteins originating from other species. Also, entries in IMEx databases has to be cleaned of tags and textual descriptions ("taxid:9606(human-h1299)|taxid:9606(Homo sapiens lung lymph node carcinoma)" to "9606") to make further analysis easier and cleaner.
    Next, when provided in the research articles protein isoform information is always included in IMEx databases, so to perform analysis excluding isoform information UniProtKB/AC were cleaned of -N suffix (P04637-4 to P04637).
-   IMEx consortium databases such as IntAct, MINT, BHF-UCL, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo are currently integrated into IntAct [1]. 
+   IMEx consortium databases such as IntAct, MINT, BHF-UCL, MPIDB, MatrixDB, HPIDb, I2D-IMEx, InnateDB-IMEx, MolCon, UniProt, MBInfo are currently integrated into IntAct [@Orchard:2014aa]. 
 
 
 ### Physicochemical properties and disordered region prediction
 
-   Information on disordered region content and biochemical properties of individual proteins were obtained from the dataset generated by Vincent and  Schnell in 2015 []. Briefly, Vincent and  Schnell used a number of disorder prediction algorithms (IUPred and DisEMBL) and their consensus to generate disordered region predictions for each protein which was be used to calculate the fraction of disordered regions in a protein. In addition, Vincent and  Schnell used localCIDER version 0.1.7 (Classification of Intrinsically Disordered Ensemble Regions) to calculate physical properties such as a fraction of charged residues, mean hydrophobicity or charge separation for each protein. This was done for 10 eukaryotic proteomes and written to SQLite-database which was made available online.
+   Information on disordered region content and physicochemical properties of individual proteins were obtained from the dataset generated by Vincent and  Schnell in 2015 [@Vincent:2016aa]. Briefly, Vincent and  Schnell used a number of disorder prediction algorithms (IUPred and DisEMBL) and their consensus to generate disordered region predictions for each protein which was be used to calculate the fraction of disordered regions in a protein. In addition, Vincent and  Schnell used localCIDER version 0.1.7 (Classification of Intrinsically Disordered Ensemble Regions) to calculate physical properties such as fraction of charged residues, mean hydropathy or charge separation for each protein. This was done for 10 eukaryotic proteomes and written to SQLite-database which was made available online through dryad service [@dryad_sm107].
 
-### Gene ontology enrichment analysis
+### Gene Ontology enrichment analysis
 
-   coming soon
+   Enrichment analysis can identify groups of genes seletively enriched or depleted in a specific dataset. Genes can be grouped by common annotations decribing their function, location in the cell or membership in a pathway, such as those described in KEGG [@Kanehisa:2016aa] or Reactome [@Fabregat:2016aa]. Gene Ontology Consortium (GO) [@Gene-Ontology:2015aa] annotates gene products (proteins, non-coding RNA, protein complexes) by molecular fuction they perform, cellular component they are located in and biological process they are involved in. This annotation is first done manually by a curator based on evidence provided in the research paper and then expanded to other proteins using computational annotation methods, for example, mouse orthologues of human protein are likely to have similar function. Computational annotation is less reliable however it allows to generate at annotations for non-studied proteins or in poorely studied organisms. More information on the evidence codes for Gene Ontology annotations can be found on the GO Consortium website [http://geneontology.org/page/guide-go-evidence-codes]. All analyses in this study included all Gene Ontology annotations.
+   Enrichment analysis uses statistical tests and protein to GO term associations to identify functions and compartments overrepresented in a particular list of proteins as compared to background list. Statistical test is performed for every GO term and uses hypergeometric distubution to estimate the probability that a number of proteins in our list is annotated by a speficic GO term by chance based on the fraction of proteins annotated with that term in the background list. Calculated probality tells how likely (by chance) is that our list is enriched in proteins with function described by that specific GO term. If that's highly unlikely to occur by chance we consider GO function to be enriched. Multiple hypothesis testing correction is applied to adjust probabilies for higher probability of getting extreme result by chance due to testing thousands of GO terms. All enrichment test were performed and visualised using R package clusterProfiler [@Yu:2012aa]. GO annotations used in that package are compiled from GO consortium into R package GO.db provided through Bioconductor project [@Gentleman:2004aa]. 

@@ -1,4 +1,4 @@
-\begin{thebibliography}{12}
+\begin{thebibliography}{19}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -18,6 +18,45 @@ Pascal Braun, Murat Tasan, Matija Dreze, Miriam Barrios-Rodiles, Irma Lemmens,
 \newblock \emph{Nat Methods}, 6\penalty0 (1):\penalty0 91--97, Jan 2009.
 \newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
 \newblock \doi{10.1038/nmeth.1281}.
+
+\bibitem[Fabregat et~al.(2016)Fabregat, Sidiropoulos, Garapati, Gillespie,
+  Hausmann, Haw, Jassal, Jupe, Korninger, McKay, Matthews, May, Milacic,
+  Rothfels, Shamovsky, Webber, Weiser, Williams, Wu, Stein, Hermjakob, and
+  D'Eustachio]{Fabregat:2016aa}
+Antonio Fabregat, Konstantinos Sidiropoulos, Phani Garapati, Marc Gillespie,
+  Kerstin Hausmann, Robin Haw, Bijay Jassal, Steven Jupe, Florian Korninger,
+  Sheldon McKay, Lisa Matthews, Bruce May, Marija Milacic, Karen Rothfels,
+  Veronica Shamovsky, Marissa Webber, Joel Weiser, Mark Williams, Guanming Wu,
+  Lincoln Stein, Henning Hermjakob, and Peter D'Eustachio.
+\newblock The reactome pathway knowledgebase.
+\newblock \emph{Nucleic Acids Res}, 44\penalty0 (D1):\penalty0 D481--7, Jan
+  2016.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gkv1351}.
+
+\bibitem[Gene~Ontology(2015)]{Gene-Ontology:2015aa}
+Consortium Gene~Ontology.
+\newblock Gene ontology consortium: going forward.
+\newblock \emph{Nucleic Acids Res}, 43\penalty0 (Database issue):\penalty0
+  D1049--56, Jan 2015.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gku1179}.
+
+\bibitem[Gentleman et~al.(2004)Gentleman, Carey, Bates, Bolstad, Dettling,
+  Dudoit, Ellis, Gautier, Ge, Gentry, Hornik, Hothorn, Huber, Iacus, Irizarry,
+  Leisch, Li, Maechler, Rossini, Sawitzki, Smith, Smyth, Tierney, Yang, and
+  Zhang]{Gentleman:2004aa}
+Robert~C Gentleman, Vincent~J Carey, Douglas~M Bates, Ben Bolstad, Marcel
+  Dettling, Sandrine Dudoit, Byron Ellis, Laurent Gautier, Yongchao Ge, Jeff
+  Gentry, Kurt Hornik, Torsten Hothorn, Wolfgang Huber, Stefano Iacus, Rafael
+  Irizarry, Friedrich Leisch, Cheng Li, Martin Maechler, Anthony~J Rossini,
+  Gunther Sawitzki, Colin Smith, Gordon Smyth, Luke Tierney, Jean Y~H Yang, and
+  Jianhua Zhang.
+\newblock Bioconductor: open software development for computational biology and
+  bioinformatics.
+\newblock \emph{Genome Biol}, 5\penalty0 (10):\penalty0 R80, 2004.
+\newblock ISSN 1474-760X (Electronic); 1474-7596 (Linking).
+\newblock \doi{10.1186/gb-2004-5-10-r80}.
 
 \bibitem[Hein et~al.(2015)Hein, Hubner, Poser, Cox, Nagaraj, Toyoda, Gak,
   Weisswange, Mansfeld, Buchholz, Hyman, and Mann]{Hein:2015aa}
@@ -48,6 +87,15 @@ Henning Hermjakob, Luisa Montecchi-Palazzi, Gary Bader, Jerome Wojcik, Lukasz
 \newblock \emph{Nat Biotechnol}, 22\penalty0 (2):\penalty0 177--183, Feb 2004.
 \newblock ISSN 1087-0156 (Print); 1087-0156 (Linking).
 \newblock \doi{10.1038/nbt926}.
+
+\bibitem[Kanehisa et~al.(2016)Kanehisa, Sato, Kawashima, Furumichi, and
+  Tanabe]{Kanehisa:2016aa}
+Minoru Kanehisa, Yoko Sato, Masayuki Kawashima, Miho Furumichi, and Mao Tanabe.
+\newblock Kegg as a reference resource for gene and protein annotation.
+\newblock \emph{Nucleic Acids Res}, 44\penalty0 (D1):\penalty0 D457--62, Jan
+  2016.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gkv1070}.
 
 \bibitem[Lemmens et~al.(2015)Lemmens, Lievens, and Tavernier]{Lemmens:2015aa}
 Irma Lemmens, Sam Lievens, and Jan Tavernier.
@@ -156,6 +204,28 @@ J~M Villaveces, R~C Jimenez, P~Porras, N~Del-Toro, M~Duesbury, M~Dumousseau,
 \newblock \emph{Database (Oxford)}, 2015, 2015.
 \newblock ISSN 1758-0463 (Electronic); 1758-0463 (Linking).
 \newblock \doi{10.1093/database/bau131}.
+
+\bibitem[Vincent and Schnell(2016{\natexlab{a}})]{Vincent:2016aa}
+Michael Vincent and Santiago Schnell.
+\newblock A collection of intrinsic disorder characterizations from eukaryotic
+  proteomes.
+\newblock \emph{Sci Data}, 3:\penalty0 160045, Jun 2016{\natexlab{a}}.
+\newblock ISSN 2052-4463 (Electronic); 2052-4463 (Linking).
+\newblock \doi{10.1038/sdata.2016.45}.
+
+\bibitem[Vincent and Schnell(2016{\natexlab{b}})]{dryad_sm107}
+MP~Vincent and S~Schnell.
+\newblock Data from: A collection of intrinsic disorder characterizations from
+  eukaryotic proteomes, 2016{\natexlab{b}}.
+\newblock URL \url{http://dx.doi.org/10.5061/dryad.sm107}.
+
+\bibitem[Yu et~al.(2012)Yu, Wang, Han, and He]{Yu:2012aa}
+Guangchuang Yu, Li-Gen Wang, Yanyan Han, and Qing-Yu He.
+\newblock clusterprofiler: an r package for comparing biological themes among
+  gene clusters.
+\newblock \emph{OMICS}, 16\penalty0 (5):\penalty0 284--287, May 2012.
+\newblock ISSN 1557-8100 (Electronic); 1536-2310 (Linking).
+\newblock \doi{10.1089/omi.2011.0118}.
 
 \bibitem[Zhang et~al.(2011)Zhang, Sun, and Jiang]{Zhang:2011aa}
 Wangshu Zhang, Fengzhu Sun, and Rui Jiang.
