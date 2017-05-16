@@ -1,9 +1,18 @@
-\begin{thebibliography}{19}
+\begin{thebibliography}{29}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Babu(2016)]{Babu:2016aa}
+M~Madan Babu.
+\newblock The contribution of intrinsically disordered regions to protein
+  function, cellular complexity, and human disease.
+\newblock \emph{Biochem Soc Trans}, 44\penalty0 (5):\penalty0 1185--1200, Oct
+  2016.
+\newblock ISSN 1470-8752 (Electronic); 0300-5127 (Linking).
+\newblock \doi{10.1042/BST20160172}.
 
 \bibitem[Braun et~al.(2009)Braun, Tasan, Dreze, Barrios-Rodiles, Lemmens, Yu,
   Sahalie, Murray, Roncari, de~Smet, Venkatesan, Rual, Vandenhaute, Cusick,
@@ -18,6 +27,43 @@ Pascal Braun, Murat Tasan, Matija Dreze, Miriam Barrios-Rodiles, Irma Lemmens,
 \newblock \emph{Nat Methods}, 6\penalty0 (1):\penalty0 91--97, Jan 2009.
 \newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
 \newblock \doi{10.1038/nmeth.1281}.
+
+\bibitem[Buljan et~al.(2012)Buljan, Chalancon, Eustermann, Wagner, Fuxreiter,
+  Bateman, and Babu]{Buljan:2012aa}
+Marija Buljan, Guilhem Chalancon, Sebastian Eustermann, Gunter~P Wagner, Monika
+  Fuxreiter, Alex Bateman, and M~Madan Babu.
+\newblock Tissue-specific splicing of disordered segments that embed binding
+  motifs rewires protein interaction networks.
+\newblock \emph{Mol Cell}, 46\penalty0 (6):\penalty0 871--883, Jun 2012.
+\newblock ISSN 1097-4164 (Electronic); 1097-2765 (Linking).
+\newblock \doi{10.1016/j.molcel.2012.05.039}.
+
+\bibitem[Calderone et~al.(2013)Calderone, Castagnoli, and
+  Cesareni]{Calderone:2013aa}
+Alberto Calderone, Luisa Castagnoli, and Gianni Cesareni.
+\newblock mentha: a resource for browsing integrated protein-interaction
+  networks.
+\newblock \emph{Nat Methods}, 10\penalty0 (8):\penalty0 690--691, Aug 2013.
+\newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
+\newblock \doi{10.1038/nmeth.2561}.
+
+\bibitem[Carlson(2017)]{GO.db}
+Marc Carlson.
+\newblock \emph{GO.db: A set of annotation maps describing the entire Gene
+  Ontology}, 2017.
+\newblock R package version 3.4.1.
+
+\bibitem[Chatr-Aryamontri et~al.(2017)Chatr-Aryamontri, Oughtred, Boucher,
+  Rust, Chang, Kolas, O'Donnell, Oster, Theesfeld, Sellam, Stark, Breitkreutz,
+  Dolinski, and Tyers]{Chatr-Aryamontri:2017aa}
+Andrew Chatr-Aryamontri, Rose Oughtred, Lorrie Boucher, Jennifer Rust, Christie
+  Chang, Nadine~K Kolas, Lara O'Donnell, Sara Oster, Chandra Theesfeld, Adnane
+  Sellam, Chris Stark, Bobby-Joe Breitkreutz, Kara Dolinski, and Mike Tyers.
+\newblock The biogrid interaction database: 2017 update.
+\newblock \emph{Nucleic Acids Res}, 45\penalty0 (D1):\penalty0 D369--D379, Jan
+  2017.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gkw1102}.
 
 \bibitem[Fabregat et~al.(2016)Fabregat, Sidiropoulos, Garapati, Gillespie,
   Hausmann, Haw, Jassal, Jupe, Korninger, McKay, Matthews, May, Milacic,
@@ -88,6 +134,30 @@ Henning Hermjakob, Luisa Montecchi-Palazzi, Gary Bader, Jerome Wojcik, Lukasz
 \newblock ISSN 1087-0156 (Print); 1087-0156 (Linking).
 \newblock \doi{10.1038/nbt926}.
 
+\bibitem[Huttlin et~al.(2015)Huttlin, Ting, Bruckner, Gebreab, Gygi, Szpyt,
+  Tam, Zarraga, Colby, Baltier, Dong, Guarani, Vaites, Ordureau, Rad, Erickson,
+  Wuhr, Chick, Zhai, Kolippakkam, Mintseris, Obar, Harris, Artavanis-Tsakonas,
+  Sowa, De~Camilli, Paulo, Harper, and Gygi]{Huttlin:2015aa}
+Edward~L Huttlin, Lily Ting, Raphael~J Bruckner, Fana Gebreab, Melanie~P Gygi,
+  John Szpyt, Stanley Tam, Gabriela Zarraga, Greg Colby, Kurt Baltier, Rui
+  Dong, Virginia Guarani, Laura~Pontano Vaites, Alban Ordureau, Ramin Rad,
+  Brian~K Erickson, Martin Wuhr, Joel Chick, Bo~Zhai, Deepak Kolippakkam,
+  Julian Mintseris, Robert~A Obar, Tim Harris, Spyros Artavanis-Tsakonas,
+  Mathew~E Sowa, Pietro De~Camilli, Joao~A Paulo, J~Wade Harper, and Steven~P
+  Gygi.
+\newblock The bioplex network: A systematic exploration of the human
+  interactome.
+\newblock \emph{Cell}, 162\penalty0 (2):\penalty0 425--440, Jul 2015.
+\newblock ISSN 1097-4172 (Electronic); 0092-8674 (Linking).
+\newblock \doi{10.1016/j.cell.2015.06.043}.
+
+\bibitem[Isserlin et~al.(2011)Isserlin, El-Badrawi, and Bader]{Isserlin:2011aa}
+Ruth Isserlin, Rashad~A El-Badrawi, and Gary~D Bader.
+\newblock The biomolecular interaction network database in psi-mi 2.5.
+\newblock \emph{Database (Oxford)}, 2011:\penalty0 baq037, 2011.
+\newblock ISSN 1758-0463 (Electronic); 1758-0463 (Linking).
+\newblock \doi{10.1093/database/baq037}.
+
 \bibitem[Kanehisa et~al.(2016)Kanehisa, Sato, Kawashima, Furumichi, and
   Tanabe]{Kanehisa:2016aa}
 Minoru Kanehisa, Yoko Sato, Masayuki Kawashima, Miho Furumichi, and Mao Tanabe.
@@ -104,6 +174,17 @@ Irma Lemmens, Sam Lievens, and Jan Tavernier.
 \newblock \emph{Methods Mol Biol}, 1278:\penalty0 447--455, 2015.
 \newblock ISSN 1940-6029 (Electronic); 1064-3745 (Linking).
 \newblock \doi{10.1007/978-1-4939-2425-7{\_}29}.
+
+\bibitem[Li et~al.(2017)Li, Wernersson, Hansen, Horn, Mercer, Slodkowicz,
+  Workman, Rigina, Rapacki, Staerfeldt, Brunak, Jensen, and Lage]{Li:2017aa}
+Taibo Li, Rasmus Wernersson, Rasmus~B Hansen, Heiko Horn, Johnathan Mercer,
+  Greg Slodkowicz, Christopher~T Workman, Olga Rigina, Kristoffer Rapacki,
+  Hans~H Staerfeldt, Soren Brunak, Thomas~S Jensen, and Kasper Lage.
+\newblock A scored human protein-protein interaction network to catalyze
+  genomic interpretation.
+\newblock \emph{Nat Methods}, 14\penalty0 (1):\penalty0 61--64, Jan 2017.
+\newblock ISSN 1548-7105 (Electronic); 1548-7091 (Linking).
+\newblock \doi{10.1038/nmeth.4083}.
 
 \bibitem[Mellacheruvu et~al.(2013)Mellacheruvu, Wright, Couzens, Lambert,
   St-Denis, Li, Miteva, Hauri, Sardiu, Low, Halim, Bagshaw, Hubner, Al-Hakim,
@@ -166,6 +247,26 @@ Sandra Orchard, Mais Ammari, Bruno Aranda, Lionel Breuza, Leonardo Briganti,
 \newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
 \newblock \doi{10.1093/nar/gkt1115}.
 
+\bibitem[Peri et~al.(2004)Peri, Navarro, Kristiansen, Amanchy, Surendranath,
+  Muthusamy, Gandhi, Chandrika, Deshpande, Suresh, Rashmi, Shanker, Padma,
+  Niranjan, Harsha, Talreja, Vrushabendra, Ramya, Yatish, Joy, Shivashankar,
+  Kavitha, Menezes, Choudhury, Ghosh, Saravana, Chandran, Mohan, Jonnalagadda,
+  Prasad, Kumar-Sinha, Deshpande, and Pandey]{Peri:2004aa}
+Suraj Peri, J~Daniel Navarro, Troels~Z Kristiansen, Ramars Amanchy, Vineeth
+  Surendranath, Babylakshmi Muthusamy, T~K~B Gandhi, K~N Chandrika, Nandan
+  Deshpande, Shubha Suresh, B~P Rashmi, K~Shanker, N~Padma, Vidya Niranjan, H~C
+  Harsha, Naveen Talreja, B~M Vrushabendra, M~A Ramya, A~J Yatish, Mary Joy,
+  H~N Shivashankar, M~P Kavitha, Minal Menezes, Dipanwita~Roy Choudhury,
+  Neelanjana Ghosh, R~Saravana, Sreenath Chandran, Sujatha Mohan, Chandra~Kiran
+  Jonnalagadda, C~K Prasad, Chandan Kumar-Sinha, Krishna~S Deshpande, and
+  Akhilesh Pandey.
+\newblock Human protein reference database as a discovery resource for
+  proteomics.
+\newblock \emph{Nucleic Acids Res}, 32\penalty0 (Database issue):\penalty0
+  D497--501, Jan 2004.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gkh070}.
+
 \bibitem[Saraon et~al.(2017)Saraon, Grozavu, Lim, Snider, Yao, and
   Stagljar]{Saraon:2017aa}
 Punit Saraon, Ingrid Grozavu, Sang~Hyun Lim, Jamie Snider, Zhong Yao, and Igor
@@ -192,6 +293,14 @@ Paul Shannon.
 \newblock \emph{PSICQUIC: Proteomics Standard Initiative Common QUery
   InterfaCe}, 2017.
 \newblock R package version 1.14.0.
+
+\bibitem[The~UniProt(2017)]{The-UniProt:2017aa}
+Consortium The~UniProt.
+\newblock Uniprot: the universal protein knowledgebase.
+\newblock \emph{Nucleic Acids Res}, 45\penalty0 (D1):\penalty0 D158--D169, Jan
+  2017.
+\newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
+\newblock \doi{10.1093/nar/gkw1099}.
 
 \bibitem[Villaveces et~al.(2015)Villaveces, Jimenez, Porras, Del-Toro,
   Duesbury, Dumousseau, Orchard, Choi, Ping, Zong, Askenazi, Habermann, and

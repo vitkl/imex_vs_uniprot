@@ -646,9 +646,9 @@ for (r in reviewed) {
 
 ### Olfactory receptors are a major group of human proteins not represented in IntAct
 
+We have performed Gene Ontology enrichment analysis of proteins with no available interactions as compared to whole proteome (SwissProt protein list). We have looked at overrepresented biological processes, molecular fuctions and cellular compartment localisation of proteins. Here only overrepresented biological processes are shown. 
 
-
-```{r human_not_in_IMEx_protein_properties_GO_BP, fig.width=10, fig.height=8}
+```{r human_not_in_IMEx_protein_properties_GO_BP, fig.width=10, fig.height=8, fig.cap="Overrepresented biological processes. The size of the dot shows the number of proteins of that category in the dataset (proteins without interaction), x-axis represents the fraction of proteins of that category in the dataset. Colour shows the probability of that overlap occurring by chance."}
 ##====================================================================
 suppressPackageStartupMessages({
       library(data.table)
@@ -672,20 +672,22 @@ i = isoforms
                                    reference_protein_set = unique(proteome_vs_imex_details_f[whole_proteome_Uniprot == 1,whole_proteome_IDs]),
                                    identifier_type = "UNIPROT", ontology = "BP", 
                                    pAdjustMethod_ = "BH", 
-                                   minSetSize = 40, maxSetSize = Inf, 
+                                   minSetSize = 40, maxSetSize = 430, 
                                    simplify_by = "GeneRatio", 
                                    simplify_fun = "function (x) x[which.max(eval(parse(text = paste0(\"c(\",paste0(x, collapse = \",\"),\")\"))))]", 
                                    similarity_calc_method = "Wang", 
-                                   similarity_cutoff = 0.7, 
+                                   similarity_cutoff = 0.8, 
                                    visualize_result = "dotplot", 
                                    above_corrected_pval = 0.05, 
                                    use_bioc_annotationdbi = T, 
                                    plot_title = "biological function of proteins with no interactions in IntAct",
-                                   xlabel = "the fraction of proteins with biological function among proteins with no interactions",
-                                   drop_GO_levels = c(1:2,15:20))
+                                   xlabel = "the fraction of proteins with a specific biological function \namong proteins with no interactions",
+                                   drop_GO_levels = c(1:3,15:20))
       print(not_in_IMEx_BP$plot + theme(plot.title = element_text(hjust = 0.8)))
       
 ```
+
+Most of the proteins missing interactions are smell receptors, ion channels, adhesion molecules, lipid synthesys enzymes, taste receptors. A minor category of proteins involving sperm-egg recognition is also overrepresented. As you might infer, all these proteins are transmembrane or are connected to the membrane, which is also supported by enrichment analysis for GO cellular component. We can speculate that olfactory receptors are numerous and according to our current knowledge, similar in function, therefore this group has not attracted enough interest to study it's protein-protein interactions. Nonetheless, transmembrane proteins are challenging to perform protein-protein interactions studies on.  
 
 ### Human proteins with no available interactions (from IMEx) are on average shorter than the proteins with interactions available  
 
@@ -2360,6 +2362,7 @@ hist(ttest.r10000, xlim = c(min(ttest.r10000),ttest_r$statistic+ttest_r$statisti
 abline(v = ttest_r$statistic, col = "red")
 }
 ```
+
 
 
 ```{r poster_figures, fig.height=8, fig.width=12}
