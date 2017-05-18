@@ -1,4 +1,4 @@
-\begin{thebibliography}{29}
+\begin{thebibliography}{30}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -266,6 +266,35 @@ Suraj Peri, J~Daniel Navarro, Troels~Z Kristiansen, Ramars Amanchy, Vineeth
   D497--501, Jan 2004.
 \newblock ISSN 1362-4962 (Electronic); 0305-1048 (Linking).
 \newblock \doi{10.1093/nar/gkh070}.
+
+\bibitem[Rolland et~al.(2014)Rolland, Tasan, Charloteaux, Pevzner, Zhong,
+  Sahni, Yi, Lemmens, Fontanillo, Mosca, Kamburov, Ghiassian, Yang, Ghamsari,
+  Balcha, Begg, Braun, Brehme, Broly, Carvunis, Convery-Zupan, Corominas,
+  Coulombe-Huntington, Dann, Dreze, Dricot, Fan, Franzosa, Gebreab, Gutierrez,
+  Hardy, Jin, Kang, Kiros, Lin, Luck, MacWilliams, Menche, Murray, Palagi,
+  Poulin, Rambout, Rasla, Reichert, Romero, Ruyssinck, Sahalie, Scholz, Shah,
+  Sharma, Shen, Spirohn, Tam, Tejeda, Trigg, Twizere, Vega, Walsh, Cusick, Xia,
+  Barabasi, Iakoucheva, Aloy, De~Las~Rivas, Tavernier, Calderwood, Hill, Hao,
+  Roth, and Vidal]{Rolland:2014aa}
+Thomas Rolland, Murat Tasan, Benoit Charloteaux, Samuel~J Pevzner, Quan Zhong,
+  Nidhi Sahni, Song Yi, Irma Lemmens, Celia Fontanillo, Roberto Mosca, Atanas
+  Kamburov, Susan~D Ghiassian, Xinping Yang, Lila Ghamsari, Dawit Balcha,
+  Bridget~E Begg, Pascal Braun, Marc Brehme, Martin~P Broly, Anne-Ruxandra
+  Carvunis, Dan Convery-Zupan, Roser Corominas, Jasmin Coulombe-Huntington,
+  Elizabeth Dann, Matija Dreze, Amelie Dricot, Changyu Fan, Eric Franzosa, Fana
+  Gebreab, Bryan~J Gutierrez, Madeleine~F Hardy, Mike Jin, Shuli Kang, Ruth
+  Kiros, Guan~Ning Lin, Katja Luck, Andrew MacWilliams, Jorg Menche, Ryan~R
+  Murray, Alexandre Palagi, Matthew~M Poulin, Xavier Rambout, John Rasla,
+  Patrick Reichert, Viviana Romero, Elien Ruyssinck, Julie~M Sahalie, Annemarie
+  Scholz, Akash~A Shah, Amitabh Sharma, Yun Shen, Kerstin Spirohn, Stanley Tam,
+  Alexander~O Tejeda, Shelly~A Trigg, Jean-Claude Twizere, Kerwin Vega,
+  Jennifer Walsh, Michael~E Cusick, Yu~Xia, Albert-Laszlo Barabasi, Lilia~M
+  Iakoucheva, Patrick Aloy, Javier De~Las~Rivas, Jan Tavernier, Michael~A
+  Calderwood, David~E Hill, Tong Hao, Frederick~P Roth, and Marc Vidal.
+\newblock A proteome-scale map of the human interactome network.
+\newblock \emph{Cell}, 159\penalty0 (5):\penalty0 1212--1226, Nov 2014.
+\newblock ISSN 1097-4172 (Electronic); 0092-8674 (Linking).
+\newblock \doi{10.1016/j.cell.2014.10.050}.
 
 \bibitem[Saraon et~al.(2017)Saraon, Grozavu, Lim, Snider, Yao, and
   Stagljar]{Saraon:2017aa}

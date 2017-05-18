@@ -15,6 +15,7 @@ monofont: Helvetica
 documentclass: report
 sansfont: Helvetica
 bibliography: bibtex_library.bib
+csl: Taras-Shevchenko-National-University-of-Kyiv-KNU-biology.csl
 toc: yes
 --- 
  
@@ -934,13 +935,14 @@ ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_
    The figure 7.6 shows that the mass of the proteins which were identified interacting using AP-MS technique is on average higher that the mass of the proteins identified using two-hybrid or the other methods.  
 
 
-### Major experimental role types (bait/prey/neutral component) are substantially influenced by the mass of the protein in two-hybrid assays  
+### Major experimental role types (bait/prey/neutral component) are influenced by the mass of the protein in two-hybrid assays  
 
-The experimental role of the protein (bait/prey/neutral component) can, in theory, be influenced by protein mass. For example, it may be easier to clone shorter proteins for use as bait/prey. So it important to see if the experimental role is really influenced by protein mass.
+The experimental role of the protein (bait/prey/neutral component) can, in theory, be influenced by protein mass. For example, it may be easier to clone shorter proteins for use as bait/prey. So it important to see if the experimental role is really influenced by protein mass. We also factor in the interaction detection method.
 
-```{r human_not_in_IMEx_bait_vs_non_bait, fig.width = 11, fig.height = 7, fig.cap="Experimental role of a protein is not substantially influenced by the mass of the protein." }
+```{r human_not_in_IMEx_bait_vs_non_bait, fig.width = 12, fig.height = 7, fig.cap="Experimental role of a protein is not substantially influenced by the mass of the protein. " }
 bait_vs_non_bait = copy(all.IntAct[,.(IDs_interactor_A, IDs_interactor_B, Taxid_interactor_A, Taxid_interactor_B, bait_prey_status_A,bait_prey_status_B,interactor_IDs_databases_A,interactor_IDs_databases_B)])
-proteome_vs_imex_details_f = as.data.table(proteome_vs_imex_interaction_details_all)
+proteome_vs_imex_details_f = as.data.table(proteome_vs_imex_interaction_details_all) # filterin datasets: Publication_Identifiers != "25416956"
+
 # Length for interactor A, implicit filtering: proteins only and species human due to the data.frame "proteome_vs_imex_details_f" contents
 bait_vs_non_bait = merge(bait_vs_non_bait, proteome_vs_imex_details_f[, .(whole_proteome_IDs, Mass, two_hybrid_vs_AP_MS, SPECIES_NAME)], by.x = "IDs_interactor_A", by.y = "whole_proteome_IDs", all.y = F, all.x = F)
 # Length for interactor B, implicit filtering: proteins only and species human due to the data.frame "proteome_vs_imex_details_f" contents
@@ -969,7 +971,7 @@ ggplot(bait_vs_non_bait[two_hybrid_vs_AP_MS != "not in IntAct" & SPECIES_NAME ==
                 labels = trans_format("log10", math_format(10^.x)))+theme(axis.text.x = element_text(angle =-35))
 ```
  
-   Evidently, the experimental role of a protein is not substantially influenced by the mass of the protein. Nonetheless, this analysis doen't factor in the interaction detection method, which will be done later.
+   Evidently, the experimental role of a protein is not substantially influenced with exception of two-hybrid methods. Prey proteins tend to be longer in two-hybrid experiments. Two hybrid bait and prey are not fundamentally different (proteins can be cloned either in one plasmid, or the other), so the disctiction observed is not descriptiptive of protein as much as it is of the experimental setup. Potential explanation might be that fragments of proteins (aimed to identify sufficient to bind regions) are often cloned as a bait. This bias might also be created by a specific high-throughput two-hybrid study (however, we have removed large Vidal dataset[@Rolland:2014aa] and can still observe the trend).
 
 # Supplementary figures
 
