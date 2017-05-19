@@ -4,18 +4,19 @@ title: Characterisation of model species interactome available from primary mole
 author: "Vitalii Kleshchevnikov"
 date: "21 December 2016"
 output:
+  word_document: default
   pdf_document:
     citation_package: natbib
     df_print: kable
-  word_document: default
+  html_document: default
+documentclass: report
 fontsize: 12pt
 latex_engine: lualatex
 mainfont: Helvetica
 monofont: Helvetica
-documentclass: report
+csl: Taras-Shevchenko-National-University-of-Kyiv-KNU-biology.csl
 sansfont: Helvetica
 bibliography: bibtex_library.bib
-csl: Taras-Shevchenko-National-University-of-Kyiv-KNU-biology.csl
 toc: yes
 --- 
  
@@ -71,13 +72,13 @@ The report was published on `r Sys.Date()`. Data used in the report was availabl
 
 # Abstract
 
-The structure and the function of the cell arise from interactions between molecules inside and outside it. Investigation of those interactions is, therefore, necessary (not sufficient) to obtain understanding of the living systems. Gathering interaction data and depositing it in a central database for open and easy access by the research community can and does accellerate progress in the field. An attempt to unify interaction data from multiple sources meets many challenges, such as standardisation of annotation, interoperability with other resources and time it takes to manually gather the data. As new network analysis methods become available and research group start to use molecular interaction data to make inferences, generate new hypotheses and explain the results of highthrougput the coverage of the cell interactome and the bias present in the databases becomes influential to the research. This motivates the need to measure interactome coverage  the 
+The structure and the function of the cell arise from interactions between molecules inside and outside it. Investigation of those interactions is, therefore, necessary (but not sufficient) to obtain the understanding of the living systems. Gathering interaction data and depositing it in a central database for open and easy access by the research community can and does accelerate progress in the field. An attempt to unify interaction data from multiple sources meets many challenges, such as standardisation of annotation, interoperability with other resources and time it takes to manually gather the data. As new network analysis methods become available and research group start to use molecular interaction data to make inferences, generate new hypotheses and explain the results of transcriptomics and proteomics the coverage of the real interactome by our knowledge and the bias present in the databases begin to influence research results. This motivates the need to identify which proteins have no interactions are available and understand biases in our interaction data. We focus our analysis on the data deposited to the IMEx consortium of primary databases, which includes the IntAct database, the resource supported by our group.
 
-The best coverage is observed for yeast, E.coli and human. Isoform coverage is limited, but still significant for human.
-Proteins with no interactions in IntAct are on average smaller, less well-studied overall, have a lower fraction of charged residues and higher mean hydropathy.
-We have investigated if two high-throughput interaction detection methods (which use distinct strategies) may be biased towards physicochemical properties of the protein (such as mass): AP-MS and two-hybrid. 
-Affinity-purification followed by mass-spectrometry (AP-MS) seems to capture a higher proportion of larger proteins as compared to two-hybrid methods. 
-By performing enrichment analysis of the molecular function (Gene Ontology) [4, 5] we have found that databases and datasets which contain experimentally derived data are enriched and depleted in the same functional categories. STRING database, which includes computational prediction data, is the least biased.
+The best coverage we observe is for yeast, *E.coli* and human. Isoform coverage is limited, but still significant for human.
+We have investigated if IntAct database coverage is biased towards physicochemical properties of the protein and how well described the protein is in the literature. Proteins with no interactions in IntAct are on average smaller, less well-studied overall, have a lower fraction of charged residues and higher mean hydropathy.
+Next, we have investigated if two high-throughput interaction detection methods (which use distinct strategies) may be biased towards physicochemical properties of the protein (such as mass): AP-MS and two-hybrid. Affinity purification followed by mass spectrometry (AP-MS) seems to capture a higher proportion of larger proteins as compared to two-hybrid methods. 
+By performing enrichment analysis of the molecular function (Gene Ontology) we have found that databases and datasets which contain experimentally derived data are enriched and depleted in the same functional categories. STRING database, which includes computational prediction data, is the least biased.
+These results can inform literature curation by IMEx consortium teams and data integration efforts.
 
 
 # Introduction 
@@ -134,10 +135,8 @@ By performing enrichment analysis of the molecular function (Gene Ontology) [4, 
 
 4. Find out if major protein interaction detection methods (two-hybrid and AP-MS) exhibit any bias towards biochemical properties of the proteins involved (mass, disordered regions, hydropathy, the fraction of charged residues)
 
-5. Investigate the relationship between the number of interactions or MI score and the number of publications or GO terms per protein.
 
-
-# Methods - data processing and analysis
+# Methods: data processing and analysis
 
 ### Getting proteome from UniProtKB
 
@@ -157,8 +156,11 @@ By performing enrichment analysis of the molecular function (Gene Ontology) [4, 
 ### Gene Ontology enrichment analysis
 
    Enrichment analysis can identify groups of genes seletively enriched or depleted in a specific dataset. Genes can be grouped by common annotations decribing their function, location in the cell or membership in a pathway, such as those described in KEGG [@Kanehisa:2016aa] or Reactome [@Fabregat:2016aa]. Gene Ontology Consortium (GO) [@Gene-Ontology:2015aa] annotates gene products (proteins, non-coding RNA, protein complexes) by molecular fuction they perform, cellular component they are located in and biological process they are involved in. This annotation is first done manually by a curator based on evidence provided in the research paper and then expanded to other proteins using computational annotation methods, for example, mouse orthologues of human protein are likely to have similar function. Computational annotation is less reliable however it allows to generate at annotations for non-studied proteins or in poorely studied organisms. More information on the evidence codes for Gene Ontology annotations can be found on the GO Consortium website [http://geneontology.org/page/guide-go-evidence-codes]. All analyses in this study included all Gene Ontology annotations.  
-   Enrichment analysis uses statistical tests and protein to GO term associations to identify functions and compartments overrepresented in a particular list of proteins as compared to background list. Statistical test is performed for every GO term and uses hypergeometric distubution to estimate the probability that a number of proteins in our list is annotated by a speficic GO term by chance based on the fraction of proteins annotated with that term in the background list. Calculated probality tells how likely (by chance) is that our list is enriched in proteins with function described by that specific GO term. If that's highly unlikely to occur by chance we consider GO function to be enriched. Multiple hypothesis testing correction is applied to adjust probabilies for higher probability of getting extreme result by chance due to testing thousands of GO terms. All enrichment test were performed and visualised using R package clusterProfiler [@Yu:2012aa]. GO annotations used in the clusterProfiler package are compiled from GO consortium into R package GO.db [@GO.db] provided through Bioconductor project [@Gentleman:2004aa]. 
+   Enrichment analysis uses statistical tests and protein to GO term associations to identify functions and compartments overrepresented in a particular list of proteins as compared to background list. Statistical test is performed for every GO term and uses hypergeometric distubution to estimate the probability that a number of proteins in our list is annotated by a speficic GO term by chance based on the fraction of proteins annotated with that term in the background list. Calculated probality tells how likely (by chance) is that our list is enriched in proteins with function described by that specific GO term. If that's highly unlikely to occur by chance we consider GO function to be enriched. Multiple hypothesis testing correction is applied to adjust probabilies for higher probability of getting extreme result by chance due to testing thousands of GO terms. All enrichment test were performed and visualised using R package clusterProfiler [@Yu:2012aa]. GO annotations used in the clusterProfiler package are compiled from GO consortium into R package GO.db [@GO.db] provided through Bioconductor project [@Gentleman:2004aa].  
    
+### Computational analysis: code
+
+All R code used in this analysis in deposited to a public Github repository [@VKleshchevnikov2017], which is a common code-sharing resource.  
   
 # Results
 
@@ -709,7 +711,7 @@ Most of the proteins missing interactions are smell receptors, ion channels, adh
 ### Human proteins with no available interactions are on average shorter than the proteins with interactions available  
 
    Protein length or mass are physical properties of a protein which can, in theory, influence it's usage as a bait in experiments and it's detection in case methods depend on protein length. Proteins length is also important biologically. Longer proteins can have multiple functional domains and, therefore, more interactions.
-The distribution of protein mass has a very long right tail - there are much more big proteins than a normal distribution would predict (Supplementary figure 3), which only allows using non-parametric statistical tests (Wilcox test). Log10 transformation of protein mass, though, makes extreme values less extreme and is approximately normally distributed.  
+The distribution of protein mass has a very long right tail - there are much more big proteins than a normal distribution would predict (Supplementary figure 3), which only allows the use of non-parametric statistical tests (Wilcox test is a pairwise test we have chosen). Log10 transformation of protein mass, though, makes extreme values less extreme and is approximately normally distributed.  
 
 ```{r human_not_in_IMEx_proteins_are_shorter_density, fig.width=7, fig.height=5, fig.cap="Human proteins with no available interactions are on average shorter than the proteins with interactions available. The plot compares the distribution of protein mass across SwissProt proteins with or without interacting partners in IntAct. Vertical line highlights the median." }
       ## Analysis
@@ -771,7 +773,7 @@ proteome_vs_imex_details_f_minus_odor_olf.c[, in_IntAct := ifelse(whole_proteome
       wilcox.test.r.min.olf = wilcox.test(SwissProt_not_IMEX, SwissProt_and_IMEX, conf.int = T)
 ```
 
-This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test (Mass, Da, 95% confidence interval: `r format(signif(wilcox.test.r$conf.int,3), scientific =F)`, p-value: `r format(signif(wilcox.test.r$p.value,3), scientific =F)`) and Student t-test(log10 of Mass, Da, 95% confidence interval: `r format(signif(ttest_r$conf.int,3), scientific =F)`, p-value: `r format(signif(ttest_r$p.value,3), scientific =F)`) on the whole population of proteins, Monte-Carlo sampling (is it useful?), permutation of labels followed by Wilcox rank test (is it useful?) - Supplementary figure 3,4,5). Removing `r format(signif(n_odor_receptors,3), scientific =F)` olfactory receptors, evidently, does not change this trend (Wilcox rank test on Mass, Da, 95% confidence interval: `r format(signif(wilcox.test.r.min.olf$conf.int,3), scientific =F)`, p-value: `r format(signif(wilcox.test.r.min.olf$p.value,3), scientific =F)`).  
+This difference in protein mass between proteins present and absent in the interactome is highly unlikely to occur by chance (Wilcox rank test (Mass, Da, 95% confidence interval: `r format(signif(wilcox.test.r$conf.int,3), scientific =F)`, p-value: `r format(signif(wilcox.test.r$p.value,3), scientific =F)`) and Student t-test(log10 of Mass, Da, 95% confidence interval: `r format(signif(ttest_r$conf.int,3), scientific =F)`, p-value: `r format(signif(ttest_r$p.value,3), scientific =F)`) on the whole population of proteins. The removal of `r format(signif(n_odor_receptors,3), scientific =F)` olfactory receptors, evidently, does not change this trend (Wilcox rank test on Mass, Da, 95% confidence interval: `r format(signif(wilcox.test.r.min.olf$conf.int,3), scientific =F)`, p-value: `r format(signif(wilcox.test.r.min.olf$p.value,3), scientific =F)`).  
 
 
 ## 5. Do major protein interaction detection methods (two-hybrid and AP-MS) exhibit a bias towards biochemical properties of the proteins?
@@ -971,7 +973,12 @@ ggplot(bait_vs_non_bait[two_hybrid_vs_AP_MS != "not in IntAct" & SPECIES_NAME ==
                 labels = trans_format("log10", math_format(10^.x)))+theme(axis.text.x = element_text(angle =-35))
 ```
  
-   Evidently, the experimental role of a protein is not substantially influenced with exception of two-hybrid methods. Prey proteins tend to be longer in two-hybrid experiments. Two hybrid bait and prey are not fundamentally different (proteins can be cloned either in one plasmid, or the other), so the disctiction observed is not descriptiptive of protein as much as it is of the experimental setup. Potential explanation might be that fragments of proteins (aimed to identify sufficient to bind regions) are often cloned as a bait. This bias might also be created by a specific high-throughput two-hybrid study (however, we have removed large Vidal dataset[@Rolland:2014aa] and can still observe the trend).
+   Evidently, the experimental role of a protein is influenced by the protein length in two-hybrid methods: prey proteins tend to be longer than bait proteins. Two hybrid bait and prey are not fundamentally different. In two-hybrid methods, bait protein and prey protein can be cloned into either of the plasmids used in the assay, in contrast, AP-MS aproaches use antibodies targeting the bait to purify the bait and any protein interacting with it, this way, pray proteins don't need to be cloned the assay to work, now cloning restriction applies. So the distinction observed is not descriptiptive of protein as much as it is of the experimental setup. Potential explanation might be that fragments of proteins (aimed to identify sufficient to bind regions) are often cloned as a bait. This bias might also be created by a specific high-throughput two-hybrid study.  
+
+# Conclusions
+
+Our analysis shows that main model species have interaction data for the substantial fraction of the proteome. It also suggests that interaction data is still biased [@Rolland:2014aa] towards well-researched proteins. We can also see that interaction detection methods have specific biases; however, we were don't see many of the effects from the original study on structural bias published 8 years ago[@Bjorklund:2008aa]. The latter supports the take-home-message of that paper: aggregated datasets of protein interactions represent a more robust source for drawing conclusions. Large fraction of IntAct proteins are also present in BioGRID which combined with the result of functional enrichment suggest that the bias we see in the coverage comes the fact that some categories proteins are underresearched and not from the undercuration by IntAct or BioGRID teams. Finally, our result suggests that all experimental resources (human interaction data only) have similar bias to biological process, molecular function or the cellular localisation of the proteins; however, STRING database, which includes computational prediction data, is the least biased.  
+Result of this study have served as a foundation to a data integration project aimed use multiple protein-protein interaction resources and machine learning to find publications which contain protein-protein interactions not yet curated into IntAct database. This project has a potential to reduce bias in the interaction data, increase accessibility of currectly published protein-protein interactions involving proteins with underrepresented functions and in currently in progress [@PPorras2017].
 
 # Supplementary figures
 
