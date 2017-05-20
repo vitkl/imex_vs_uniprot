@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<style class="in-text" version="1.0" et-al-min="1" et-al-use-first="1" page-range-format="expanded" demote-non-dropping-particle="sort-only" default-locale="en-US" xmlns="http://purl.org/net/xbiblio/csl">
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0" et-al-min="1" et-al-use-first="1" page-range-format="expanded" demote-non-dropping-particle="sort-only" default-locale="en-US">
   <info>
     <title>Taras Shevchenko National University of Kyiv, KNU, biology</title>
     <id>http://csl.mendeley.com/styles/378568691/Taras-Shevchenko-National-University-of-Kyiv-KNU-biology</id>
@@ -22,7 +22,7 @@
 
     И последнее, патенты по умолчанию представлены как USA, поскольку в CSL 1.0 нет переменной, соответствующей полю country в базе Zotero 4.0. Надеюсь, это будет исправлено в будущих версиях.</summary>
     <published>2010-03-22T10:40:00+06:00</published>
-    <updated>2017-05-17T20:39:41+00:00</updated>
+    <updated>2017-05-20T11:06:18+00:00</updated>
     <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
   </info>
   <locale>
@@ -162,7 +162,7 @@
     <sort>
       <key variable="author"/>
     </sort>
-    <layout prefix="[" suffix="]" delimiter=",">
+    <layout prefix="(" suffix=")" delimiter=",">
       <text macro="author"/>
       <text macro="issued-year" prefix=", "/>
       <group prefix=", " delimiter=" ">
@@ -185,12 +185,11 @@
           <text macro="edition" prefix=". "/>
           <text macro="editor-translator" prefix=" / "/>
         </group>
-        <group>
-          <text macro="issued-year"/>
-        </group>
+        <group/>
+        <text macro="issued-year"/>
         <text macro="locators"/>
-        <text macro="page"/>
         <text macro="access"/>
+        <text macro="page"/>
       </group>
     </layout>
   </bibliography>
