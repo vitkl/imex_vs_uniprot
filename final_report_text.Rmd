@@ -4,12 +4,12 @@ title: Characterisation of model species interactome available from primary mole
 author: "Vitalii Kleshchevnikov"
 date: "21 December 2016"
 output:
+  html_document: default
+  word_document:
+    toc: yes
   pdf_document:
     citation_package: natbib
     df_print: kable
-    toc: yes
-  html_document: default
-  word_document:
     toc: yes
 documentclass: report
 fontsize: 12pt
@@ -40,7 +40,7 @@ suppressPackageStartupMessages({
 
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
-date = as.Date("2017-04-24")
+date = as.Date("2017-09-25")
 # git update-index --assume-unchanged .RData 
 # http://stackoverflow.com/questions/21043132/gitignore-just-doesnt-work-i-cant-get-it-to-ignore-ds-store-gitignore-fil
 
