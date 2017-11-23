@@ -29,8 +29,8 @@ GO_enrich_simplify_plot_bioc = function(protein_set, reference_protein_set, iden
                   by = simplify_by, 
                   select_fun = eval(parse(text = simplify_fun)), 
                   measure = similarity_calc_method,
-                  semData = NULL, 
-                  use_bioc_annotationdbi = use_bioc_annotationdbi)
+                  semData = NULL)#, 
+                  #use_bioc_annotationdbi = use_bioc_annotationdbi)
   # "x[which.max(eval(parse(text = paste0("c(",paste0(x, collapse = ","),")"))))]"
   }
   if(similarity_calc_method == "none") ego2 = ego
@@ -59,8 +59,8 @@ GSEA_simplify_plot_bioc = function(ranked_protein_list, identifier_type, ontolog
                   select_fun = eval(parse(text = simplify_fun)), 
                   measure = similarity_calc_method,
                   semData = NULL, 
-                  use_data_table = T, 
-                  use_bioc_annotationdbi = use_bioc_annotationdbi)
+                  use_data_table = T)#, 
+                  # use_bioc_annotationdbi = use_bioc_annotationdbi)
   # "x[which.max(eval(parse(text = paste0("c(",paste0(x, collapse = ","),")"))))]"
   }
   if(similarity_calc_method == "none") ego2 = ego

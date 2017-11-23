@@ -23,6 +23,18 @@ bibliography: bibtex_library.bib
  
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(echo = FALSE, results = "hide", warning = FALSE, message = FALSE, fig.keep = "all",eval=T) 
+
+packages = c("MItools", "data.table", "dplyr", "UniProt.ws", "PSICQUIC", "ggplot2", "clusterProfiler", "scales", "VennDiagram", "reshape2", "MASS", "RColorBrewer", "multcomp")
+if(mean(packages %in% names(installed.packages()[,"Package"])) != 1){
+    packages_to_install = packages[!packages %in% names(installed.packages()[,"Package"])]
+    # specifying mirror is necessary for some Linux systems
+    install.packages(packages_to_install, dependencies = TRUE, repos = "http://mirrors.ebi.ac.uk/CRAN/")
+    packages_to_install = packages[!packages %in% names(installed.packages()[,"Package"])]
+    source("https://bioconductor.org/biocLite.R")
+    biocLite(packages_to_install, dependencies = TRUE)
+    devtools::install_github("vitkl/MItools", dependencies = TRUE)
+}
+
 suppressPackageStartupMessages({
   library(data.table)
   library(dplyr)
@@ -31,16 +43,23 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(clusterProfiler)
   library(scales)
+  library(VennDiagram)
+  library(reshape2)
+  library(MASS)
+  library(RColorBrewer)
+  library(multcomp)
+  library(MItools)
 })
+
   source("multiplot.R")
   source("GO_analyse_simplify_plot.R")
 # library(devtools)
-# install_github("vitkl/clusterProfiler")
-# install_github("vitkl/DOSE")
+# devtools::install_github("vitkl/clusterProfiler")
+# devtools::install_github("vitkl/DOSE")
 
 date = Sys.Date()
 ## Please specify the date for which you want to perform analysis (if not today)
-date = as.Date("2017-09-25")
+date = as.Date("2017-11-22")
 # git update-index --assume-unchanged .RData 
 # http://stackoverflow.com/questions/21043132/gitignore-just-doesnt-work-i-cant-get-it-to-ignore-ds-store-gitignore-fil
 
@@ -171,6 +190,8 @@ filename.summary.all = paste("./results/","proteome_vs_interactome_summary_",dat
 filename.summary.all2 = paste("./results/","whole_proteome_Uniprot_vs_IMEx_vs_protein.exist_summary_",date,".txt", sep = "")
 filename.summary.all3 = paste("./results/","whole_proteome_Uniprot_vs_IntAct_vs_protein.exist_summary_",date,".txt", sep = "")
 if(!file.exists(filename.summary.all)){
+# download are read all IntAct data from FTP  
+IntActFTP = MItools::loadIntActFTP("./Data/")
 
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12", "Drosophila melanogaster", "Caenorhabditis elegans", "Arabidopsis thaliana")
 
@@ -197,7 +218,7 @@ source("intact_vs_uniprot.R")
 for (i in isoforms) {
   for (r in reviewed) {
     for (n in SPECIES_NAME) {
-      intact_vs_uniprot(SPECIES_NAME = n, reviewed = r, isoforms = i, missing_proteins = TRUE, date = date, databases = databases)
+      intact_vs_uniprot(SPECIES_NAME = n, reviewed = r, isoforms = i, missing_proteins = TRUE, date = date, databases = databases, fullIntAct = IntActFTP)
       message(paste("- ",n," -  reviewed", r, " -  isoforms included", i))
     }
   }
@@ -230,7 +251,7 @@ for (r in reviewed) {
         proteome_vs_interactome_summary.all
       }
       if(file.exists(filename.summary)) {
-        proteome_vs_interactome_summary_o = as.data.frame(read.delim(filename.summary, stringsAsFactors = F))
+        proteome_vs_interactome_summary_o = as.data.frame(read.delim(filename.summary, stringsAsFactors = F, quote = ""))
         proteome_vs_interactome_summary.all = rbind(proteome_vs_interactome_summary.all, proteome_vs_interactome_summary_o)
       }
       #=====================================
@@ -239,7 +260,7 @@ for (r in reviewed) {
         whole_proteome_Uniprot_vs_IMEx_vs_protein.exist.all
       }
       if(file.exists(filename.summary2)) {
-        whole_proteome_Uniprot_vs_IMEx_vs_protein.exist = as.data.frame(read.delim(filename.summary2, stringsAsFactors = F))
+        whole_proteome_Uniprot_vs_IMEx_vs_protein.exist = as.data.frame(read.delim(filename.summary2, stringsAsFactors = F, quote = ""))
         whole_proteome_Uniprot_vs_IMEx_vs_protein.exist.all = rbind(whole_proteome_Uniprot_vs_IMEx_vs_protein.exist.all, whole_proteome_Uniprot_vs_IMEx_vs_protein.exist)
       }
       #=====================================
@@ -248,7 +269,7 @@ for (r in reviewed) {
         whole_proteome_Uniprot_vs_IntAct_vs_protein.exist.all
       }
       if(file.exists(filename.summary3)) {
-        whole_proteome_Uniprot_vs_IntAct_vs_protein.exist = as.data.frame(read.delim(filename.summary3, stringsAsFactors = F))
+        whole_proteome_Uniprot_vs_IntAct_vs_protein.exist = as.data.frame(read.delim(filename.summary3, stringsAsFactors = F, quote = ""))
         whole_proteome_Uniprot_vs_IntAct_vs_protein.exist.all = rbind(whole_proteome_Uniprot_vs_IntAct_vs_protein.exist.all, whole_proteome_Uniprot_vs_IntAct_vs_protein.exist)
       }
   }
@@ -259,8 +280,8 @@ filename.summary.all = paste("./results/","proteome_vs_interactome_summary_",dat
 write.table(proteome_vs_interactome_summary.all, filename.summary.all, col.names=T,row.names=F,sep="\t",quote=F)
 filename.summary.all2 = paste("./results/","whole_proteome_Uniprot_vs_IMEx_vs_protein.exist_summary_",date,".txt", sep = "")
 write.table(whole_proteome_Uniprot_vs_IMEx_vs_protein.exist.all, filename.summary.all2, col.names=T,row.names=F,sep="\t",quote=F)
-filename.summary.all3 = paste("./results/","whole_proteome_Uniprot_vs_IntAct_vs_protein.exist_summary_",date,".txt", sep = "")
-write.table(whole_proteome_Uniprot_vs_IntAct_vs_protein.exist.all, filename.summary.all3, col.names=T,row.names=F,sep="\t",quote=F)
+#filename.summary.all3 = paste("./results/","whole_proteome_Uniprot_vs_IntAct_vs_protein.exist_summary_",date,".txt", sep = "")
+#write.table(whole_proteome_Uniprot_vs_IntAct_vs_protein.exist.all, filename.summary.all3, col.names=T,row.names=F,sep="\t",quote=F)
 }
 
 {
@@ -286,11 +307,9 @@ proteome_vs_interactome_summary.all$species.name = gsub("strain ATCC 204508", "S
 proteome_vs_interactome_summary.all$species.name = gsub("strain K12", "Escherichia coli, strain K12", proteome_vs_interactome_summary.all$species.name)
 SPECIES_NAME = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", SPECIES_NAME)
 SPECIES_NAME = gsub("strain K12", "Escherichia coli, strain K12", SPECIES_NAME)
-library(dplyr)
 proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == TRUE & database == IMExdatabase_sel)
 proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn & isoforms == FALSE & database == IMExdatabase_sel)
 
-library(VennDiagram)
 {
 source("double.venn.prot.R")
 grid.newpage()
@@ -378,7 +397,7 @@ for (r in reviewed) {
       SPECIES_IDs = SPECIES_NAME_TO_ID(n)
       SPECIES_ID = SPECIES_IDs$SPECIES_ID
       filename_vs_3 = paste("./analysis/","proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",reviewed = r,"_isoforms_",isoforms = i,"_", date,".txt", sep = "")
-      biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F))
+      biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F, quote = ""))
 
 #============================================================================#
 ## Calculating overlaps
@@ -391,12 +410,12 @@ whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap
                     SPECIES_NAME = n, reviewed = r, isoforms = i)
 whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha = rbind(whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp)
 
-whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap(biogrid_from_mentha_vs_proteome_vs_imex_f, 
-                                                                                 A = "whole_proteome_Uniprot", 
-                                                                                 B = "X0469.IntAct.", 
-                                                                                 C = "BioGRID_from_Mentha", 
-                                                                                 SPECIES_NAME = n, reviewed = r, isoforms = i)
-whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha = rbind(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha_temp)
+#whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap(biogrid_from_mentha_vs_proteome_vs_imex_f, 
+#                                                                                 A = "whole_proteome_Uniprot", 
+#                                                                                 B = "X0469.IntAct.", 
+#                                                                                 C = "BioGRID_from_Mentha", 
+#                                                                                 SPECIES_NAME = n, reviewed = r, isoforms = i)
+#whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha = rbind(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha_temp)
 
 reference_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha_temp = A_vs_B_vs_C_overlap(biogrid_from_mentha_vs_proteome_vs_imex_f, 
                                                                                  A = "reference_proteome_Uniprot", 
@@ -424,7 +443,6 @@ IMExdatabase_label = "IntAct" # show on the plot
 # non-modifyable code
 if(IMExdatabase == "IMEx"){
 whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha$species_name = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha$species_name)
-library(dplyr)
 proteome_vs_interactome_summary.all_isof = filter(whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, reviewed == 1)
 proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == FALSE)
 proteome_vs_interactome_summary.all_noisof = filter(whole_proteome_Uniprot_vs_IMEx_vs_BioGRID_from_Mentha, reviewed == 2)
@@ -432,13 +450,11 @@ proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summ
 }
 if(IMExdatabase == "X0469.IntAct."){
   whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha$species_name = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha$species_name)
-  library(dplyr)
   proteome_vs_interactome_summary.all_isof = filter(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, reviewed == 1)
   proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == FALSE)
   proteome_vs_interactome_summary.all_noisof = filter(whole_proteome_Uniprot_vs_IntAct_vs_BioGRID_from_Mentha, reviewed == 2)
   proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, isoforms == FALSE)
 }
-library(VennDiagram)
 {
 grid.newpage()
 
@@ -504,7 +520,6 @@ interactome_identifiers_summary.all = unique(interactome_identifiers_summary.all
 ## Plotting the number of interactors which have UniprotKB identifiers and belong to the species queried
 interactome_identifiers_summary.all.s = interactome_identifiers_summary.all[,c(3,4,5,6,7)]
 ## Transform table for plotting with ggplot2
-library(reshape2)
 interactome_identifiers_summary.all.s.m= melt(data = interactome_identifiers_summary.all.s,
                                               id.vars = c("SPECIES_NAME", "SPECIES_ID"),
                                               variable.name = "decription",
@@ -521,8 +536,6 @@ ind = interactome_identifiers_summary.all.s.m$decription != "interacting partner
 interactome_identifiers_summary.all.s.m = interactome_identifiers_summary.all.s.m[ind,]
 
 # plot how many interactors have non-uniprot and non-given-species identifiers
-library(ggplot2)
-library(dplyr)
 ggplot(interactome_identifiers_summary.all.s.m, aes(x=SPECIES_NAME, y=number, fill=decription)) + geom_bar(width = 0.9, stat = "identity", position = "stack") + geom_label(aes(label=number), position = "stack", size = 4, label.padding = unit(0.08, "lines")) +
   ggtitle("The number of interacting partners which have UniprotKB identifiers \n and belong to the species of interest") + theme(axis.text.x=element_text(angle = 20), axis.title.x = element_text(size = 0)) + ylab("number of proteins")
 # save plot
@@ -544,7 +557,6 @@ if(!file.exists(filename_intact)) {
   downloader::download(url_intact, filename_intact)
   }
 # Read all IntAct
-library(data.table)
 all.IntAct = fread(filename_intact)
 # changing column names to data.table-compatible format
 {
@@ -622,7 +634,6 @@ reviewed = 2
 isoforms = FALSE
 ##============================================================================##
 source("SPECIES_NAME_TO_ID.R")
-library(dplyr)
 for (r in reviewed) {
   for (i in isoforms) {
     for (n in SPECIES_NAME) {
@@ -636,7 +647,7 @@ for (r in reviewed) {
       filename_vs_3 = paste("./analysis/","proteome_vs_interactome_vs_BioGRID_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")}
       if(n == "strain K12"){
       filename_vs_3 = paste("./analysis/","proteome_vs_interactome_f_", SPECIES_ID,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")}
-      biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F))
+      biogrid_from_mentha_vs_proteome_vs_imex_f = as.data.frame(read.delim(filename_vs_3, stringsAsFactors = F, quote = ""))
       source("download_whole_proteome.R")
       whole_proteome_query = download_whole_proteome(SPECIES_ID, date = date)
       colnames(whole_proteome_query)[2] = "Status"
@@ -723,10 +734,9 @@ r = reviewed
 isoforms = FALSE
 i = isoforms
       filename_vs_2 = paste("./analysis/","proteome_vs_interactome_protein_properties_f_", n,"_reviewed_",r,"_isoforms_",i,"_", date,".txt", sep = "")
-      proteome_vs_imex_details_f = as.data.frame(read.delim(filename_vs_2, header = T, stringsAsFactors = F,quote=""))
+      proteome_vs_imex_details_f = as.data.frame(read.delim(filename_vs_2, header = T, stringsAsFactors = F, quote=""))
       proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx = factor(proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx, ordered =F)
                   ## plotting the distribution of mass
-      library(ggplot2)
       # ggplot(proteome_vs_imex_details_f, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, alpha =0.5)) +geom_density()+ scale_x_log10()
       # ggplot(proteome_vs_imex_details_f, aes(x = Mass, color = whole_proteome_Uniprot_IMEx, alpha =0.5)) + scale_x_log10() + geom_histogram(position = "identity", bins = 50)
       
@@ -797,7 +807,6 @@ filename = paste("./analysis/","proteome_vs_interactome_interaction_properties_f
 if(mean(file.exists(filename)) != 1){
 ##============================================================================##
 source("SPECIES_NAME_TO_ID.R")
-library(dplyr)
 for (r in reviewed) {
   for (i in isoforms) {
     for (n in SPECIES_NAME) {
@@ -899,7 +908,6 @@ isoforms = FALSE
 ##============================================================================##
 source("SPECIES_NAME_TO_ID.R")
 proteome_vs_imex_interaction_details_all = data.table()
-library(dplyr)
 for (r in reviewed) {
   for (i in isoforms) {
     for (n in SPECIES_NAME) {
@@ -921,7 +929,6 @@ proteome_vs_imex_interaction_details_all[, Median_mass := median((Mass)), by = .
 proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(gsub("_"," ",two_hybrid_vs_AP_MS),", (median mass: ", signif(Median_mass/1000,3)," kDa)"))]
 proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(signif(Median_mass/1000,3)," kDa)"))]
 
-library(scales)
 ggplot(proteome_vs_imex_interaction_details_all, aes(y = Mass, x =two_hybrid_vs_AP_MS, fill = two_hybrid_vs_AP_MS)) +
   geom_violin(draw_quantiles = c(0.05,0.25,0.495,0.5,0.505,0.75,0.95),scale = "area") +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
@@ -999,7 +1006,6 @@ proteome_vs_interactome_summary.all$species.name = gsub("strain ATCC 204508", "S
 proteome_vs_interactome_summary.all$species.name = gsub("strain K12", "Escherichia coli, strain K12", proteome_vs_interactome_summary.all$species.name)
 SPECIES_NAME = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", SPECIES_NAME)
 SPECIES_NAME = gsub("strain K12", "Escherichia coli, strain K12", SPECIES_NAME)
-library(dplyr)
 proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all, reviewed == reviewed_venn)
 proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, isoforms == TRUE)
 proteome_vs_interactome_summary.all_isof = filter(proteome_vs_interactome_summary.all_isof, database == IMExdatabase)
@@ -1007,7 +1013,6 @@ proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summ
 proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, isoforms == FALSE)
 proteome_vs_interactome_summary.all_noisof = filter(proteome_vs_interactome_summary.all_noisof, database == IMExdatabase)
 
-library(VennDiagram)
 {
 grid.newpage()
 
@@ -1061,7 +1066,7 @@ for (i in isoforms) {
       interactome_identifiers_summary.all
     }
     if(file.exists(filename.summary)) {
-      interactome_identifiers_summary.o = as.data.frame(read.delim(filename.summary, stringsAsFactors = F))
+      interactome_identifiers_summary.o = as.data.frame(read.delim(filename.summary, stringsAsFactors = F, quote = ""))
       interactome_identifiers_summary.all = rbind(interactome_identifiers_summary.all, interactome_identifiers_summary.o)
     }
   }
@@ -1074,7 +1079,6 @@ write.table(interactome_identifiers_summary.all, filename.summary.all, col.names
 #################
 interactome_identifiers_summary.all.s = interactome_identifiers_summary.all[,c(3,4,5,6,7)]
 ## Transform table for plotting with ggplot2
-library(reshape2)
 interactome_identifiers_summary.all.s.m= melt(data = interactome_identifiers_summary.all.s,
                                               id.vars = c("SPECIES_NAME", "SPECIES_ID"),
                                               variable.name = "decription",
@@ -1092,9 +1096,6 @@ ind = interactome_identifiers_summary.all.s.m$decription != "interacting partner
 interactome_identifiers_summary.all.s.m = interactome_identifiers_summary.all.s.m[ind,]
 
 # plot
-library(ggplot2)
-library(dplyr)
-
 proteome_vs_interactome_plot <- ggplot(interactome_identifiers_summary.all.s.m, aes(x=SPECIES_NAME, y=number, fill=decription,label=number)) + geom_bar(width = 0.9, stat = "identity", position = "stack") + geom_label(position = "stack", size = 4, label.padding = unit(0.08, "lines")) +
   ggtitle("The number of interacting partners which have UniprotKB identifiers \n and belong to the species of interest") + theme(axis.text.x=element_text(angle = 20), axis.title.x = element_text(size = 0)) + ylab("number of proteins")
 proteome_vs_interactome_plot
@@ -1127,9 +1128,8 @@ i = isoforms
       SwissProt_not_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_not_IMEX"]
       SwissProt_and_IMEX = proteome_vs_imex_details_f$Mass[proteome_vs_imex_details_f$whole_proteome_Uniprot_IMEx=="SwissProt_and_IMEX"]
                  ## is the distibution of mass or log(mass) normal?
-      library(rafalib)
-      mypar(2,2)
-      popsd(log10(SwissProt_not_IMEX))
+      par(mfrow = c(2,2))
+      sd(log10(SwissProt_not_IMEX))
       median(log10(SwissProt_not_IMEX))
       mad(log10(SwissProt_not_IMEX))
       {
@@ -1150,10 +1150,6 @@ i = isoforms
 ## Supplementary figure 4
 
 ```{r protein_length_det_method_rlm,  fig.width = 10, fig.height = 8, fig.cap= "Supplementary figure 4. The results of statistical tests can be visualised on a plot. In the box plot below, each vertical arrow points to the median mass of the proteins in a particular group. The middle line of the boxplot represents a median which happens to coincide with mean because the distribution of logarithm base 10 of mass is approximately normally distributed. Each yellow arrow shows the p-value and the difference in protein mass between two corresponding groups."}
-library(rafalib)
-library(MASS)
-library(RColorBrewer)
-library(multcomp)
 # read the table saved before 
 SPECIES_NAME = c("Homo sapiens", "Mus musculus", "strain ATCC 204508", "strain K12")
 ## only reviewed = 2 and isoforms = FALSE is relevant for this analysis
@@ -1162,7 +1158,6 @@ isoforms = FALSE
 ##============================================================================##
 source("SPECIES_NAME_TO_ID.R")
 proteome_vs_imex_interaction_details_all = data.table()
-library(dplyr)
 for (r in reviewed) {
   for (i in isoforms) {
     for (n in SPECIES_NAME) {
@@ -1187,7 +1182,7 @@ proteome_vs_imex_interaction_details_all[,plot_labels := (paste0(signif(Median_m
 # ============================================
 
 # IMEx_two_hybrid_AP_MS
-mypar(2,2)
+par(mfrow = c(2,2))
 for(sp in SPECIES_NAME){
 sp = gsub("strain ATCC 204508", "S. cerevisiae, strain S288c", sp)
 sp = gsub("strain K12", "Escherichia coli, strain K12", sp)

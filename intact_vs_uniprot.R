@@ -1,4 +1,4 @@
-intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins = TRUE, date = Sys.Date(), databases) {
+intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins = TRUE, date = Sys.Date(), databases, fullIntAct = MItools::loadIntActFTP("./")) {
   ## The function below downloads reference proteome list from Uniprot, saves it,
   ## finds and returns Proteome_ID and SPECIES_ID for given SPECIES_NAME
 
@@ -10,7 +10,10 @@ intact_vs_uniprot = function(SPECIES_NAME, reviewed, isoforms, missing_proteins 
   
   ## Query PSICQUIC for interactions, get MI-TAB-2.5, save, return
   source("query_PSICQUIC_for_interactions.R")
-  all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, SPECIES_NAME = SPECIES_NAME, databases = databases, date)
+  all_interactions = fullInteractome(MITABdata = fullIntAct, taxid = SPECIES_ID, database = "IntActFTP", clean = FALSE, protein_only = FALSE, directory = "./Data/", releaseORdate = NULL, within_species = FALSE)
+  all_interactions = all_interactions$data
+  colnames(all_interactions) = paste0("V", 1:42)
+  #all_interactions = query_PSICQUIC_for_interactions(SPECIES_ID = SPECIES_ID, SPECIES_NAME = SPECIES_NAME, databases = databases, date)
   if(nrow(all_interactions) > 0){
   
   ## Download the reference proteome from Uniprot for SPECIES_ID, gunzip, read

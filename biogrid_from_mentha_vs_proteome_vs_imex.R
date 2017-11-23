@@ -52,7 +52,7 @@ print(uniprotkb_and_SPECIES_ID_interactor_summary)
 #============================================================================#
 ## Combine the "logic table" proteome_vs_interactome_f with BioGRIG
 filename_vs_2 = paste("./analysis/","proteome_vs_interactome_f_", SPECIES_ID,"_reviewed_",reviewed,"_isoforms_",isoforms,"_", date,".txt", sep = "")
-proteome_vs_interactome_o = as.data.frame(read.delim(filename_vs_2, stringsAsFactors = F))
+proteome_vs_interactome_o = as.data.frame(read.delim(filename_vs_2, stringsAsFactors = F, quote = ""))
 
 biogrid_from_mentha_vs_proteome_vs_imex = merge(x = proteome_vs_interactome_o, 
                                                 y = biogrid_from_mentha_temp, by.x="whole_proteome_IDs", 
